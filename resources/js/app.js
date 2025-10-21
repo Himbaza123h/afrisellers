@@ -16,28 +16,73 @@ document.addEventListener('DOMContentLoaded', function() {
         lastScroll = currentScroll;
     });
 
-    // Categories Dropdown Toggle
+    // Categories Dropdown - HOVER BASED
     const categoriesBtn = document.getElementById('categories-btn');
     const categoriesMenu = document.getElementById('categories-menu');
+    let categoriesTimeout;
 
     if (categoriesBtn && categoriesMenu) {
-        categoriesBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            categoriesMenu.classList.toggle('hidden');
+        // Show on hover
+        categoriesBtn.addEventListener('mouseenter', function() {
+            clearTimeout(categoriesTimeout);
+            categoriesMenu.classList.remove('hidden');
         });
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!categoriesBtn.contains(e.target) && !categoriesMenu.contains(e.target)) {
+        // Keep open when hovering over menu
+        categoriesMenu.addEventListener('mouseenter', function() {
+            clearTimeout(categoriesTimeout);
+        });
+
+        // Hide with delay when leaving button
+        categoriesBtn.addEventListener('mouseleave', function() {
+            categoriesTimeout = setTimeout(() => {
                 categoriesMenu.classList.add('hidden');
-            }
+            }, 200);
         });
 
-        // Prevent closing when clicking inside the menu
-        categoriesMenu.addEventListener('click', function(e) {
-            e.stopPropagation();
+        // Hide with delay when leaving menu
+        categoriesMenu.addEventListener('mouseleave', function() {
+            categoriesTimeout = setTimeout(() => {
+                categoriesMenu.classList.add('hidden');
+            }, 200);
         });
     }
+
+    // Generic Dropdown Handler for other navigation items
+    const navDropdowns = document.querySelectorAll('.nav-dropdown-trigger');
+
+    navDropdowns.forEach(trigger => {
+        const menuId = trigger.getAttribute('data-dropdown');
+        const menu = document.getElementById(menuId);
+        let timeout;
+
+        if (menu) {
+            trigger.addEventListener('mouseenter', function() {
+                clearTimeout(timeout);
+                // Hide all other dropdowns
+                document.querySelectorAll('.nav-dropdown-menu').forEach(m => {
+                    if (m !== menu) m.classList.add('hidden');
+                });
+                menu.classList.remove('hidden');
+            });
+
+            menu.addEventListener('mouseenter', function() {
+                clearTimeout(timeout);
+            });
+
+            trigger.addEventListener('mouseleave', function() {
+                timeout = setTimeout(() => {
+                    menu.classList.add('hidden');
+                }, 200);
+            });
+
+            menu.addEventListener('mouseleave', function() {
+                timeout = setTimeout(() => {
+                    menu.classList.add('hidden');
+                }, 200);
+            });
+        }
+    });
 
     // Category Sidebar Navigation
     const categorySidebarBtns = document.querySelectorAll('.category-sidebar-btn');
@@ -45,6 +90,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     categorySidebarBtns.forEach(btn => {
         btn.addEventListener('click', function() {
+            const categoryId = this.getAttribute('data-category');
+
+            // Update sidebar buttons styling
+            categorySidebarBtns.forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.add('bg-white', 'text-gray-700');
+            });
+            this.classList.remove('bg-white', 'text-gray-700');
+            this.classList.add('bg-blue-600', 'text-white');
+
+            // Show selected category content
+            categoryContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            const selectedContent = document.getElementById('category-' + categoryId);
+            if (selectedContent) {
+                selectedContent.classList.remove('hidden');
+            }
+        });
+
+        // Also handle hover for better UX
+        btn.addEventListener('mouseenter', function() {
             const categoryId = this.getAttribute('data-category');
 
             // Update sidebar buttons styling
@@ -131,7 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let slidesToShow = 4;
         let autoSlideInterval;
 
-        // Determine slides to show based on screen size
         function updateSlidesToShow() {
             const width = window.innerWidth;
             if (width < 480) {
@@ -145,12 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Calculate total pages
         function getTotalPages() {
             return Math.ceil(categorySlides.length / slidesToShow);
         }
 
-        // Create dots
         function createDots() {
             categoryDotsContainer.innerHTML = '';
             const totalPages = getTotalPages();
@@ -163,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Update dots
         function updateDots() {
             const dots = categoryDotsContainer.querySelectorAll('button');
             const currentPage = Math.floor(currentIndex / slidesToShow);
@@ -178,38 +241,34 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Move slider
         function moveSlider() {
             const slideWidth = categorySlides[0].offsetWidth;
-            const gap = 16; // 1rem gap
+            const gap = 16;
             const offset = -(currentIndex * (slideWidth + gap));
             categorySlider.style.transform = `translateX(${offset}px)`;
             updateDots();
         }
 
-        // Next slide
         function nextSlide() {
             const maxIndex = categorySlides.length - slidesToShow;
             if (currentIndex < maxIndex) {
                 currentIndex++;
             } else {
-                currentIndex = 0; // Loop back to start
+                currentIndex = 0;
             }
             moveSlider();
         }
 
-        // Previous slide
         function prevSlide() {
             const maxIndex = categorySlides.length - slidesToShow;
             if (currentIndex > 0) {
                 currentIndex--;
             } else {
-                currentIndex = maxIndex; // Loop to end
+                currentIndex = maxIndex;
             }
             moveSlider();
         }
 
-        // Go to specific slide
         function goToSlide(pageIndex) {
             currentIndex = pageIndex * slidesToShow;
             const maxIndex = categorySlides.length - slidesToShow;
@@ -219,22 +278,19 @@ document.addEventListener('DOMContentLoaded', function() {
             moveSlider();
         }
 
-        // Start auto slide
         function startAutoSlide() {
-            autoSlideInterval = setInterval(nextSlide, 3000); // Slide every 3 seconds
+            autoSlideInterval = setInterval(nextSlide, 3000);
         }
 
-        // Stop auto slide
         function stopAutoSlide() {
             clearInterval(autoSlideInterval);
         }
 
-        // Event listeners
         if (categoryNextBtn) {
             categoryNextBtn.addEventListener('click', () => {
                 nextSlide();
                 stopAutoSlide();
-                startAutoSlide(); // Restart auto slide
+                startAutoSlide();
             });
         }
 
@@ -242,15 +298,13 @@ document.addEventListener('DOMContentLoaded', function() {
             categoryPrevBtn.addEventListener('click', () => {
                 prevSlide();
                 stopAutoSlide();
-                startAutoSlide(); // Restart auto slide
+                startAutoSlide();
             });
         }
 
-        // Pause on hover
         categorySlider.addEventListener('mouseenter', stopAutoSlide);
         categorySlider.addEventListener('mouseleave', startAutoSlide);
 
-        // Handle window resize
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
@@ -262,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 250);
         });
 
-        // Initialize
         updateSlidesToShow();
         createDots();
         moveSlider();

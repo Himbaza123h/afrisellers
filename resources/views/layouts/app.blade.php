@@ -30,6 +30,9 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
+
+    <!-- Page-specific styles -->
+    @stack('styles')
 </head>
 <body class="bg-gray-50 antialiased">
     <!-- Navigation -->
@@ -42,5 +45,8 @@
 
     <!-- Footer -->
     @include('components.footer')
+
+    <!-- Page-specific scripts -->
+    @stack('scripts')
 </body>
 </html>

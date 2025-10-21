@@ -1,32 +1,34 @@
-<section class="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
+<section class="py-16 bg-gray-50">
     <div class="container mx-auto px-4">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-3">Shop by Region</h2>
-            <p class="text-gray-600">Discover suppliers across Africa</p>
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900">Show by region</h2>
+            <a href="#" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
+                View more
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            @foreach([
-                ['region' => 'East Africa', 'countries' => 'Kenya, Tanzania, Uganda, Rwanda', 'suppliers' => '3,456', 'bg' => 'from-green-400 to-green-600'],
-                ['region' => 'West Africa', 'countries' => 'Nigeria, Ghana, Senegal, Ivory Coast', 'suppliers' => '4,567', 'bg' => 'from-yellow-400 to-orange-600'],
-                ['region' => 'Southern Africa', 'countries' => 'South Africa, Zimbabwe, Botswana', 'suppliers' => '2,345', 'bg' => 'from-purple-400 to-purple-600'],
-            ] as $region)
-            <a href="#" class="relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group">
-                <div class="h-48 bg-gradient-to-br {{ $region['bg'] }} flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">
-                    🌍
+
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
+            @php
+            $countries = [
+                ['name' => 'Tanzania', 'flag' => '🇹🇿'],
+                ['name' => 'Uganda', 'flag' => '🇺🇬'],
+                ['name' => 'Rwanda', 'flag' => '🇷🇼'],
+                ['name' => 'Senegal', 'flag' => '🇸🇳'],
+                ['name' => 'Ivory Coast', 'flag' => '🇨🇮'],
+                ['name' => 'Cameroon', 'flag' => '🇨🇲'],
+                ['name' => 'Tunisia', 'flag' => '🇹🇳']
+            ];
+            @endphp
+
+            @foreach($countries as $country)
+            <a href="#" class="flex flex-col items-center group">
+                <div class="w-20 h-20 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow flex items-center justify-center mb-3 group-hover:scale-105 transform duration-200">
+                    <span class="text-4xl">{{ $country['flag'] }}</span>
                 </div>
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ $region['region'] }}</h3>
-                    <p class="text-sm text-gray-600 mb-3">{{ $region['countries'] }}</p>
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-700 font-semibold">{{ $region['suppliers'] }} suppliers</span>
-                        <span class="text-blue-600 font-semibold group-hover:translate-x-2 transition-transform inline-flex items-center gap-1">
-                            Explore
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
+                <span class="text-sm font-medium text-gray-900 text-center">{{ $country['name'] }}</span>
             </a>
             @endforeach
         </div>
