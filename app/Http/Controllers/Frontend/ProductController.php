@@ -140,4 +140,10 @@ class ProductController extends Controller
             ]
         ];
     }
+
+    public function show($slug)
+    {
+        // For demonstration, simply return the slug
+        return view('frontend.products.show', ['slug' => $slug]);
+    }
 }

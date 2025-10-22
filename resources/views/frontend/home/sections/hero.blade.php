@@ -5,7 +5,7 @@
             <!-- Left Side - Text Content -->
             <div class="order-2 lg:order-1">
                 <div class="mb-4">
-                    <span class="inline-block bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold">
+                    <span class="inline-block bg-[#ff0808] text-white px-4 py-2 rounded-full text-sm font-bold">
                         <i class="fas fa-trophy mr-2"></i>#1 B2B Marketplace in Africa
                     </span>
                 </div>
@@ -26,7 +26,7 @@
                         placeholder="Search products or suppliers..."
                         class="flex-1 px-4 py-4 text-gray-900 text-lg font-medium focus:outline-none"
                     >
-                    <button class="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-bold transition-colors whitespace-nowrap">
+                    <button class="bg-[#ff0808] hover:bg-red-700 text-white px-8 py-4 rounded-lg font-bold transition-colors whitespace-nowrap">
                         <i class="fas fa-search mr-2"></i>Search
                     </button>
                 </div>
@@ -34,19 +34,19 @@
                 <!-- Stats -->
                 <div class="grid grid-cols-3 gap-6">
                     <div>
-                        <div class="text-4xl font-black text-orange-500 mb-1">10K+</div>
+                        <div class="text-4xl font-black text-[#ff0808] mb-1">10K+</div>
                         <div class="text-sm font-bold text-gray-600">
                             <i class="fas fa-store mr-1"></i>Suppliers
                         </div>
                     </div>
                     <div>
-                        <div class="text-4xl font-black text-blue-600 mb-1">50K+</div>
+                        <div class="text-4xl font-black text-[#ff0808] mb-1">50K+</div>
                         <div class="text-sm font-bold text-gray-600">
                             <i class="fas fa-box mr-1"></i>Products
                         </div>
                     </div>
                     <div>
-                        <div class="text-4xl font-black text-green-600 mb-1">30+</div>
+                        <div class="text-4xl font-black text-[#ff0808] mb-1">30+</div>
                         <div class="text-sm font-bold text-gray-600">
                             <i class="fas fa-globe mr-1"></i>Countries
                         </div>
@@ -67,13 +67,13 @@
 
                         <div class="absolute bottom-8 left-8 right-8 bg-white rounded-xl p-6 shadow-2xl">
                             <div class="flex items-center gap-4">
-                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                                <div class="w-16 h-16 bg-gradient-to-br from-[#ff0808] to-red-700 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                                     GL
                                 </div>
                                 <div class="flex-1">
                                     <div class="text-2xl font-black text-gray-900 mb-1 font-display">Global Logistics Ltd</div>
                                     <div class="text-gray-600 font-semibold">
-                                        <i class="fas fa-shipping-fast mr-2 text-orange-500"></i>Shipping & Freight Solutions
+                                        <i class="fas fa-shipping-fast mr-2 text-[#ff0808]"></i>Shipping & Freight Solutions
                                     </div>
                                 </div>
                                 <div class="hidden sm:block">
@@ -99,13 +99,13 @@
 
                         <div class="absolute bottom-8 left-8 right-8 bg-white rounded-xl p-6 shadow-2xl">
                             <div class="flex items-center gap-4">
-                                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                                <div class="w-16 h-16 bg-gradient-to-br from-[#ff0808] to-red-700 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                                     TI
                                 </div>
                                 <div class="flex-1">
                                     <div class="text-2xl font-black text-gray-900 mb-1 font-display">Tech Innovations Hub</div>
                                     <div class="text-gray-600 font-semibold">
-                                        <i class="fas fa-laptop mr-2 text-orange-500"></i>Electronics & Smart Devices
+                                        <i class="fas fa-laptop mr-2 text-[#ff0808]"></i>Electronics & Smart Devices
                                     </div>
                                 </div>
                                 <div class="hidden sm:block">
@@ -131,13 +131,13 @@
 
                         <div class="absolute bottom-8 left-8 right-8 bg-white rounded-xl p-6 shadow-2xl">
                             <div class="flex items-center gap-4">
-                                <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                                <div class="w-16 h-16 bg-gradient-to-br from-[#ff0808] to-red-700 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                                     AS
                                 </div>
                                 <div class="flex-1">
                                     <div class="text-2xl font-black text-gray-900 mb-1 font-display">Agro Supplies Co.</div>
                                     <div class="text-gray-600 font-semibold">
-                                        <i class="fas fa-seedling mr-2 text-orange-500"></i>Agricultural Equipment & Seeds
+                                        <i class="fas fa-seedling mr-2 text-[#ff0808]"></i>Agricultural Equipment & Seeds
                                     </div>
                                 </div>
                                 <div class="hidden sm:block">

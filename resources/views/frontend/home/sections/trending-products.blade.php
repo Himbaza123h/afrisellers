@@ -5,7 +5,7 @@
                 <h2 class="text-3xl font-bold text-gray-900 mb-2">Trending Products</h2>
                 <p class="text-gray-600">Discover today's most popular items</p>
             </div>
-            <a href="#" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
+            <a href="{{ route('products.search', ['type' => 'trendings', 'slug' => 'products']) }}" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
                 View All
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -110,7 +110,7 @@
             @endphp
 
             @foreach($products as $product)
-            <a href="#" class="bg-white rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200 group block">
+            <a href="{{ route('products.show', $product['name'])}}" class="bg-white rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200 group block">
                 <div class="aspect-square bg-gray-50 rounded-t-lg overflow-hidden relative">
                     <img src="{{ $product['image'] }}"
                          alt="{{ $product['name'] }}"

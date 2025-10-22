@@ -3,7 +3,9 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
             <!-- About -->
             <div class="lg:col-span-2">
-                <h3 class="text-white font-bold text-xl mb-4">AfriSellers</h3>
+                <h3 class="text-white font-bold text-xl mb-4">
+                    <img src="https://afrisellers.com/public/uploads/all/rcIW6v7SfbxlCbrTIBU6CXQNggsQbKVO1a8vXheE.png" alt="" class="h-12 inline-block mb-2">
+                </h3>
                 <p class="text-sm leading-relaxed mb-6">Africa's premier B2B marketplace connecting buyers and suppliers across the continent. Empowering trade and fostering business growth throughout Africa.</p>
                 <div class="flex gap-4">
                     <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
@@ -74,7 +76,7 @@
                     <div class="flex gap-3">
                         <div class="bg-white px-3 py-2 rounded">
                             <svg class="h-6" viewBox="0 0 38 24" fill="none">
-                                <rect width="38" height="24" rx="3" fill="#fff"/>
+                                <rect width="48" height="24" rx="3" fill="#fff"/>
                                 <circle cx="15" cy="12" r="7" fill="#EB001B"/>
                                 <circle cx="23" cy="12" r="7" fill="#F79E1B"/>
                                 <path d="M19 6.5c1.4 1.2 2.3 3 2.3 5s-.9 3.8-2.3 5c-1.4-1.2-2.3-3-2.3-5s.9-3.8 2.3-5z" fill="#FF5F00"/>
@@ -87,10 +89,10 @@
                             </svg>
                         </div>
                         <div class="bg-white px-3 py-2 rounded text-xs font-semibold text-gray-700 flex items-center">
-                            PayPal
+                            <img src="https://www.openbanking.org.uk/wp-content/uploads/PayPal_Logo_Horizontal_Full_Color_RGB-002-1.png" alt="" class=""width="48" height="24">
                         </div>
                         <div class="bg-white px-3 py-2 rounded text-xs font-semibold text-gray-700 flex items-center">
-                            M-Pesa
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/M-PESA.png" alt="" class=""width="48" height="24">
                         </div>
                     </div>
                 </div>

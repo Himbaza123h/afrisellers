@@ -1,4 +1,4 @@
-console.log('🔵 JavaScript file loaded!');
+console.log('🔵 AfriSellers JavaScript loaded!');
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -340,13 +340,13 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             // Remove active state from all tabs
             tabBtns.forEach(b => {
-                b.classList.remove('active', 'text-gray-900', 'border-gray-900');
-                b.classList.add('text-gray-500', 'border-transparent');
+                b.classList.remove('active', 'text-gray-900', 'border-[#ff0808]', 'font-bold');
+                b.classList.add('text-gray-600', 'border-transparent', 'font-medium');
             });
 
             // Add active state to clicked tab
-            this.classList.add('active', 'text-gray-900', 'border-gray-900');
-            this.classList.remove('text-gray-500', 'border-transparent');
+            this.classList.add('active', 'text-gray-900', 'border-[#ff0808]', 'font-bold');
+            this.classList.remove('text-gray-600', 'border-transparent', 'font-medium');
 
             // Get tab name
             const tabName = this.getAttribute('data-tab');
@@ -396,105 +396,100 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createProductCard(product, viewType) {
         const card = document.createElement('div');
-        card.className = 'product-card bg-white rounded-lg border hover:shadow-xl transition-all duration-300 group overflow-hidden';
+        card.className = 'product-card bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300 group overflow-hidden';
 
         // Add view-specific badge
         let viewBadge = '';
         if (viewType === 'suppliers') {
-            viewBadge = `<div class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full z-20">
-                Supplier View
+            viewBadge = `<div class="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-sm z-20">
+                Supplier
             </div>`;
         } else if (viewType === 'worldwide') {
-            viewBadge = `<div class="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full z-20">
+            viewBadge = `<div class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded shadow-sm z-20">
                 Worldwide
             </div>`;
         }
 
         // Supplier-specific content
         const supplierInfo = viewType === 'suppliers' && product.products_count ? `
-            <div class="bg-blue-50 p-3 rounded-lg mt-2">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-700">${product.products_count} Products</span>
-                    <span class="text-blue-600 font-semibold">Response: ${product.response_time}</span>
+            <div class="bg-gray-50 border border-gray-200 p-2 rounded mt-2 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">${product.products_count} Products</span>
+                    <span class="text-gray-700 font-medium">${product.response_time}</span>
                 </div>
             </div>
         ` : '';
 
         card.innerHTML = `
-            <div class="relative overflow-hidden aspect-square bg-gray-100">
+            <div class="relative overflow-hidden bg-gray-50" style="height: 180px;">
                 <img src="${product.image}"
                      alt="${product.name}"
-                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                      loading="lazy">
 
-                <button class="wishlist-btn absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition-colors z-20">
-                    <i class="far fa-heart text-gray-600 hover:text-red-500"></i>
+                <button class="wishlist-btn absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow hover:bg-gray-50 transition-all z-20">
+                    <i class="far fa-heart text-gray-500 text-sm"></i>
                 </button>
 
                 ${viewBadge}
                 ${product.badge ? `
-                    <div class="absolute ${viewType === 'suppliers' || viewType === 'worldwide' ? 'top-14' : 'top-4'} left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full z-10">
+                    <div class="absolute ${viewType === 'suppliers' || viewType === 'worldwide' ? 'top-10' : 'top-2'} left-2 bg-[#ff0808] text-white text-xs px-2 py-1 rounded shadow-sm z-10">
                         ${product.badge}
                     </div>
                 ` : ''}
             </div>
 
-            <div class="p-4">
-                <h3 class="text-gray-900 font-medium mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+            <div class="p-3">
+                <h3 class="text-gray-800 font-medium mb-2 line-clamp-2 group-hover:text-[#ff0808] transition-colors text-sm leading-tight">
                     ${product.name}
                 </h3>
 
-                <div class="mb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl font-bold text-gray-900">${product.price}</span>
-                        ${product.discount ? `<span class="text-sm text-red-600 font-semibold">${product.discount}</span>` : ''}
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-lg font-bold text-gray-900">${product.price}</span>
+                        ${product.discount ? `<span class="text-xs text-white bg-red-500 px-1.5 py-0.5 rounded font-medium">${product.discount}</span>` : ''}
                     </div>
-                    ${product.original_price ? `<span class="text-sm text-gray-500 line-through">${product.original_price}</span>` : ''}
-                    <div class="text-sm text-gray-600 mt-1">Min. order: ${product.min_order}</div>
-                    ${product.sold ? `<div class="text-sm text-gray-500 mt-1">${product.sold}</div>` : ''}
+                    ${product.original_price ? `<span class="text-xs text-gray-400 line-through">${product.original_price}</span>` : ''}
+                    <div class="text-xs text-gray-500 mt-1">Min. order: ${product.min_order}</div>
+                    ${product.sold ? `<div class="text-xs text-gray-400 mt-0.5">${product.sold}</div>` : ''}
                 </div>
 
-                <div class="pt-3 border-t">
-                    <div class="text-sm text-gray-700 mb-2 hover:text-blue-600 cursor-pointer">
+                <div class="pt-2 border-t border-gray-100">
+                    <div class="text-xs text-gray-600 mb-2 hover:text-[#ff0808] cursor-pointer truncate">
                         ${product.supplier}
                     </div>
 
-                    <div class="flex items-center justify-between text-xs text-gray-600">
-                        <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-between text-xs mb-2">
+                        <div class="flex items-center gap-2">
                             <div class="flex items-center gap-1">
                                 <div class="flex text-yellow-400">
                                     ${generateStars(product.rating)}
                                 </div>
-                                <span class="text-gray-700 font-medium">${product.rating}/5.0</span>
+                                <span class="text-gray-700 font-medium">${product.rating}</span>
                             </div>
-                            <span>(${product.reviews})</span>
+                            <span class="text-gray-500">(${product.reviews})</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span>${product.years} yrs</span>
+                            <span class="text-gray-500">${product.years} yrs</span>
                             <img src="https://flagcdn.com/16x12/${product.country.toLowerCase()}.png"
                                  alt="${product.country}"
-                                 class="w-4 h-3 rounded"
+                                 class="w-4 h-3 rounded shadow-sm"
                                  loading="lazy">
                         </div>
                     </div>
-                </div>
 
-                ${product.delivery ? `
-                    <div class="text-sm text-gray-600 mt-2 flex items-center gap-1">
-                        <i class="fas fa-shipping-fast text-gray-500"></i>
-                        <span>${product.delivery}</span>
+                    ${product.delivery ? `
+                        <div class="text-xs text-gray-500 flex items-center gap-1 bg-gray-50 p-1.5 rounded mb-2">
+                            <i class="fas fa-shipping-fast text-[#ff0808] text-xs"></i>
+                            <span>${product.delivery}</span>
+                        </div>
+                    ` : ''}
+
+                    ${supplierInfo}
+
+                    <div class="mt-2 pt-2 border-t border-gray-100">
+                        <span class="text-xs text-gray-600 hover:text-[#ff0808] cursor-pointer transition-colors">Contact supplier</span>
                     </div>
-                ` : ''}
-
-                ${supplierInfo}
-
-                <div class="flex gap-2 mt-4">
-                    <button class="add-to-cart-btn flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-                        Add to cart
-                    </button>
-                    <button class="chat-btn flex-1 border-2 border-orange-500 text-orange-500 hover:bg-orange-50 font-semibold py-2 px-4 rounded-lg transition-colors">
-                        Chat now
-                    </button>
                 </div>
             </div>
         `;
@@ -506,9 +501,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let stars = '';
         for (let i = 0; i < 5; i++) {
             if (i < Math.floor(rating)) {
-                stars += '<i class="fas fa-star"></i>';
+                stars += '<i class="fas fa-star" style="font-size: 10px;"></i>';
             } else {
-                stars += '<i class="far fa-star"></i>';
+                stars += '<i class="far fa-star" style="font-size: 10px;"></i>';
             }
         }
         return stars;
@@ -533,82 +528,82 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (tabName === 'suppliers') {
             sidebarContainer.innerHTML = `
-                <h2 class="text-xl font-bold text-gray-900 mb-6">Supplier Filters</h2>
+                <h2 class="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Supplier Filters</h2>
 
                 <!-- Verified Suppliers -->
-                <div class="mb-6 pb-6 border-b">
-                    <h3 class="font-bold text-gray-900 mb-4">Verification Status</h3>
-                    <div class="space-y-3">
+                <div class="mb-4 md:mb-6 pb-4 md:pb-6 border-b border-gray-200">
+                    <h3 class="font-bold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">Verification Status</h3>
+                    <div class="space-y-2 md:space-y-3">
                         <label class="flex items-center cursor-pointer group">
-                            <input type="checkbox" class="mr-2 filter-checkbox">
-                            <span class="text-blue-600 font-medium group-hover:underline">Verified Supplier</span>
+                            <input type="checkbox" class="mr-2 filter-checkbox w-4 h-4">
+                            <span class="text-blue-600 font-semibold group-hover:underline text-sm md:text-base">Verified Supplier</span>
                             <i class="fas fa-check-circle text-blue-600 ml-1 text-xs"></i>
                         </label>
                         <label class="flex items-center cursor-pointer group">
-                            <input type="checkbox" class="mr-2 filter-checkbox">
-                            <span class="text-blue-600 font-medium group-hover:underline">Gold Supplier</span>
-                            <span class="bg-yellow-400 text-white text-xs px-2 py-0.5 ml-1 rounded">GOLD</span>
+                            <input type="checkbox" class="mr-2 filter-checkbox w-4 h-4">
+                            <span class="text-blue-600 font-semibold group-hover:underline text-sm md:text-base">Gold Supplier</span>
+                            <span class="bg-yellow-400 text-white text-xs px-2 py-0.5 ml-1 rounded font-bold">GOLD</span>
                         </label>
                         <label class="flex items-center cursor-pointer group">
-                            <input type="checkbox" class="mr-2 filter-checkbox">
-                            <span class="text-blue-600 font-medium group-hover:underline">Pro Verified</span>
-                            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 ml-1 rounded">PRO</span>
+                            <input type="checkbox" class="mr-2 filter-checkbox w-4 h-4">
+                            <span class="text-blue-600 font-semibold group-hover:underline text-sm md:text-base">Pro Verified</span>
+                            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 ml-1 rounded font-bold">PRO</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Years in Business -->
-                <div class="mb-6 pb-6 border-b">
-                    <h3 class="font-bold text-gray-900 mb-4">Years in Business</h3>
+                <div class="mb-4 md:mb-6 pb-4 md:pb-6 border-b border-gray-200">
+                    <h3 class="font-bold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">Years in Business</h3>
                     <div class="space-y-2">
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="radio" name="years" class="mr-2 filter-radio">
-                            <span class="text-gray-700">5+ years</span>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+                            <input type="radio" name="years" class="mr-2 filter-radio w-4 h-4">
+                            <span class="text-gray-700 text-sm md:text-base">5+ years</span>
                         </label>
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="radio" name="years" class="mr-2 filter-radio">
-                            <span class="text-gray-700">10+ years</span>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+                            <input type="radio" name="years" class="mr-2 filter-radio w-4 h-4">
+                            <span class="text-gray-700 text-sm md:text-base">10+ years</span>
                         </label>
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="radio" name="years" class="mr-2 filter-radio">
-                            <span class="text-gray-700">15+ years</span>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+                            <input type="radio" name="years" class="mr-2 filter-radio w-4 h-4">
+                            <span class="text-gray-700 text-sm md:text-base">15+ years</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Response Time -->
-                <div class="mb-6 pb-6 border-b">
-                    <h3 class="font-bold text-gray-900 mb-4">Response Time</h3>
+                <div class="mb-4 md:mb-6 pb-4 md:pb-6 border-b border-gray-200">
+                    <h3 class="font-bold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">Response Time</h3>
                     <div class="space-y-2">
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="checkbox" class="mr-2 filter-checkbox">
-                            <span class="text-gray-700">Within 1 hour</span>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+                            <input type="checkbox" class="mr-2 filter-checkbox w-4 h-4">
+                            <span class="text-gray-700 text-sm md:text-base">Within 1 hour</span>
                         </label>
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="checkbox" class="mr-2 filter-checkbox">
-                            <span class="text-gray-700">Within 24 hours</span>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+                            <input type="checkbox" class="mr-2 filter-checkbox w-4 h-4">
+                            <span class="text-gray-700 text-sm md:text-base">Within 24 hours</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Supplier Rating -->
-                <div class="mb-6 pb-6 border-b">
-                    <h3 class="font-bold text-gray-900 mb-4">Supplier Rating</h3>
-                    <p class="text-sm text-gray-600 mb-3">Based on overall performance</p>
+                <div class="mb-4 md:mb-6 pb-4 md:pb-6 border-b border-gray-200">
+                    <h3 class="font-bold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Supplier Rating</h3>
+                    <p class="text-xs md:text-sm text-gray-600 mb-3">Based on overall performance</p>
                     <div class="space-y-2">
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="radio" name="supplier-rating" class="mr-2 filter-radio">
-                            <span class="text-gray-700">4.5 & up</span>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+                            <input type="radio" name="supplier-rating" class="mr-2 filter-radio w-4 h-4">
+                            <span class="text-gray-700 text-sm md:text-base">4.5 & up</span>
                         </label>
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="radio" name="supplier-rating" class="mr-2 filter-radio">
-                            <span class="text-gray-700">4.8 & up</span>
+                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+                            <input type="radio" name="supplier-rating" class="mr-2 filter-radio w-4 h-4">
+                            <span class="text-gray-700 text-sm md:text-base">4.8 & up</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Clear Filters Button -->
-                <button class="clear-filters-btn w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold py-2 px-4 rounded-lg transition-colors">
+                <button class="clear-filters-btn w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-2.5 md:py-3 px-4 rounded-lg transition-colors text-sm md:text-base">
                     Clear all filters
                 </button>
             `;
@@ -620,10 +615,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="mb-6 pb-6 border-b">
                     <h3 class="font-bold text-gray-900 mb-4">Region</h3>
                     <div class="space-y-2">
-                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="checkbox" class="mr-2 filter-checkbox">
-                            <span class="text-gray-700">Europe</span>
-                        </label>
                         <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
                             <input type="checkbox" class="mr-2 filter-checkbox">
                             <span class="text-gray-700">North America</span>
@@ -802,39 +793,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const icon = this.querySelector('.fa-heart');
 
                 if (icon.classList.contains('far')) {
-                    icon.classList.remove('far', 'text-gray-600');
+                    icon.classList.remove('far', 'text-gray-500');
                     icon.classList.add('fas', 'text-red-500');
                     this.classList.add('bg-red-50');
                 } else {
                     icon.classList.remove('fas', 'text-red-500');
-                    icon.classList.add('far', 'text-gray-600');
+                    icon.classList.add('far', 'text-gray-500');
                     this.classList.remove('bg-red-50');
                 }
-            });
-        });
-
-        // Add to cart
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const originalText = this.textContent.trim();
-                this.textContent = 'Added!';
-                this.classList.remove('bg-orange-500', 'hover:bg-orange-600');
-                this.classList.add('bg-green-500');
-
-                setTimeout(() => {
-                    this.textContent = originalText;
-                    this.classList.remove('bg-green-500');
-                    this.classList.add('bg-orange-500', 'hover:bg-orange-600');
-                }, 1500);
-            });
-        });
-
-        // Chat now
-        document.querySelectorAll('.chat-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                alert('Opening chat with supplier...');
             });
         });
     }
