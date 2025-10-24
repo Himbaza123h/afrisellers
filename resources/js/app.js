@@ -3,18 +3,32 @@ import './bootstrap';
 document.addEventListener('DOMContentLoaded', function() {
     const nav = document.getElementById('main-nav');
     let lastScroll = 0;
+    let navHeight = 0;
+
+    // Calculate navigation height
+    function updateNavHeight() {
+        navHeight = nav ? nav.offsetHeight : 0;
+    }
 
     window.addEventListener('scroll', function() {
         const currentScroll = window.pageYOffset;
 
         if (currentScroll > 100) {
             nav.classList.add('fixed', 'top-0', 'left-0', 'right-0', 'z-50', 'shadow-lg');
+            updateNavHeight();
         } else {
             nav.classList.remove('fixed', 'top-0', 'left-0', 'right-0', 'z-50', 'shadow-lg');
+            updateNavHeight();
         }
 
         lastScroll = currentScroll;
     });
+
+    // Initial nav height calculation
+    updateNavHeight();
+    
+    // Recalculate on window resize
+    window.addEventListener('resize', updateNavHeight);
 
     // Categories Dropdown - HOVER BASED
     const categoriesBtn = document.getElementById('categories-btn');
@@ -25,6 +39,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show on hover
         categoriesBtn.addEventListener('mouseenter', function() {
             clearTimeout(categoriesTimeout);
+            // Hide other dropdowns first
+            document.querySelectorAll('.nav-dropdown-menu').forEach(m => {
+                m.classList.add('hidden');
+            });
             categoriesMenu.classList.remove('hidden');
         });
 
@@ -59,10 +77,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (menu) {
             trigger.addEventListener('mouseenter', function() {
                 clearTimeout(timeout);
-                // Hide all other dropdowns
+                // Hide all other dropdowns including categories menu
                 document.querySelectorAll('.nav-dropdown-menu').forEach(m => {
                     if (m !== menu) m.classList.add('hidden');
                 });
+                if (categoriesMenu && menu !== categoriesMenu) {
+                    categoriesMenu.classList.add('hidden');
+                }
                 menu.classList.remove('hidden');
             });
 
@@ -84,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Category Sidebar Navigation
+    // Category Sidebar Navigation - CLICK BASED (stays selected)
     const categorySidebarBtns = document.querySelectorAll('.category-sidebar-btn');
     const categoryContents = document.querySelectorAll('.category-content');
 
@@ -94,33 +115,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Update sidebar buttons styling
             categorySidebarBtns.forEach(b => {
-                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.remove('bg-[#ff0808]', 'text-white');
                 b.classList.add('bg-white', 'text-gray-700');
             });
             this.classList.remove('bg-white', 'text-gray-700');
-            this.classList.add('bg-blue-600', 'text-white');
-
-            // Show selected category content
-            categoryContents.forEach(content => {
-                content.classList.add('hidden');
-            });
-            const selectedContent = document.getElementById('category-' + categoryId);
-            if (selectedContent) {
-                selectedContent.classList.remove('hidden');
-            }
-        });
-
-        // Also handle hover for better UX
-        btn.addEventListener('mouseenter', function() {
-            const categoryId = this.getAttribute('data-category');
-
-            // Update sidebar buttons styling
-            categorySidebarBtns.forEach(b => {
-                b.classList.remove('bg-blue-600', 'text-white');
-                b.classList.add('bg-white', 'text-gray-700');
-            });
-            this.classList.remove('bg-white', 'text-gray-700');
-            this.classList.add('bg-blue-600', 'text-white');
+            this.classList.add('bg-[#ff0808]', 'text-white');
 
             // Show selected category content
             categoryContents.forEach(content => {

@@ -11,4 +11,9 @@ class HomeController extends Controller
     {
         return view('frontend.home.index');
     }
+
+    public function livestream()
+    {
+        return view('frontend.home.livestream');
+    }
 }

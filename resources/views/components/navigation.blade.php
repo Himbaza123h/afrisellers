@@ -3,7 +3,7 @@
     <div class="bg-[#ff0808] text-white py-2.5">
         <div class="container mx-auto px-4 flex justify-between items-center text-sm">
             <div class="hidden md:flex gap-4">
-                <a href="#" class="hover:text-red-100 transition-colors">
+                <a href="{{ route('vendor.register') }}" class="hover:text-red-100 transition-colors">
                     <i class="fas fa-store mr-1"></i>Become Seller
                 </a>
                 <span class="text-red-200">|</span>
@@ -68,11 +68,17 @@
                     </div>
                 </div>
 
-                <a href="#" class="text-gray-700 hover:text-[#ff0808] flex items-center gap-2 relative transition-colors">
-                    <i class="fas fa-shopping-cart text-xl lg:text-2xl"></i>
-                    <span class="absolute -top-2 -right-2 bg-[#ff0808] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">3</span>
-                    <span class="hidden lg:block font-semibold">Cart</span>
-                </a>
+            <a href="{{ route('livestream') }}" class="text-gray-700 hover:text-[#ff0808] flex items-center gap-2 relative transition-colors">
+                <div class="relative">
+                    <i class="fas fa-video text-xl lg:text-2xl"></i>
+                    <span class="absolute -top-2 -right-2 bg-[#ff0808] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md">7</span>
+                </div>
+                {{-- <span class="hidden lg:block font-semibold">Livestream</span> --}}
+                <span class="hidden lg:flex items-center gap-1 bg-[#ff0808] text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                    <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                    LIVE
+                </span>
+            </a>
             </div>
         </div>
 
@@ -747,11 +753,53 @@
 </nav>
 
 <style>
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+/* Fix dropdown positioning and scrolling */
+.nav-dropdown-menu,
+#categories-menu {
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for dropdowns */
+.nav-dropdown-menu::-webkit-scrollbar,
+#categories-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.nav-dropdown-menu::-webkit-scrollbar-track,
+#categories-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.nav-dropdown-menu::-webkit-scrollbar-thumb,
+#categories-menu::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.nav-dropdown-menu::-webkit-scrollbar-thumb:hover,
+#categories-menu::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* CRITICAL: Ensure page stays scrollable */
+body {
+    overflow-y: scroll !important;
+}
+
+html {
+    overflow-y: scroll !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 </style>
+
