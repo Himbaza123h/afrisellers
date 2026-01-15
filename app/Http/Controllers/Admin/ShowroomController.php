@@ -1,0 +1,197 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Showroom;
+use App\Models\Country;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class ShowroomController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Showroom::with(['user', 'country']);
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('showroom_number', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%")
+                  ->orWhere('business_type', 'like', "%{$search}%");
+            });
+        }
+
+        // Status filter
+        if ($request->filled('filter')) {
+            $query->where('status', $request->filter);
+        }
+
+        // Country filter
+        if ($request->filled('country')) {
+            $query->where('country_id', $request->country);
+        }
+
+        // Verification filter
+        if ($request->filled('verification')) {
+            $query->where('is_verified', $request->verification);
+        }
+
+        // Featured filter
+        if ($request->filled('featured')) {
+            $query->where('is_featured', $request->featured);
+        }
+
+        // Business type filter
+        if ($request->filled('business_type')) {
+            $query->where('business_type', $request->business_type);
+        }
+
+        // Size filter
+        if ($request->filled('size')) {
+            switch ($request->size) {
+                case 'large':
+                    $query->where('showroom_size_sqm', '>=', 1000);
+                    break;
+                case 'medium':
+                    $query->whereBetween('showroom_size_sqm', [500, 999]);
+                    break;
+                case 'small':
+                    $query->where('showroom_size_sqm', '<', 500);
+                    break;
+            }
+        }
+
+        // Rating filter
+        if ($request->filled('rating')) {
+            switch ($request->rating) {
+                case '4plus':
+                    $query->where('rating', '>=', 4);
+                    break;
+                case '3plus':
+                    $query->where('rating', '>=', 3);
+                    break;
+                case 'below3':
+                    $query->where('rating', '<', 3);
+                    break;
+            }
+        }
+
+        // Date range filter
+        if ($request->filled('date_range')) {
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $showrooms = $query->paginate(20)->withQueryString();
+
+        // Calculate statistics
+        $stats = [
+            'total' => Showroom::count(),
+            'active' => Showroom::where('status', 'active')->count(),
+            'verified' => Showroom::where('is_verified', true)->count(),
+            'featured' => Showroom::where('is_featured', true)->count(),
+            'total_views' => Showroom::sum('views_count'),
+            'total_inquiries' => Showroom::sum('inquiries_count'),
+            'avg_rating' => number_format(Showroom::avg('rating'), 1),
+            'this_month' => Showroom::whereMonth('created_at', now()->month)
+                                    ->whereYear('created_at', now()->year)
+                                    ->count(),
+            'pending' => Showroom::where('status', 'pending')->count(),
+        ];
+
+        $stats['active_percentage'] = $stats['total'] > 0
+            ? round(($stats['active'] / $stats['total']) * 100, 1)
+            : 0;
+        $stats['verified_percentage'] = $stats['total'] > 0
+            ? round(($stats['verified'] / $stats['total']) * 100, 1)
+            : 0;
+        $stats['featured_percentage'] = $stats['total'] > 0
+            ? round(($stats['featured'] / $stats['total']) * 100, 1)
+            : 0;
+
+        // Add status badge to each showroom
+        $showrooms->getCollection()->transform(function ($showroom) {
+            $showroom->status_badge = $this->getStatusBadge($showroom->status);
+            return $showroom;
+        });
+
+        $countries = Country::orderBy('name')->get();
+
+        return view('admin.showrooms.index', compact('showrooms', 'stats', 'countries'));
+    }
+
+    public function show(Showroom $showroom)
+    {
+        $showroom->load(['user', 'country', 'products']);
+        return view('admin.showrooms.show', compact('showroom'));
+    }
+
+    public function verify(Showroom $showroom)
+    {
+        $showroom->update(['is_verified' => true]);
+        return redirect()->back()->with('success', 'Showroom verified successfully');
+    }
+
+    public function unverify(Showroom $showroom)
+    {
+        $showroom->update(['is_verified' => false]);
+        return redirect()->back()->with('success', 'Verification revoked successfully');
+    }
+
+    public function feature(Showroom $showroom)
+    {
+        $showroom->update(['is_featured' => !$showroom->is_featured]);
+        $message = $showroom->is_featured ? 'Showroom featured successfully' : 'Showroom unfeatured successfully';
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function activate(Showroom $showroom)
+    {
+        $showroom->update(['status' => 'active']);
+        return redirect()->back()->with('success', 'Showroom activated successfully');
+    }
+
+    public function suspend(Showroom $showroom)
+    {
+        $showroom->update(['status' => 'suspended']);
+        return redirect()->back()->with('success', 'Showroom suspended successfully');
+    }
+
+    public function destroy(Showroom $showroom)
+    {
+        $showroom->delete();
+        return redirect()->route('admin.showrooms.index')->with('success', 'Showroom deleted successfully');
+    }
+
+    private function getStatusBadge($status)
+    {
+        return match($status) {
+            'active' => ['text' => 'Active', 'class' => 'bg-green-100 text-green-800'],
+            'pending' => ['text' => 'Pending', 'class' => 'bg-yellow-100 text-yellow-800'],
+            'suspended' => ['text' => 'Suspended', 'class' => 'bg-red-100 text-red-800'],
+            'inactive' => ['text' => 'Inactive', 'class' => 'bg-gray-100 text-gray-800'],
+            default => ['text' => ucfirst($status), 'class' => 'bg-gray-100 text-gray-800'],
+        };
+    }
+}
