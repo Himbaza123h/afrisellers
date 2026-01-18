@@ -16,6 +16,7 @@ class Country extends Model
     protected $fillable = [
         'name',
         'code',
+        'code',
         'flag_url',
         'image',
         'status',

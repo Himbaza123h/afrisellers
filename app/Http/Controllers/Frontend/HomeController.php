@@ -20,6 +20,7 @@ use App\Models\Region;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Vendor\Vendor;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -198,6 +199,100 @@ class HomeController extends Controller
         'countriesByRegion'
 
     ));
+}
+
+
+public function showBusinessProfile($id, $name = null)
+{
+    $businessProfile = \App\Models\BusinessProfile::with([
+        'user.products' => function($query) {
+            $query->where('status', 'active')
+                  ->where('is_admin_verified', true)
+                  ->with(['images', 'prices', 'productCategory']);
+        },
+        'country',
+        'user'
+    ])->findOrFail($id);
+
+    // Get product count
+    $productsCount = $businessProfile->user->products()
+        ->where('status', 'active')
+        ->where('is_admin_verified', true)
+        ->count();
+
+    return view('frontend.business-profile.index', compact('businessProfile', 'productsCount'));
+}
+
+
+// Add these methods to your HomeController class
+
+/**
+ * Show request quote page
+ */
+public function showRequestQuote(Request $request, $businessProfileId, $productId = null)
+{
+    $businessProfile = \App\Models\BusinessProfile::with(['user', 'country'])
+        ->findOrFail($businessProfileId);
+
+    $product = null;
+    if ($productId) {
+        $product = \App\Models\Product::with(['images', 'productCategory', 'prices'])
+            ->findOrFail($productId);
+    }
+
+    return view('frontend.requests.request-quote', compact('businessProfile', 'product'));
+}
+
+/**
+ * Submit request quote
+ */
+public function submitRequestQuote(Request $request)
+{
+    $validated = $request->validate([
+        'business_profile_id' => 'required|exists:business_profiles,id',
+        'product_id' => 'nullable|exists:products,id',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone' => 'required|string|max:50',
+        'quantity' => 'nullable|string|max:100',
+        'message' => 'required|string|max:2000',
+    ]);
+
+    // Create quote request in database
+    $quoteRequest = \App\Models\QuoteRequest::create([
+        'business_profile_id' => $validated['business_profile_id'],
+        'product_id' => $validated['product_id'] ?? null,
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'phone' => $validated['phone'],
+        'quantity' => $validated['quantity'] ?? null,
+        'message' => $validated['message'],
+        'status' => 'pending',
+        'ip_address' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+    ]);
+
+    // Send notification email to business owner
+    $businessProfile = \App\Models\BusinessProfile::find($validated['business_profile_id']);
+
+    try {
+        // Illuminate\Support\Facades\Mail::to($businessProfile->user->email)
+        //     ->send(new \App\Mail\NewQuoteRequestMail($quoteRequest, $businessProfile));
+    } catch (Exception $e) {
+        Log::error('Failed to send quote request email: ' . $e->getMessage());
+    }
+
+    // Send confirmation email to customer
+    try {
+        // Illuminate\Support\Facades\Mail::to($validated['email'])
+        //     ->send(new \App\Mail\QuoteRequestConfirmationMail($quoteRequest, $businessProfile));
+    } catch (Exception $e) {
+        Log::error('Failed to send quote confirmation email: ' . $e->getMessage());
+    }
+
+    return redirect()
+        ->back()
+        ->with('success', 'Your quote request has been sent successfully! The supplier will contact you soon.');
 }
 
 

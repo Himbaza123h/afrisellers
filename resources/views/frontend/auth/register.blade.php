@@ -45,18 +45,33 @@
                 </p>
             </div>
 
-            <!-- Error Messages -->
+            <!-- Error Messages from Laravel Validation -->
+            @if($errors->any())
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <ul class="text-xs text-red-600 space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>• {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <!-- Success Message -->
+            @if(session('success'))
+                <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p class="text-xs text-green-700">{{ session('success') }}</p>
+                </div>
+            @endif
+
+            <!-- Error Messages (Client-side) -->
             <div id="errorContainer" class="hidden bg-red-50 border border-red-200 rounded-lg p-3">
                 <ul id="errorList" class="text-xs text-red-600 space-y-1"></ul>
             </div>
 
-            <!-- Success Message -->
-            <div id="successContainer" class="hidden bg-green-50 border border-green-200 rounded-lg p-3">
-                <p id="successMessage" class="text-xs text-green-700"></p>
-            </div>
-
             <!-- Registration Form -->
-            <form id="registrationForm" class="space-y-4">
+            <form action="{{ route('buyer.register.store') }}" method="POST" id="registrationForm" class="space-y-4">
+                @csrf
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Full Name -->
                     <div>
@@ -67,6 +82,7 @@
                             id="name"
                             name="name"
                             type="text"
+                            value="{{ old('name') }}"
                             required
                             class="block w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent transition-all bg-white text-sm"
                             placeholder="E.g. HIMBAZA Alain Honore">
@@ -81,6 +97,7 @@
                             id="email"
                             name="email"
                             type="email"
+                            value="{{ old('email') }}"
                             required
                             class="block w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent transition-all bg-white text-sm"
                             placeholder="E.g. himbazaalain022@gmail.com">
@@ -95,19 +112,21 @@
                     <div class="flex gap-2">
                         <select
                             name="phone_code"
+                            required
                             class="px-2.5 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent bg-white w-20 sm:w-24">
-                            <option value="+250">+250</option>
-                            <option value="+254">+254</option>
-                            <option value="+255">+255</option>
-                            <option value="+256">+256</option>
-                            <option value="+234">+234</option>
-                            <option value="+233">+233</option>
-                            <option value="+27">+27</option>
+                            <option value="+250" {{ old('phone_code') == '+250' ? 'selected' : '' }}>+250</option>
+                            <option value="+254" {{ old('phone_code') == '+254' ? 'selected' : '' }}>+254</option>
+                            <option value="+255" {{ old('phone_code') == '+255' ? 'selected' : '' }}>+255</option>
+                            <option value="+256" {{ old('phone_code') == '+256' ? 'selected' : '' }}>+256</option>
+                            <option value="+234" {{ old('phone_code') == '+234' ? 'selected' : '' }}>+234</option>
+                            <option value="+233" {{ old('phone_code') == '+233' ? 'selected' : '' }}>+233</option>
+                            <option value="+27" {{ old('phone_code') == '+27' ? 'selected' : '' }}>+27</option>
                         </select>
                         <input
                             id="phone"
                             name="phone"
                             type="tel"
+                            value="{{ old('phone') }}"
                             required
                             class="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent transition-all bg-white text-sm"
                             placeholder="E.g. 788123456">
@@ -117,22 +136,23 @@
                 <!-- Location -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label for="country" class="block text-sm font-medium text-gray-900 mb-1.5">
+                        @php
+                            $countries = \App\Models\Country::where('status', 'active')->get();
+                        @endphp
+                        <label for="country_id" class="block text-sm font-medium text-gray-900 mb-1.5">
                             Country
                         </label>
                         <select
-                            id="country"
-                            name="country"
+                            id="country_id"
+                            name="country_id"
                             required
                             class="block w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent bg-white text-sm">
                             <option value="">Select</option>
-                            <option value="rwanda">Rwanda</option>
-                            <option value="kenya">Kenya</option>
-                            <option value="tanzania">Tanzania</option>
-                            <option value="uganda">Uganda</option>
-                            <option value="nigeria">Nigeria</option>
-                            <option value="ghana">Ghana</option>
-                            <option value="south-africa">South Africa</option>
+                            @foreach($countries as $country)
+                                <option value="{{ $country->id }}" {{ old('country_id') == $country->id ? 'selected' : '' }}>
+                                    {{ $country->name }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -143,6 +163,7 @@
                             id="city"
                             name="city"
                             type="text"
+                            value="{{ old('city') }}"
                             required
                             class="block w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent transition-all bg-white text-sm"
                             placeholder="E.g. Kigali">
@@ -152,13 +173,15 @@
                 <!-- Date of Birth and Sex -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label for="dob" class="block text-sm font-medium text-gray-900 mb-1.5">
+                        <label for="date_of_birth" class="block text-sm font-medium text-gray-900 mb-1.5">
                             Date of Birth
                         </label>
                         <input
-                            id="dob"
-                            name="dob"
+                            id="date_of_birth"
+                            name="date_of_birth"
                             type="date"
+                            value="{{ old('date_of_birth') }}"
+                            max="{{ date('Y-m-d', strtotime('-18 years')) }}"
                             required
                             class="block w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent transition-all bg-white text-sm">
                         <p class="mt-1 text-xs text-gray-500">Must be 18+</p>
@@ -173,9 +196,9 @@
                             required
                             class="block w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent bg-white text-sm">
                             <option value="">Select</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
+                            <option value="Male" {{ old('sex') == 'Male' ? 'selected' : '' }}>Male</option>
+                            <option value="Female" {{ old('sex') == 'Female' ? 'selected' : '' }}>Female</option>
+                            <option value="Other" {{ old('sex') == 'Other' ? 'selected' : '' }}>Other</option>
                         </select>
                     </div>
                 </div>
@@ -192,6 +215,7 @@
                                 name="password"
                                 type="password"
                                 required
+                                minlength="8"
                                 class="block w-full px-3.5 py-2.5 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent transition-all bg-white text-sm"
                                 placeholder="Minimum 8 characters">
                             <button
@@ -205,20 +229,21 @@
 
                     <!-- Confirm Password -->
                     <div>
-                        <label for="password_confirm" class="block text-sm font-medium text-gray-900 mb-1.5">
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-900 mb-1.5">
                             Confirm Password
                         </label>
                         <div class="relative">
                             <input
-                                id="password_confirm"
-                                name="password_confirm"
+                                id="password_confirmation"
+                                name="password_confirmation"
                                 type="password"
                                 required
+                                minlength="8"
                                 class="block w-full px-3.5 py-2.5 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent transition-all bg-white text-sm"
                                 placeholder="Re-enter password">
                             <button
                                 type="button"
-                                onclick="togglePassword('password_confirm', 'password-confirm-icon')"
+                                onclick="togglePassword('password_confirmation', 'password-confirm-icon')"
                                 class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
                                 <i id="password-confirm-icon" class="fas fa-eye-slash text-sm"></i>
                             </button>
@@ -229,12 +254,13 @@
                 <!-- Terms and Conditions -->
                 <div class="flex items-start">
                     <input
-                        id="terms"
-                        name="terms"
+                        id="agree_terms"
+                        name="agree_terms"
                         type="checkbox"
+                        value="1"
                         required
                         class="h-4 w-4 text-[#ff0808] focus:ring-[#ff0808] border-gray-300 rounded mt-0.5">
-                    <label for="terms" class="ml-2 block text-xs text-gray-700">
+                    <label for="agree_terms" class="ml-2 block text-xs text-gray-700">
                         I agree to the <a href="#" class="font-medium text-[#ff0808] hover:text-[#dd0606]">Terms & Conditions</a> and <a href="#" class="font-medium text-[#ff0808] hover:text-[#dd0606]">Privacy Policy</a>
                     </label>
                 </div>
@@ -331,19 +357,10 @@
             }
         }
 
-        // Set max date for DOB (18 years ago)
-        const dobInput = document.getElementById('dob');
-        const eighteenYearsAgo = new Date();
-        eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
-        dobInput.max = eighteenYearsAgo.toISOString().split('T')[0];
-
         // Form validation and submission
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
             const errorContainer = document.getElementById('errorContainer');
             const errorList = document.getElementById('errorList');
-            const successContainer = document.getElementById('successContainer');
             const registerBtn = document.getElementById('registerBtn');
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
@@ -351,12 +368,11 @@
             // Clear previous errors
             errorList.innerHTML = '';
             errorContainer.classList.add('hidden');
-            successContainer.classList.add('hidden');
 
             // Get form values
             const password = document.getElementById('password').value;
-            const passwordConfirm = document.getElementById('password_confirm').value;
-            const dob = new Date(document.getElementById('dob').value);
+            const passwordConfirm = document.getElementById('password_confirmation').value;
+            const dob = new Date(document.getElementById('date_of_birth').value);
             const today = new Date();
             const age = Math.floor((today - dob) / (365.25 * 24 * 60 * 60 * 1000));
 
@@ -376,6 +392,7 @@
             }
 
             if (errors.length > 0) {
+                e.preventDefault();
                 errors.forEach(error => {
                     const li = document.createElement('li');
                     li.textContent = '• ' + error;
@@ -390,40 +407,7 @@
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
             registerBtn.disabled = true;
-
-            // Simulate form submission
-            setTimeout(() => {
-                btnText.classList.remove('hidden');
-                btnLoader.classList.add('hidden');
-                registerBtn.disabled = false;
-
-                // Show success message
-                document.getElementById('successMessage').textContent = 'Account created successfully! Redirecting to login...';
-                successContainer.classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                // Reset form
-                setTimeout(() => {
-                    this.reset();
-                    successContainer.classList.add('hidden');
-                }, 3000);
-            }, 2000);
         });
-
-        // Auto-hide messages after 5 seconds
-        setTimeout(() => {
-            const messages = document.querySelectorAll('#errorContainer, #successContainer');
-            messages.forEach(msg => {
-                if (!msg.classList.contains('hidden')) {
-                    msg.style.transition = 'opacity 0.5s';
-                    msg.style.opacity = '0';
-                    setTimeout(() => {
-                        msg.classList.add('hidden');
-                        msg.style.opacity = '1';
-                    }, 500);
-                }
-            });
-        }, 5000);
     </script>
 </body>
 </html>

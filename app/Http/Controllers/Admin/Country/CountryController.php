@@ -5,10 +5,16 @@ namespace App\Http\Controllers\Admin\Country;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Region;
+use App\Models\Role;
+use App\Models\User;
 use App\Models\Vendor\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
+
 
 class CountryController extends Controller
 {
@@ -278,6 +284,116 @@ public function index(Request $request)
 
             return back()
                 ->withErrors(['error' => 'Failed to update country status. Please try again.']);
+        }
+    }
+
+    /**
+     * Show the form for assigning/editing a country admin user
+     */
+    public function showAssignCountryAdmin(Country $country)
+    {
+        // Check if country already has an admin
+        $countryAdmin = User::where('country_id', $country->id)
+            ->where('country_admin', true)
+            ->first();
+
+        return view('admin.country.assign-country-admin', compact('country', 'countryAdmin'));
+    }
+
+    /**
+     * Assign or update a country admin user
+     */
+    public function assignCountryAdmin(Request $request, Country $country)
+    {
+        // Check if updating existing admin
+        $countryAdmin = User::where('country_id', $country->id)
+            ->where('country_admin', true)
+            ->first();
+
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ];
+
+        // Email validation - Allow same email for same country
+        $rules['email'] = [
+            'required',
+            'string',
+            'email',
+            'max:255',
+            Rule::unique('users')->where(function ($query) use ($country) {
+                return $query->where('country_id', '!=', $country->id);
+            })
+        ];
+
+        // Password validation - required only for new admins
+        if (!$countryAdmin) {
+            $rules['password'] = ['required', 'confirmed', Password::min(8)];
+        } else {
+            $rules['password'] = ['nullable', 'confirmed', Password::min(8)];
+        }
+
+        $request->validate($rules);
+
+        DB::beginTransaction();
+        try {
+            if ($countryAdmin) {
+                // Update existing country admin
+                $updateData = [
+                    'name' => $request->name,
+                    'phone' => $request->phone,
+                ];
+
+                // Update email if it changed
+                if ($request->email !== $countryAdmin->email) {
+                    $updateData['email'] = $request->email;
+                }
+
+                $countryAdmin->update($updateData);
+
+                // Update password only if provided
+                if ($request->filled('password')) {
+                    $countryAdmin->update([
+                        'password' => Hash::make($request->password),
+                    ]);
+                }
+
+                $message = 'Country Admin updated successfully!';
+            } else {
+                // Create new country admin user
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'password' => Hash::make($request->password),
+                    'email_verified_at' => now(),
+                    'regional_admin' => false,
+                    'country_admin' => true,
+                    'agent' => false,
+                    'regional_id' => $country->region_id ?? null,
+                    'country_id' => $country->id,
+                ]);
+
+                // Assign country admin role
+                $role = Role::where('slug', 'country_admin')->first();
+
+                if ($role) {
+                    $user->roles()->attach($role->id);
+                }
+
+                $message = 'Country Admin created successfully!';
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('admin.country.show', $country)
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to save country admin: ' . $e->getMessage()]);
         }
     }
 }

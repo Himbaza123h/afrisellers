@@ -57,6 +57,29 @@ class Transporter extends Model
         return $this->belongsTo(Country::class);
     }
 
+    // In Transporter model
+    public function businessProfile()
+    {
+        return $this->hasOne(BusinessProfile::class, 'user_id', 'user_id');
+    }
+    // Add: vehicles relationship
+    public function vehicles()
+    {
+        return $this->hasMany(Car::class, 'user_id', 'user_id');
+    }
+
+    // Add: loads relationship
+    public function loads()
+    {
+        return $this->hasMany(Load::class, 'user_id', 'user_id');
+    }
+
+    // Add: bids relationship (if you have a Bid model)
+    public function bids()
+    {
+        return $this->hasMany(LoadBid::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

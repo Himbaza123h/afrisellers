@@ -173,50 +173,85 @@ class LoginController extends Controller
     /**
      * Redirect user based on their role
      */
-    protected function redirectBasedOnRole()
-    {
-        $user = auth()->user();
+protected function redirectBasedOnRole()
+{
+    $user = auth()->user();
 
-        // Check if user is an Admin (role_id = 1, name = 'Admin', slug = 'admin') - CASE SENSITIVE
-        $isAdmin = $user
-            ->roles()
-            ->where('roles.id', 1) // Specify the table name
-            ->where('roles.name', 'Admin')
-            ->where('roles.slug', 'admin')
-            ->exists();
+    // Check if user is an Admin
+    $isAdmin = $user->roles()
+        ->where('roles.id', 1)
+        ->where('roles.name', 'Admin')
+        ->where('roles.slug', 'admin')
+        ->exists();
 
-        if ($isAdmin) {
-            Log::info('Redirecting to Admin Dashboard', [
-                'user_id' => $user->id,
-                'role' => 'Admin',
-            ]);
-
-            return redirect()
-                ->route('admin.dashboard.home')
-                ->with('success', 'Welcome back, ' . $user->name . '!');
-        }
-
-        // Check if user is a vendor
-        $vendor = Vendor::where('user_id', $user->id)->first();
-
-        if ($vendor) {
-            Log::info('Redirecting to Vendor Dashboard', [
-                'user_id' => $user->id,
-                'vendor_id' => $vendor->id,
-            ]);
-
-            return redirect()
-                ->route('vendor.dashboard.home')
-                ->with('success', 'Welcome back, ' . $user->name . '!');
-        }
-
-        // Default redirect for customers
-        Log::info('Redirecting to Customer Dashboard/Home', [
+    if ($isAdmin) {
+        Log::info('Redirecting to Admin Dashboard', [
             'user_id' => $user->id,
+            'role' => 'Admin',
         ]);
-
-        return redirect()
-            ->route('buyer.dashboard.home')
+        return redirect()->route('admin.dashboard.home')
             ->with('success', 'Welcome back, ' . $user->name . '!');
     }
+
+    // Check if user is a Regional Admin
+    $isRegionalAdmin = $user->roles()
+        ->where('roles.slug', 'regional_admin')
+        ->exists();
+
+    if ($isRegionalAdmin) {
+        Log::info('Redirecting to Regional Admin Dashboard', [
+            'user_id' => $user->id,
+            'role' => 'Regional Admin',
+        ]);
+        return redirect()->route('regional.dashboard.home')
+            ->with('success', 'Welcome back, ' . $user->name . '!');
+    }
+
+    // Check if user is a Country Admin
+    $isCountryAdmin = $user->roles()
+        ->where('roles.slug', 'country_admin')
+        ->exists();
+
+    if ($isCountryAdmin) {
+        Log::info('Redirecting to Country Admin Dashboard', [
+            'user_id' => $user->id,
+            'role' => 'Country Admin',
+        ]);
+        return redirect()->route('country.dashboard.home')
+            ->with('success', 'Welcome back, ' . $user->name . '!');
+    }
+
+    // Check if user is an Agent
+    $isAgent = $user->roles()
+        ->where('roles.slug', 'agent')
+        ->exists();
+
+    if ($isAgent) {
+        Log::info('Redirecting to Agent Dashboard', [
+            'user_id' => $user->id,
+            'role' => 'Agent',
+        ]);
+        return redirect()->route('agent.dashboard.home')
+            ->with('success', 'Welcome back, ' . $user->name . '!');
+    }
+
+    // Check if user is a vendor
+    $vendor = Vendor::where('user_id', $user->id)->first();
+
+    if ($vendor) {
+        Log::info('Redirecting to Vendor Dashboard', [
+            'user_id' => $user->id,
+            'vendor_id' => $vendor->id,
+        ]);
+        return redirect()->route('vendor.dashboard.home')
+            ->with('success', 'Welcome back, ' . $user->name . '!');
+    }
+
+    // Default redirect for buyers/customers
+    Log::info('Redirecting to Buyer Dashboard', [
+        'user_id' => $user->id,
+    ]);
+    return redirect()->route('buyer.dashboard.home')
+        ->with('success', 'Welcome back, ' . $user->name . '!');
+}
 }

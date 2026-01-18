@@ -57,71 +57,81 @@
                             $product = $supplierProducts[$supplier->id] ?? null;
                             $image = $product && $product->images->count() > 0 ? $product->images->first() : null;
                         @endphp
-                        <a href="{{ route('country.business-profiles', $supplier->country_id) }}" class="bg-white rounded-md border-2 border-transparent shadow-sm overflow-hidden hover:shadow-lg hover:border-[#faafaf] transition-all block">
-                            <!-- Supplier Image -->
-                            <div class="relative h-24 sm:h-28 md:h-32 overflow-hidden group">
-                                @if($image)
-                                    <img src="{{ $image->image_url }}"
-                                         alt="{{ $supplier->business_name }}"
-                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                         loading="lazy">
-                                @else
-                                    <div class="flex justify-center items-center w-full h-full bg-gray-100">
-                                        <svg class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        <div class="bg-white rounded-md border-2 border-transparent shadow-sm overflow-hidden hover:shadow-lg hover:border-[#faafaf] transition-all">
+                            <a href="{{ route('country.business-profiles', $supplier->country_id) }}" class="block">
+                                <!-- Supplier Image -->
+                                <div class="relative h-24 sm:h-28 md:h-32 overflow-hidden group">
+                                    @if($image)
+                                        <img src="{{ $image->image_url }}"
+                                             alt="{{ $supplier->business_name }}"
+                                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                             loading="lazy">
+                                    @else
+                                        <div class="flex justify-center items-center w-full h-full bg-gray-100">
+                                            <svg class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+
+                                    <!-- Top Exporter Badge -->
+                                    <span class="absolute top-1 right-1 sm:top-2 sm:right-2 bg-[#ff0808] text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full">
+                                        ⭐ {{ __('messages.top_exporter') }}
+                                    </span>
+
+                                    <!-- Verified Badge -->
+                                    <span class="absolute top-1 left-1 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded">
+                                        ✓ {{ __('messages.verified') }}
+                                    </span>
+                                </div>
+
+                                <!-- Supplier Details -->
+                                <div class="p-2 sm:p-3">
+                                    <!-- Supplier Name -->
+                                    <h4 class="text-[10px] sm:text-xs font-bold text-gray-900 mb-1 sm:mb-2 hover:text-[#ff0808] transition-colors line-clamp-2 min-h-[1.5rem] sm:min-h-[2rem]">
+                                        {{ $supplier->business_name }}
+                                    </h4>
+
+                                    <!-- Location -->
+                                    <div class="flex items-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] text-gray-500 mb-1 sm:mb-2">
+                                        <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                         </svg>
+                                        <span class="truncate">{{ $supplier->city }}, {{ $supplier->country->name ?? '' }}</span>
                                     </div>
-                                @endif
 
-                                <!-- Top Exporter Badge -->
-                                <span class="absolute top-1 right-1 sm:top-2 sm:right-2 bg-[#ff0808] text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full">
-                                    ⭐ {{ __('messages.top_exporter') }}
-                                </span>
+                                    <!-- Products Count -->
+                                    <div class="mb-1 sm:mb-2">
+                                        <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-purple-600 bg-purple-50 px-1 sm:px-1.5 py-0.5 rounded">
+                                            <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                            </svg>
+                                            <span class="truncate">{{ number_format($supplier->products_count) }} {{ __('messages.products') }}</span>
+                                        </span>
+                                    </div>
 
-                                <!-- Verified Badge -->
-                                <span class="absolute top-1 left-1 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded">
-                                    ✓ {{ __('messages.verified') }}
-                                </span>
+                                    <!-- Business Type -->
+                                    @if($supplier->business_type)
+                                    <div class="mb-2">
+                                        <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-blue-600 bg-blue-50 px-1 sm:px-1.5 py-0.5 rounded">
+                                            <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            </svg>
+                                            <span class="truncate">{{ $supplier->business_type }}</span>
+                                        </span>
+                                    </div>
+                                    @endif
+                                </div>
+                            </a>
+
+                            <!-- View Profile Button -->
+                            <div class="px-2 pb-2 sm:px-3 sm:pb-3">
+                                <a href=""
+                                   class="block w-full text-center bg-[#ff0808] hover:bg-[#e00707] text-white text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 rounded transition-colors">
+                                    {{ __('messages.view_profile') }}
+                                </a>
                             </div>
-
-                            <!-- Supplier Details -->
-                            <div class="p-2 sm:p-3">
-                                <!-- Supplier Name -->
-                                <h4 class="text-[10px] sm:text-xs font-bold text-gray-900 mb-1 sm:mb-2 hover:text-[#ff0808] transition-colors line-clamp-2 min-h-[1.5rem] sm:min-h-[2rem]">
-                                    {{ $supplier->business_name }}
-                                </h4>
-
-                                <!-- Location -->
-                                <div class="flex items-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] text-gray-500 mb-1 sm:mb-2">
-                                    <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    </svg>
-                                    <span class="truncate">{{ $supplier->city }}, {{ $supplier->country->name ?? '' }}</span>
-                                </div>
-
-                                <!-- Products Count -->
-                                <div class="mb-1 sm:mb-2">
-                                    <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-purple-600 bg-purple-50 px-1 sm:px-1.5 py-0.5 rounded">
-                                        <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                        </svg>
-                                        <span class="truncate">{{ number_format($supplier->products_count) }} {{ __('messages.products') }}</span>
-                                    </span>
-                                </div>
-
-                                <!-- Business Type -->
-                                @if($supplier->business_type)
-                                <div>
-                                    <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-blue-600 bg-blue-50 px-1 sm:px-1.5 py-0.5 rounded">
-                                        <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                        </svg>
-                                        <span class="truncate">{{ $supplier->business_type }}</span>
-                                    </span>
-                                </div>
-                                @endif
-                            </div>
-                        </a>
+                        </div>
                     @empty
                         <div class="col-span-2 md:col-span-3 py-12 md:py-16 text-center">
                             <div class="flex flex-col items-center gap-3 md:gap-4">
@@ -179,86 +189,98 @@
                             $currency = $price ? $price->currency : 'RWF';
                         @endphp
 
-                        <a href="{{ route('products.show', $product->slug) }}" class="bg-white rounded-md border-2 border-transparent shadow-sm overflow-hidden hover:shadow-lg hover:border-[#faafaf] transition-all block">
-                            <!-- Product Image -->
-                            <div class="relative h-24 sm:h-28 md:h-32 overflow-hidden group">
-                                @if($image)
-                                    <img src="{{ $image->image_url }}"
-                                         alt="{{ $product->name }}"
-                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                         loading="lazy">
-                                @else
-                                    <div class="flex justify-center items-center w-full h-full bg-gray-100">
-                                        <span class="text-xl sm:text-2xl">📦</span>
-                                    </div>
-                                @endif
+                        <div class="bg-white rounded-md border-2 border-transparent shadow-sm overflow-hidden hover:shadow-lg hover:border-[#faafaf] transition-all">
+                            <a href="{{ route('products.show', $product->slug) }}" class="block">
+                                <!-- Product Image -->
+                                <div class="relative h-24 sm:h-28 md:h-32 overflow-hidden group">
+                                    @if($image)
+                                        <img src="{{ $image->image_url }}"
+                                             alt="{{ $product->name }}"
+                                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                             loading="lazy">
+                                    @else
+                                        <div class="flex justify-center items-center w-full h-full bg-gray-100">
+                                            <span class="text-xl sm:text-2xl">📦</span>
+                                        </div>
+                                    @endif
 
-                                <!-- Hot Deal Badge -->
-                                <span class="absolute top-1 right-1 sm:top-2 sm:right-2 bg-[#ff0808] text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full animate-pulse">
-                                    🔥 {{ __('messages.hot') }}
-                                </span>
-
-                                <!-- Verified Badge -->
-                                @if($product->is_admin_verified)
-                                <span class="absolute top-1 left-1 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded">
-                                    ✓ {{ __('messages.verified') }}
-                                </span>
-                                @endif
-                            </div>
-
-                            <!-- Product Details -->
-                            <div class="p-2 sm:p-3">
-                                <!-- Product Name -->
-                                <h4 class="text-[10px] sm:text-xs font-bold text-gray-900 mb-1 sm:mb-2 hover:text-[#ff0808] transition-colors line-clamp-2 min-h-[1.5rem] sm:min-h-[2rem]">
-                                    {{ $product->name }}
-                                </h4>
-
-                                <!-- Category -->
-                                @if($product->productCategory)
-                                <div class="mb-1 sm:mb-2">
-                                    <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-purple-600 bg-purple-50 px-1 sm:px-1.5 py-0.5 rounded">
-                                        <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                                        </svg>
-                                        <span class="truncate">{{ $product->productCategory->name }}</span>
+                                    <!-- Hot Deal Badge -->
+                                    <span class="absolute top-1 right-1 sm:top-2 sm:right-2 bg-[#ff0808] text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full animate-pulse">
+                                        🔥 {{ __('messages.hot') }}
                                     </span>
-                                </div>
-                                @endif
 
-                                <!-- Price -->
-                                <div class="text-[#ff0808] font-bold text-[10px] sm:text-xs mb-1 sm:mb-2">
-                                    {{ $currency }} {{ number_format($mainPrice, 2) }}
-                                    @if($maxPrice && $maxPrice != $mainPrice)
-                                        <span class="text-[8px] sm:text-[10px]">- {{ number_format($maxPrice, 2) }}</span>
+                                    <!-- Verified Badge -->
+                                    @if($product->is_admin_verified)
+                                    <span class="absolute top-1 left-1 sm:top-2 sm:left-2 bg-green-600 text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded">
+                                        ✓ {{ __('messages.verified') }}
+                                    </span>
                                     @endif
                                 </div>
 
-                                <!-- MOQ -->
-                                <div class="text-[8px] sm:text-[10px] text-gray-500 mb-1 sm:mb-2">
-                                    {{ __('messages.moq') }}: {{ number_format($product->min_order_quantity) }} pcs
-                                </div>
+                                <!-- Product Details -->
+                                <div class="p-2 sm:p-3">
+                                    <!-- Product Name -->
+                                    <h4 class="text-[10px] sm:text-xs font-bold text-gray-900 mb-1 sm:mb-2 hover:text-[#ff0808] transition-colors line-clamp-2 min-h-[1.5rem] sm:min-h-[2rem]">
+                                        {{ $product->name }}
+                                    </h4>
 
-                                <!-- Location -->
-                                <div class="flex items-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] text-gray-500 mb-1 sm:mb-2">
-                                    <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    </svg>
-                                    <span class="truncate">{{ $product->country->name ?? '' }}</span>
-                                </div>
+                                    <!-- Category -->
+                                    @if($product->productCategory)
+                                    <div class="mb-1 sm:mb-2">
+                                        <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-purple-600 bg-purple-50 px-1 sm:px-1.5 py-0.5 rounded">
+                                            <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                            </svg>
+                                            <span class="truncate">{{ $product->productCategory->name }}</span>
+                                        </span>
+                                    </div>
+                                    @endif
 
-                                <!-- Supplier Badge -->
-                                @if($businessProfile)
-                                <div>
-                                    <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-blue-600 bg-blue-50 px-1 sm:px-1.5 py-0.5 rounded">
+                                    <!-- Price -->
+                                    <div class="text-[#ff0808] font-bold text-[10px] sm:text-xs mb-1 sm:mb-2">
+                                        {{ $currency }} {{ number_format($mainPrice, 2) }}
+                                        @if($maxPrice && $maxPrice != $mainPrice)
+                                            <span class="text-[8px] sm:text-[10px]">- {{ number_format($maxPrice, 2) }}</span>
+                                        @endif
+                                    </div>
+
+                                    <!-- MOQ -->
+                                    <div class="text-[8px] sm:text-[10px] text-gray-500 mb-1 sm:mb-2">
+                                        {{ __('messages.moq') }}: {{ number_format($product->min_order_quantity) }} pcs
+                                    </div>
+
+                                    <!-- Location -->
+                                    <div class="flex items-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] text-gray-500 mb-1 sm:mb-2">
                                         <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                         </svg>
-                                        <span class="truncate">{{ $businessProfile->business_name }}</span>
-                                    </span>
+                                        <span class="truncate">{{ $product->country->name ?? '' }}</span>
+                                    </div>
+
+                                    <!-- Supplier Badge -->
+                                    @if($businessProfile)
+                                    <div class="mb-2">
+                                        <span class="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-medium text-blue-600 bg-blue-50 px-1 sm:px-1.5 py-0.5 rounded">
+                                            <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            </svg>
+                                            <span class="truncate">{{ $businessProfile->business_name }}</span>
+                                        </span>
+                                    </div>
+                                    @endif
                                 </div>
-                                @endif
+                            </a>
+
+                            <!-- View Profile Button -->
+                            @if($businessProfile)
+                            <div class="px-2 pb-2 sm:px-3 sm:pb-3">
+                                <a href="{{ route('business-profile.show', $businessProfile->id, $businessProfile->business_name) }}"
+                                   class="block w-full text-center bg-[#233f99] hover:bg-[#233f99] text-white text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 rounded transition-colors">
+                                    {{ __('messages.view_profile') }}
+                                </a>
                             </div>
-                        </a>
+                            @endif
+                        </div>
                     @empty
                         <div class="col-span-2 md:col-span-3 py-12 md:py-16 text-center">
                             <div class="flex flex-col items-center gap-3 md:gap-4">

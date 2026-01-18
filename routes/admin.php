@@ -40,6 +40,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('regional-admins/{regionalAdmin}/activate', [RegionalAdminController::class, 'activate'])->name('regional-admins.activate');
     Route::post('regional-admins/{regionalAdmin}/deactivate', [RegionalAdminController::class, 'deactivate'])->name('regional-admins.deactivate');
 
+
+            // NEW ROUTES FOR REGIONAL ADMIN USER ASSIGNMENT
+    Route::get('regional-admins/{regionalAdmin}/assign-regional-user', [RegionalAdminController::class, 'showAssignRegionalUser'])->name('regional-admins.assign-regional-user');
+    Route::post('regional-admins/{regionalAdmin}/assign-regional-user', [RegionalAdminController::class, 'assignRegionalUser'])->name('regional-admins.assign-regional-user.store');
+
+
     // Country Management
     Route::resource('countries', CountryController::class);
     Route::post('countries/{country}/activate', [CountryController::class, 'activate'])->name('countries.activate');
@@ -199,11 +205,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard.home');
 
+        // NEW ROUTES FOR REGIONAL ADMIN USER ASSIGNMENT
+    Route::get('regional-admins/{regionalAdmin}/assign-regional-user', [RegionalAdminController::class, 'showAssignRegionalUser'])->name('regional-admins.assign-regional-user');
+    Route::post('regional-admins/{regionalAdmin}/assign-regional-user', [RegionalAdminController::class, 'assignRegionalUser'])->name('regional-admins.assign-regional-user.store');
+
+
     // Country Management Routes
     Route::resource('countries', CountryController::class);
 
     // Product Category Management Routes
     Route::resource('product-categories', ProductCategoryController::class);
+
+    // NEW ROUTES FOR COUNTRY ADMIN USER ASSIGNMENT
+    Route::get('countries/{country}/assign-country-admin', [CountryController::class, 'showAssignCountryAdmin'])->name('countries.assign-country-admin');
+    Route::post('countries/{country}/assign-country-admin', [CountryController::class, 'assignCountryAdmin'])->name('countries.assign-country-admin.store');
 
     // Product Management Routes
     Route::resource('products', ProductController::class);

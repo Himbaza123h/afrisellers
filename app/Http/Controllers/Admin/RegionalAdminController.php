@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
+
 
 class RegionalAdminController extends Controller
 {
@@ -342,4 +344,119 @@ public function index(Request $request)
             return back()->withErrors(['error' => 'Failed to suspend regional administrator: ' . $e->getMessage()]);
         }
     }
+
+
+
+
+
+    /**
+     * Show the form for assigning/editing a regional admin user
+     */
+    public function showAssignRegionalUser(RegionalAdmin $regionalAdmin)
+    {
+        // Check if regional admin already has a user assigned
+        $assignedUser = $regionalAdmin->user;
+
+        return view('admin.regional-admins.assign-regional-user', compact('regionalAdmin', 'assignedUser'));
+    }
+
+    /**
+     * Assign or update a regional admin user
+     */
+    public function assignRegionalUser(Request $request, RegionalAdmin $regionalAdmin)
+    {
+        $assignedUser = $regionalAdmin->user;
+
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ];
+
+        // Email validation - FIXED: Exclude current user's email from uniqueness check
+        $rules['email'] = [
+            'required',
+            'string',
+            'email',
+            'max:255',
+            Rule::unique('users')->where(function ($query) use ($regionalAdmin) {
+                return $query->where('regional_id', '!=', $regionalAdmin->region_id);
+            })
+        ];
+
+        // Password validation
+        if (!$assignedUser) {
+            $rules['password'] = ['required', 'confirmed', Password::min(8)];
+        } else {
+            $rules['password'] = ['nullable', 'confirmed', Password::min(8)];
+        }
+
+        $request->validate($rules);
+
+        DB::beginTransaction();
+        try {
+            if ($assignedUser) {
+                // Update existing user
+                $updateData = [
+                    'name' => $request->name,
+                    'phone' => $request->phone,
+                ];
+
+                // Update email if it changed
+                if ($request->email !== $assignedUser->email) {
+                    $updateData['email'] = $request->email;
+                }
+
+                $assignedUser->update($updateData);
+
+                // Update password only if provided
+                if ($request->filled('password')) {
+                    $assignedUser->update([
+                        'password' => Hash::make($request->password),
+                    ]);
+                }
+
+                $message = 'Regional Admin updated successfully!';
+            } else {
+                // Create new regional admin user
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'password' => Hash::make($request->password),
+                    'email_verified_at' => now(),
+                    'regional_admin' => true,
+                    'country_admin' => false,
+                    'agent' => false,
+                    'regional_id' => $regionalAdmin->region_id,
+                    'country_id' => null,
+                ]);
+
+                // Assign role
+                $role = Role::where('slug', 'regional_admin')->first();
+
+                if ($role) {
+                    $user->roles()->attach($role->id);
+                }
+
+                // Link to regional admin
+                $regionalAdmin->update([
+                    'user_id' => $user->id,
+                ]);
+
+                $message = 'Regional Admin created successfully!';
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('admin.regional-admins.show', $regionalAdmin)
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to save regional admin: ' . $e->getMessage()]);
+        }
+    }
+
 }

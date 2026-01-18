@@ -13,7 +13,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = ['name', 'email', 'country_admin', 'country_id','regional_id','regional_admin','agent', 'password'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -54,6 +54,11 @@ class User extends Authenticatable
 public function addonUsers()
 {
     return $this->hasMany(AddonUser::class);
+}
+
+public function country()
+{
+    return $this->belongsTo(Country::class);
 }
 
 /**

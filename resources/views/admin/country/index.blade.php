@@ -311,6 +311,11 @@
                                     <a href="{{ route('admin.country.show', $country) }}" class="p-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <a href="{{ route('admin.countries.assign-country-admin', $country) }}"
+                                    class="p-2 text-gray-600 rounded-lg hover:bg-green-50 hover:text-green-600"
+                                    title="Assign Country Admin">
+                                        <i class="fas fa-user-plus"></i>
+                                    </a>
                                     <a href="{{ route('admin.country.edit', $country) }}" class="p-2 text-gray-600 rounded-lg hover:bg-amber-50 hover:text-amber-600" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>

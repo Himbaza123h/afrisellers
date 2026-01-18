@@ -281,6 +281,11 @@
                                     <a href="{{ route('admin.regional-admins.edit', $regionalAdmin) }}" class="p-2 text-gray-600 rounded-lg hover:bg-amber-50 hover:text-amber-600" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <a href="{{ route('admin.regional-admins.assign-regional-user', $regionalAdmin) }}"
+                                    class="p-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600"
+                                    title="Assign Regional Admin">
+                                        <i class="fas fa-user-plus"></i>
+                                    </a>
                                     <div class="relative inline-block text-left">
                                         <button type="button" class="p-2 text-gray-600 rounded-lg hover:bg-gray-100" onclick="toggleDropdown(event, 'dropdown-{{ $regionalAdmin->id }}')">
                                             <i class="fas fa-ellipsis-v"></i>

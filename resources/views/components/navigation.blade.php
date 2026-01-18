@@ -80,10 +80,11 @@
                         <div class="hidden gap-2 items-center text-gray-700 lg:flex">
                             @php
                                 $user = auth()->user();
-                                $isAdmin = false;
-                                $vendor = null;
+                                $dashboardRoute = null;
+                                $userRole = null;
 
                                 if ($user) {
+                                    // Check for Admin
                                     $isAdmin = $user
                                         ->roles()
                                         ->where('roles.id', 1)
@@ -91,24 +92,60 @@
                                         ->where('roles.slug', 'admin')
                                         ->exists();
 
-                                    if (!$isAdmin) {
-                                        $vendor = App\Models\Vendor\Vendor::where('user_id', auth()->id())->first();
+                                    if ($isAdmin) {
+                                        $dashboardRoute = route('admin.dashboard.home');
+                                        $userRole = 'Admin';
+                                    } else {
+                                        // Check for Regional Admin
+                                        $isRegionalAdmin = $user
+                                            ->roles()
+                                            ->where('roles.slug', 'regional_admin')
+                                            ->exists();
+
+                                        if ($isRegionalAdmin) {
+                                            $dashboardRoute = route('regional.dashboard.home');
+                                            $userRole = 'Regional Admin';
+                                        } else {
+                                            // Check for Country Admin
+                                            $isCountryAdmin = $user
+                                                ->roles()
+                                                ->where('roles.slug', 'country_admin')
+                                                ->exists();
+
+                                            if ($isCountryAdmin) {
+                                                $dashboardRoute = route('country.dashboard.home');
+                                                $userRole = 'Country Admin';
+                                            } else {
+                                                // Check for Agent
+                                                $isAgent = $user
+                                                    ->roles()
+                                                    ->where('roles.slug', 'agent')
+                                                    ->exists();
+
+                                                if ($isAgent) {
+                                                    $dashboardRoute = route('agent.dashboard.home');
+                                                    $userRole = 'Agent';
+                                                } else {
+                                                    // Check for Vendor
+                                                    $vendor = App\Models\Vendor\Vendor::where('user_id', $user->id)->first();
+
+                                                    if ($vendor) {
+                                                        $dashboardRoute = route('vendor.dashboard.home');
+                                                        $userRole = 'Vendor';
+                                                    } else {
+                                                        // Default to Buyer
+                                                        $dashboardRoute = route('buyer.dashboard.home');
+                                                        $userRole = 'Buyer';
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             @endphp
 
-                            @if ($isAdmin)
-                                <a href="{{ route('admin.dashboard.home') }}"
-                                    class="hover:text-[#ff0808] font-semibold transition-colors text-sm">
-                                    {{ __('messages.dashboard') }}
-                                </a>
-                            @elseif($vendor)
-                                <a href="{{ route('vendor.dashboard.home') }}"
-                                    class="hover:text-[#ff0808] font-semibold transition-colors text-sm">
-                                    {{ __('messages.dashboard') }}
-                                </a>
-                            @else
-                                <a href="{{ route('buyer.dashboard.home') }}"
+                            @if ($dashboardRoute)
+                                <a href="{{ $dashboardRoute }}"
                                     class="hover:text-[#ff0808] font-semibold transition-colors text-sm">
                                     {{ __('messages.dashboard') }}
                                 </a>

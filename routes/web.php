@@ -31,7 +31,15 @@ $routes = function ($namePrefix = '') {
     Route::get('/search', [HomeController::class, 'globalSearch'])->name($namePrefix . 'global.search');
     Route::get('/search/suggestions', [HomeController::class, 'searchSuggestions'])->name($namePrefix . 'search.suggestions');
 
+Route::get('/business-profile/{businessProfileId}/{name?}', [HomeController::class, 'showBusinessProfile'])->name($namePrefix . 'business-profile.show');
 
+
+
+Route::get('/request-quote/{businessProfileId}/{productId?}', [HomeController::class, 'showRequestQuote'])
+    ->name($namePrefix . 'request-quote.show');
+
+Route::post('/request-quote/submit', [HomeController::class, 'submitRequestQuote'])
+    ->name($namePrefix . 'request-quote.submit');
 
 
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -79,6 +87,9 @@ $routes = function ($namePrefix = '') {
     require __DIR__.'/auth.php';
     require __DIR__.'/buyer.php';
     require __DIR__.'/admin.php';
+    require __DIR__.'/agent.php';
+    require __DIR__.'/country.php';
+    require __DIR__.'/regional.php';
 };
 
 // Routes WITHOUT locale prefix (default English)

@@ -188,10 +188,10 @@
                     {{ __('messages.want_to_become_buyer') }}
                     <a href="{{ route('auth.register') }}" class="font-semibold text-[#ff0808] hover:text-[#dd0606] transition-colors">{{ __('messages.register') }}</a>
                 </p>
-                <p class="text-xs text-gray-600">
+                {{-- <p class="text-xs text-gray-600">
                     {{ __('messages.dont_have_account') }}
                     <a href="{{ route('vendor.register.step1') }}" class="font-semibold text-[#ff0808] hover:text-[#dd0606] transition-colors">{{ __('messages.register_as_vendor') }}</a>
-                </p>
+                </p> --}}
             </div>
 
             <!-- Back to Home -->

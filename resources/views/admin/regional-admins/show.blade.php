@@ -217,7 +217,7 @@
                             <div class="w-24 text-sm font-semibold text-gray-600">Description:</div>
                             <div class="flex-1 text-sm text-gray-900">{{ $regionalAdmin->region->description }}</div>
                         </div>
-                    @endif>
+                    @endif
 
                     <!-- Countries List -->
                     <div class="flex items-start gap-4">

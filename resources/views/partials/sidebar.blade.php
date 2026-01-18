@@ -10,8 +10,26 @@
     <div class="p-4">
         <!-- Dashboard -->
         <div class="mb-6">
-            <a href="{{ auth()->user()->hasRole('admin') ? route('admin.dashboard.home') : (auth()->user()->isVendor() ? route('vendor.dashboard.home') : route('buyer.dashboard.home')) }}"
-                class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('*.dashboard.home') ? 'text-white  bg-[#ff0808] to-[#cc0606]' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg font-semibold transition-all group">
+            @php
+                $user = auth()->user();
+                $dashboardRoute = route('buyer.dashboard.home'); // Default
+
+                // Check roles in priority order
+                if ($user->roles()->where('roles.slug', 'admin')->exists()) {
+                    $dashboardRoute = route('admin.dashboard.home');
+                } elseif ($user->roles()->where('roles.slug', 'regional_admin')->exists()) {
+                    $dashboardRoute = route('regional.dashboard.home');
+                } elseif ($user->roles()->where('roles.slug', 'country_admin')->exists()) {
+                    $dashboardRoute = route('country.dashboard.home');
+                } elseif ($user->roles()->where('roles.slug', 'agent')->exists()) {
+                    $dashboardRoute = route('agent.dashboard.home');
+                } elseif ($user->isVendor()) {
+                    $dashboardRoute = route('vendor.dashboard.home');
+                }
+            @endphp
+
+            <a href="{{ $dashboardRoute }}"
+                class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('*.dashboard.home') ? 'text-white bg-[#ff0808] to-[#cc0606]' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg font-semibold transition-all group">
                 <i class="w-5 text-center transition-transform fas fa-th-large {{ request()->routeIs('*.dashboard.home') ? '' : 'text-gray-400' }} group-hover:scale-110"></i>
                 <span class="text-sm">Dashboard</span>
                 @if(request()->routeIs('*.dashboard.home'))
@@ -32,8 +50,8 @@
                     </a>
 
                     <a href="{{ route('admin.country.index') }}"
-                        class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('admin.country.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
-                        <i class="w-5 text-center {{ request()->routeIs('admin.country.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-globe group-hover:scale-110"></i>
+                        class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('admin.countries.*') || request()->routeIs('admin.country.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                        <i class="w-5 text-center {{ request()->routeIs('admin.countries.*') || request()->routeIs('admin.country.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-globe group-hover:scale-110"></i>
                         <span class="text-sm">Countries</span>
                     </a>
 
@@ -70,6 +88,159 @@
                 </nav>
             </div>
         @endif
+
+        <!-- Regional Admin Sections -->
+@if (auth()->user()->hasRole('regional_admin'))
+    <!-- Vendors Management -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Vendors</p>
+        <nav class="space-y-1">
+            <a href="{{ route('regional.vendors.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.vendors.*') ? 'text-purple-600 bg-purple-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.vendors.*') ? 'text-purple-600' : 'text-gray-400' }} transition-transform fas fa-store group-hover:scale-110"></i>
+                <span class="text-sm">Vendors</span>
+            </a>
+
+            <a href="{{ route('regional.products.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.products.*') ? 'text-indigo-600 bg-indigo-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.products.*') ? 'text-indigo-600' : 'text-gray-400' }} transition-transform fas fa-boxes group-hover:scale-110"></i>
+                <span class="text-sm">Products</span>
+            </a>
+
+            <a href="{{ route('regional.showrooms.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.showrooms.*') ? 'text-purple-600 bg-purple-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.showrooms.*') ? 'text-purple-600' : 'text-gray-400' }} transition-transform fas fa-building group-hover:scale-110"></i>
+                <span class="text-sm">Showrooms</span>
+            </a>
+
+            <a href="{{ route('regional.orders.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.orders.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.orders.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-shopping-bag group-hover:scale-110"></i>
+                <span class="text-sm">Orders</span>
+            </a>
+
+            <a href="{{ route('regional.loads.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.loads.*') ? 'text-orange-600 bg-orange-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.loads.*') ? 'text-orange-600' : 'text-gray-400' }} transition-transform fas fa-truck-loading group-hover:scale-110"></i>
+                <span class="text-sm">Loads</span>
+            </a>
+
+            <a href="{{ route('regional.transporters.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.transporters.*') ? 'text-indigo-600 bg-indigo-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.transporters.*') ? 'text-indigo-600' : 'text-gray-400' }} transition-transform fas fa-truck group-hover:scale-110"></i>
+                <span class="text-sm">Transporters</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Country Admins -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Administration</p>
+        <nav class="space-y-1">
+            <a href="{{ route('regional.country-admins.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.country-admins.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.country-admins.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-user-tie group-hover:scale-110"></i>
+                <span class="text-sm">Country Admins</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Reports -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Analytics</p>
+        <nav class="space-y-1">
+            <a href="{{ route('regional.reports.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('regional.reports.*') ? 'text-rose-600 bg-rose-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('regional.reports.*') ? 'text-rose-600' : 'text-gray-400' }} transition-transform fas fa-chart-line group-hover:scale-110"></i>
+                <span class="text-sm">Reports</span>
+            </a>
+        </nav>
+    </div>
+@endif
+
+<!-- Country Admin Sections -->
+@if (auth()->user()->hasRole('country_admin'))
+    <!-- Vendors Management -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Vendors</p>
+        <nav class="space-y-1">
+            <a href="{{ route('country.vendors.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('country.vendors.*') ? 'text-purple-600 bg-purple-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('country.vendors.*') ? 'text-purple-600' : 'text-gray-400' }} transition-transform fas fa-store group-hover:scale-110"></i>
+                <span class="text-sm">Vendors</span>
+            </a>
+
+            <a href="{{ route('country.products.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('country.products.*') ? 'text-indigo-600 bg-indigo-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('country.products.*') ? 'text-indigo-600' : 'text-gray-400' }} transition-transform fas fa-boxes group-hover:scale-110"></i>
+                <span class="text-sm">Products</span>
+            </a>
+
+            <a href="{{ route('country.showrooms.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('country.showrooms.*') ? 'text-purple-600 bg-purple-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('country.showrooms.*') ? 'text-purple-600' : 'text-gray-400' }} transition-transform fas fa-building group-hover:scale-110"></i>
+                <span class="text-sm">Showrooms</span>
+            </a>
+
+            <a href="{{ route('country.orders.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('country.orders.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('country.orders.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-shopping-bag group-hover:scale-110"></i>
+                <span class="text-sm">Orders</span>
+            </a>
+
+            <a href="{{ route('country.loads.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('country.loads.*') ? 'text-orange-600 bg-orange-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('country.loads.*') ? 'text-orange-600' : 'text-gray-400' }} transition-transform fas fa-truck-loading group-hover:scale-110"></i>
+                <span class="text-sm">Loads</span>
+            </a>
+
+            <a href="{{ route('country.transporters.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('country.transporters.*') ? 'text-indigo-600 bg-indigo-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('country.transporters.*') ? 'text-indigo-600' : 'text-gray-400' }} transition-transform fas fa-truck group-hover:scale-110"></i>
+                <span class="text-sm">Transporters</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Reports -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Analytics</p>
+        <nav class="space-y-1">
+            <a href="{{ route('country.reports.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('country.reports.*') ? 'text-rose-600 bg-rose-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('country.reports.*') ? 'text-rose-600' : 'text-gray-400' }} transition-transform fas fa-chart-line group-hover:scale-110"></i>
+                <span class="text-sm">Reports</span>
+            </a>
+        </nav>
+    </div>
+@endif
+
+<!-- Agent Sections -->
+@if (auth()->user()->hasRole('agent'))
+    <!-- Referrals -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Referrals</p>
+        <nav class="space-y-1">
+            <a href="{{ route('agent.referrals.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('agent.referrals.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('agent.referrals.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-users group-hover:scale-110"></i>
+                <span class="text-sm">My Referrals</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Commissions -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Earnings</p>
+        <nav class="space-y-1">
+            <a href="{{ route('agent.commissions.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('agent.commissions.*') ? 'text-green-600 bg-green-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('agent.commissions.*') ? 'text-green-600' : 'text-gray-400' }} transition-transform fas fa-dollar-sign group-hover:scale-110"></i>
+                <span class="text-sm">Commissions</span>
+            </a>
+        </nav>
+    </div>
+@endif
 
         <!-- Marketplace -->
         @if (auth()->user()->hasRole('admin'))

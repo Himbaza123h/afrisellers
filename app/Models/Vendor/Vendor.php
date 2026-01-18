@@ -83,7 +83,7 @@ public function getCountryId()
     // Scopes
     public function scopeVerified($query)
     {
-        return $query->where('verification_status', 'verified');
+        return $query->where('account_status', 'verified');
     }
 
     public function scopeActive($query)
@@ -93,13 +93,13 @@ public function getCountryId()
 
     public function scopePending($query)
     {
-        return $query->where('verification_status', 'pending');
+        return $query->where('account_status', 'pending');
     }
 
     // Helper methods
     public function isVerified()
     {
-        return $this->verification_status === 'verified';
+        return $this->account_status === 'verified';
     }
 
     public function isActive()
@@ -109,17 +109,17 @@ public function getCountryId()
 
     public function isPending()
     {
-        return $this->verification_status === 'pending';
+        return $this->account_status === 'pending';
     }
 
     public function verify()
     {
-        $this->update(['verification_status' => 'verified']);
+        $this->update(['account_status' => 'verified']);
     }
 
     public function reject()
     {
-        $this->update(['verification_status' => 'rejected']);
+        $this->update(['account_status' => 'rejected']);
     }
 
     public function suspend()
