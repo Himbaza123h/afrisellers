@@ -80,7 +80,7 @@ class VendorsSheet implements FromCollection, WithHeadings, WithTitle
 
     public function collection()
     {
-        $countries = Country::where('region', $this->region)->pluck('id')->toArray();
+        $countries = Country::where('region_id', $this->region)->pluck('id')->toArray();
 
         if ($this->countryFilter) {
             $countries = [$this->countryFilter];
@@ -145,7 +145,7 @@ class ProductsSheet implements FromCollection, WithHeadings, WithTitle
 
     public function collection()
     {
-        $countries = Country::where('region', $this->region)->pluck('id')->toArray();
+        $countries = Country::where('region_id', $this->region)->pluck('id')->toArray();
 
         if ($this->countryFilter) {
             $countries = [$this->countryFilter];
@@ -211,7 +211,7 @@ class OrdersSheet implements FromCollection, WithHeadings, WithTitle
 
     public function collection()
     {
-        $countries = Country::where('region', $this->region)->pluck('id')->toArray();
+        $countries = Country::where('region_id', $this->region)->pluck('id')->toArray();
 
         if ($this->countryFilter) {
             $countries = [$this->countryFilter];
@@ -281,7 +281,7 @@ class LoadsSheet implements FromCollection, WithHeadings, WithTitle
 
     public function collection()
     {
-        $countries = Country::where('region', $this->region)->pluck('id')->toArray();
+        $countries = Country::where('region_id', $this->region)->pluck('id')->toArray();
 
         if ($this->countryFilter) {
             $countries = [$this->countryFilter];
@@ -351,7 +351,7 @@ class TransportersSheet implements FromCollection, WithHeadings, WithTitle
 
     public function collection()
     {
-        $countries = Country::where('region', $this->region)->pluck('id')->toArray();
+        $countries = Country::where('region_id', $this->region)->pluck('id')->toArray();
 
         if ($this->countryFilter) {
             $countries = [$this->countryFilter];
@@ -406,7 +406,7 @@ class SummarySheet implements FromCollection, WithHeadings, WithTitle
 
     public function collection()
     {
-        $countries = Country::where('region', $this->region)->pluck('id')->toArray();
+        $countries = Country::where('region_id', $this->region)->pluck('id')->toArray();
 
         if ($this->countryFilter) {
             $countries = [$this->countryFilter];

@@ -473,6 +473,7 @@
                     </a>
                 </nav>
             @endif
+            
             @if (auth()->user()->isVendor())
                 <nav class="space-y-1 mb-4">
                     <a href="{{ route('vendor.store.settings') }}"

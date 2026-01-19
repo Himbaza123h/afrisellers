@@ -26,10 +26,13 @@ class ReportController extends Controller
     {
         $user = Auth::user();
 
-        // Get regional admin's countries
-        if (!$user->regional_admin) {
+        // Get regional admin's region
+        if (!$user->regionalAdmin) {
             abort(403, 'You are not authorized to access this page.');
         }
+
+        $regionalAdmin = $user->regionalAdmin;
+        $region = $regionalAdmin->region;
 
         // Get date range
         $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
@@ -37,7 +40,7 @@ class ReportController extends Controller
         $countryFilter = $request->get('country_id');
 
         // Get all countries in the region
-        $countries = Country::where('region', $user->region)->get();
+        $countries = $region->countries;
         $countryIds = $countries->pluck('id')->toArray();
 
         // Apply country filter if specified
@@ -146,6 +149,7 @@ class ReportController extends Controller
             ->get();
 
         return view('regional.reports.index', compact(
+            'region',
             'vendorsStats',
             'productsStats',
             'showroomsStats',
@@ -168,9 +172,12 @@ class ReportController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->regional_admin) {
+        if (!$user->regionalAdmin) {
             abort(403, 'You are not authorized to access this page.');
         }
+
+        $regionalAdmin = $user->regionalAdmin;
+        $region = $regionalAdmin->region;
 
         $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
@@ -180,7 +187,7 @@ class ReportController extends Controller
         $fileName = 'regional_report_' . Carbon::now()->format('Y-m-d_His') . '.' . $format;
 
         return Excel::download(
-            new RegionalReportExport($user->region, $startDate, $endDate, $countryFilter),
+            new RegionalReportExport($region->id, $startDate, $endDate, $countryFilter),
             $fileName
         );
     }

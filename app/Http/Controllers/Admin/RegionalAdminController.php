@@ -111,62 +111,62 @@ public function index(Request $request)
         return view('admin.regional-admins.create', compact('regions', 'availableRegions'));
     }
 
-    /**
-     * Store a newly created regional admin in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::min(8)],
-            'region_id' => ['required', 'exists:regions,id'],
-            'phone' => ['nullable', 'string', 'max:20'],
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+        'password' => ['required', 'confirmed', Password::min(8)],
+        'region_id' => ['required', 'exists:regions,id'],
+        'phone' => ['nullable', 'string', 'max:20'],
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // Check if region already has an active admin
+        $existingAdmin = RegionalAdmin::where('region_id', $validated['region_id'])
+            ->where('status', 'active')
+            ->first();
+
+        if ($existingAdmin) {
+            return back()->withErrors(['region_id' => 'This region already has an active administrator.'])->withInput();
+        }
+
+        // Create user
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'phone' => $validated['phone'], // ADD THIS LINE
+            'regional_admin' => 1, // ADD THIS LINE
+            'regional_id' => $validated['region_id'], // ADD THIS LINE
         ]);
 
-        try {
-            DB::beginTransaction();
-
-            // Check if region already has an active admin
-            $existingAdmin = RegionalAdmin::where('region_id', $validated['region_id'])
-                ->where('status', 'active')
-                ->first();
-
-            if ($existingAdmin) {
-                return back()->withErrors(['region_id' => 'This region already has an active administrator.'])->withInput();
-            }
-
-            // Create user
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-            ]);
-
-            // Assign regional admin role
-            $regionalAdminRole = Role::where('slug', 'regional-admin')->first();
-            if ($regionalAdminRole) {
-                $user->assignRole($regionalAdminRole);
-            }
-
-            // Create regional admin record
-            $regionalAdmin = RegionalAdmin::create([
-                'user_id' => $user->id,
-                'region_id' => $validated['region_id'],
-                'status' => 'active',
-                'assigned_at' => now(),
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('admin.regional-admins.index')
-                ->with('success', 'Regional administrator created successfully.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to create regional administrator: ' . $e->getMessage()])->withInput();
+        // Assign regional admin role
+        $regionalAdminRole = Role::where('slug', 'regional_admin')->first();
+        if ($regionalAdminRole) {
+            $user->assignRole($regionalAdminRole);
         }
+
+        // Create regional admin record
+        $regionalAdmin = RegionalAdmin::create([
+            'user_id' => $user->id,
+            'region_id' => $validated['region_id'],
+            'status' => 'active',
+            'assigned_at' => now(),
+        ]);
+
+        DB::commit();
+
+        return redirect()->route('admin.regional-admins.index')
+            ->with('success', 'Regional administrator created successfully.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withErrors(['error' => 'Failed to create regional administrator: ' . $e->getMessage()])->withInput();
     }
+}
 
     /**
      * Display the specified regional admin.

@@ -62,7 +62,7 @@
     <!-- Overview Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Vendors Card -->
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold opacity-90">Total Vendors</h3>
                 <i class="fas fa-store text-2xl opacity-75"></i>
@@ -75,7 +75,7 @@
         </div>
 
         <!-- Products Card -->
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold opacity-90">Total Products</h3>
                 <i class="fas fa-box text-2xl opacity-75"></i>
@@ -88,7 +88,7 @@
         </div>
 
         <!-- Orders Card -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold opacity-90">Total Orders</h3>
                 <i class="fas fa-shopping-cart text-2xl opacity-75"></i>
@@ -100,7 +100,7 @@
         </div>
 
         <!-- Loads Card -->
-        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold opacity-90">Total Loads</h3>
                 <i class="fas fa-truck text-2xl opacity-75"></i>

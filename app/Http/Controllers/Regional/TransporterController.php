@@ -18,9 +18,17 @@ class TransporterController extends Controller
         $user = Auth::user();
 
         // Get regional admin's countries
-        if (!$user->regional_admin || !$user->region_id) {
+        if (!$user->regional_admin || !$user->regional_id) {
             abort(403, 'You are not assigned to any region.');
         }
+
+
+        // $user = Auth::user();
+
+        // // Get regional admin's region
+        // if (!$user->regional_admin || !$user->regional_id) {
+        //     abort(403, 'You are not assigned to any region.');
+        // }
 
         // Get countries in this region
         $regionCountries = \App\Models\Country::where('region_id', $user->region_id)->pluck('id');

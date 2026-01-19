@@ -125,6 +125,13 @@ public function orders()
         return $this->status === 'active';
     }
 
+    public function countryAdmin()
+{
+    return $this->hasOne(User::class, 'country_id')
+        ->where('country_admin', 1)
+        ->whereNull('deleted_at');
+}
+
     public function isInactive()
     {
         return $this->status === 'inactive';

@@ -271,31 +271,31 @@
 <td class="px-6 py-4">
 <span class="text-sm font-bold text-gray-900">{{ $order->formatted_total }}</span>
 </td>
-<td class="px-6 py-4">                                @php
-                                    $paymentColors = [
-                                        'paid' => ['Paid', 'bg-green-100 text-green-800'],
-                                        'pending' => ['Pending', 'bg-yellow-100 text-yellow-800'],
-                                        'failed' => ['Failed', 'bg-red-100 text-red-800'],
-                                        'refunded' => ['Refunded', 'bg-purple-100 text-purple-800'],
-                                    ];
-                                    payment = $paymentColors[
-order->payment_status ?? 'pending'] ?? ['Unknown', 'bg-gray-100 text-gray-800'];
-                                @endphp
-<span class="px-2.5 py-1 rounded-md text-xs font-medium {{ $payment[1] }}">{{ $payment[0] }}</span>
+<td class="px-6 py-4">
+    @php
+        $paymentColors = [
+            'paid' => ['Paid', 'bg-green-100 text-green-800'],
+            'pending' => ['Pending', 'bg-yellow-100 text-yellow-800'],
+            'failed' => ['Failed', 'bg-red-100 text-red-800'],
+            'refunded' => ['Refunded', 'bg-purple-100 text-purple-800'],
+        ];
+        $payment = $paymentColors[$order->payment_status ?? 'pending'] ?? ['Unknown', 'bg-gray-100 text-gray-800'];  // ✅ ADD $
+    @endphp
+    <span class="px-2.5 py-1 rounded-md text-xs font-medium {{ $payment[1] }}">{{ $payment[0] }}</span>
 </td>
-<td class="px-6 py-4">                                @php
-                                    $statusColors = [
-                                        'pending' => ['Pending', 'bg-yellow-100 text-yellow-800'],
-                                        'confirmed' => ['Confirmed', 'bg-blue-100 text-blue-800'],
-                                        'processing' => ['Processing', 'bg-purple-100 text-purple-800'],
-                                        'shipped' => ['Shipped', 'bg-indigo-100 text-indigo-800'],
-                                        'delivered' => ['Delivered', 'bg-green-100 text-green-800'],
-                                        'cancelled' => ['Cancelled', 'bg-red-100 text-red-800'],
-                                    ];
-                                    status = $statusColors[
-order->status] ?? ['Unknown', 'bg-gray-100 text-gray-800'];
-                                @endphp
-<span class="px-3 py-1.5 rounded-full text-xs font-medium {{ $status[1] }}">{{ $status[0] }}</span>
+<td class="px-6 py-4">
+    @php
+        $statusColors = [
+            'pending' => ['Pending', 'bg-yellow-100 text-yellow-800'],
+            'confirmed' => ['Confirmed', 'bg-blue-100 text-blue-800'],
+            'processing' => ['Processing', 'bg-purple-100 text-purple-800'],
+            'shipped' => ['Shipped', 'bg-indigo-100 text-indigo-800'],
+            'delivered' => ['Delivered', 'bg-green-100 text-green-800'],
+            'cancelled' => ['Cancelled', 'bg-red-100 text-red-800'],
+        ];
+        $status = $statusColors[$order->status] ?? ['Unknown', 'bg-gray-100 text-gray-800'];  // ✅ ADD $
+    @endphp
+    <span class="px-3 py-1.5 rounded-full text-xs font-medium {{ $status[1] }}">{{ $status[0] }}</span>
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center justify-center gap-2">
