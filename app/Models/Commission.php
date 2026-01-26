@@ -14,9 +14,12 @@ class Commission extends Model
 
     protected $fillable = [
         'transaction_id',
+        'referral_id',
+        'agent_id',
         'user_id',
         'vendor_id',
         'buyer_id',
+        'amount',
         'commission_amount',
         'commission_rate',
         'transaction_amount',
@@ -31,6 +34,7 @@ class Commission extends Model
     ];
 
     protected $casts = [
+        'amount' => 'decimal:2',
         'commission_amount' => 'decimal:2',
         'commission_rate' => 'decimal:2',
         'transaction_amount' => 'decimal:2',
@@ -44,6 +48,16 @@ class Commission extends Model
     public function transaction()
     {
         return $this->belongsTo(Transaction::class);
+    }
+
+    public function referral()
+    {
+        return $this->belongsTo(Referral::class);
+    }
+
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
     }
 
     public function user()
@@ -92,6 +106,11 @@ class Commission extends Model
         return $query->where('user_id', $userId);
     }
 
+    public function scopeByAgent($query, $agentId)
+    {
+        return $query->where('agent_id', $agentId);
+    }
+
     // Helper Methods
     public function isPending()
     {
@@ -136,7 +155,8 @@ class Commission extends Model
 
     public function getFormattedAmountAttribute()
     {
-        return number_format($this->commission_amount, 2) . ' ' . $this->currency;
+        $amount = $this->amount ?? $this->commission_amount;
+        return number_format($amount, 2) . ' ' . ($this->currency ?? 'USD');
     }
 
     public function getCommissionPercentageAttribute()

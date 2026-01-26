@@ -102,6 +102,93 @@ class ProductController extends Controller
         return view('country.products.index', compact('products', 'stats', 'country', 'categories'));
     }
 
+        /**
+     * Print products report
+     */
+    public function print(Request $request)
+    {
+        $user = Auth::user();
+
+        // Get country admin's country
+        if (!$user->country_admin || !$user->country_id) {
+            abort(403, 'You are not assigned to any country.');
+        }
+
+        $country = Country::findOrFail($user->country_id);
+
+        $query = Product::with(['user', 'productCategory', 'prices'])
+            ->where('country_id', $country->id);
+
+        // Apply filters (same as index)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('productCategory', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('verification')) {
+            if ($request->verification === 'verified') {
+                $query->where('is_admin_verified', true);
+            } elseif ($request->verification === 'unverified') {
+                $query->where('is_admin_verified', false);
+            }
+        }
+
+        if ($request->filled('category')) {
+            $query->where('product_category_id', $request->category);
+        }
+
+        if ($request->filled('date_range')) {
+            $dates = explode(' to ', $request->date_range);
+            if (count($dates) === 2) {
+                $query->whereDate('created_at', '>=', $dates[0])
+                      ->whereDate('created_at', '<=', $dates[1]);
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $products = $query->get();
+
+        // Statistics for print
+        $stats = [
+            'total' => Product::where('country_id', $country->id)->count(),
+            'active' => Product::where('country_id', $country->id)->where('status', 'active')->count(),
+            'pending' => Product::where('country_id', $country->id)->where('status', 'pending')->count(),
+            'verified' => Product::where('country_id', $country->id)->where('is_admin_verified', true)->count(),
+            'unverified' => Product::where('country_id', $country->id)->where('is_admin_verified', false)->count(),
+            'total_views' => Product::where('country_id', $country->id)->sum('views'),
+        ];
+
+        // Calculate percentages
+        $stats['active_percentage'] = $stats['total'] > 0 ? round(($stats['active'] / $stats['total']) * 100) : 0;
+        $stats['verified_percentage'] = $stats['total'] > 0 ? round(($stats['verified'] / $stats['total']) * 100) : 0;
+
+        // Get categories for summary
+        $categories = DB::table('product_categories')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return view('country.products.print', compact('products', 'stats', 'country', 'categories'));
+    }
+
     /**
      * Display the specified product.
      */

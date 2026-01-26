@@ -86,6 +86,76 @@ class TransporterController extends Controller
     }
 
     /**
+ * Print transporters report for the country.
+ */
+public function print(Request $request)
+{
+    $user = Auth::user();
+
+    // Get country admin's country
+    if (!$user->country_admin || !$user->country_id) {
+        abort(403, 'You are not assigned to any country.');
+    }
+
+    $country = \App\Models\Country::findOrFail($user->country_id);
+
+    $query = Transporter::with([
+        'user',
+        'country',
+        'businessProfile'
+    ])
+        ->where('country_id', $user->country_id);
+
+    // Apply filters
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('company_name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%")
+              ->orWhere('phone', 'like', "%{$search}%")
+              ->orWhere('registration_number', 'like', "%{$search}%")
+              ->orWhereHas('user', function($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+              });
+        });
+    }
+
+    if ($request->filled('is_verified')) {
+        $query->where('is_verified', $request->is_verified === 'verified');
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    $sortBy = $request->get('sort_by', 'created_at');
+    $sortOrder = $request->get('sort_order', 'desc');
+    $query->orderBy($sortBy, $sortOrder);
+
+    $transporters = $query->get();
+
+    // Statistics
+    $baseQuery = Transporter::where('country_id', $user->country_id);
+
+    $stats = [
+        'total' => (clone $baseQuery)->count(),
+        'verified' => (clone $baseQuery)->where('is_verified', true)->count(),
+        'unverified' => (clone $baseQuery)->where('is_verified', false)->count(),
+        'active' => (clone $baseQuery)->where('status', 'active')->count(),
+        'suspended' => (clone $baseQuery)->where('status', 'suspended')->count(),
+        'inactive' => (clone $baseQuery)->where('status', 'inactive')->count(),
+        'total_fleet' => (clone $baseQuery)->sum('fleet_size'),
+        'average_rating' => (clone $baseQuery)->avg('average_rating'),
+    ];
+
+    $stats['verified_percentage'] = $stats['total'] > 0 ? round(($stats['verified'] / $stats['total']) * 100) : 0;
+    $stats['active_percentage'] = $stats['total'] > 0 ? round(($stats['active'] / $stats['total']) * 100) : 0;
+
+    return view('country.transporters.print', compact('transporters', 'stats', 'country'));
+}
+
+    /**
      * Display the specified transporter.
      */
 public function show($id)

@@ -59,6 +59,10 @@ Route::prefix('vendor')
         Route::get('/dashboard', [VendorDashboardController::class, 'index'])
             ->name('dashboard.home');
 
+        // web.php (in vendor routes group)
+Route::get('/dashboard/print', [VendorDashboardController::class, 'print'])
+    ->name('dashboard.print');
+
         // Product Management Routes (Vendor CRUD)
         Route::prefix('products')
             ->name('product.')

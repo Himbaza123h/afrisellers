@@ -109,6 +109,64 @@ class ProductController extends Controller
         return view('regional.products.index', compact('products', 'stats', 'region', 'countries', 'categories'));
     }
 
+
+    // In App\Http\Controllers\Regional\ProductController.php
+
+public function print(Request $request)
+{
+    $region = auth()->user()->regionalAdmin->region;
+    $countries = $region->countries;
+
+    // Build query
+    $query = Product::whereIn('country_id', $countries->pluck('id'))
+        ->with(['user', 'country', 'productCategory', 'images', 'prices']);
+
+    // Apply filters if any
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    if ($request->filled('country_id')) {
+        $query->where('country_id', $request->country_id);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('verification')) {
+        $verified = $request->verification === 'verified';
+        $query->where('is_admin_verified', $verified);
+    }
+
+    if ($request->filled('category')) {
+        $query->where('product_category_id', $request->category);
+    }
+
+    // Get all products (no pagination for print)
+    $products = $query->get();
+
+    // Calculate stats
+    $stats = [
+        'total' => $products->count(),
+        'active' => $products->where('status', 'active')->count(),
+        'pending' => $products->where('status', 'pending')->count(),
+        'verified' => $products->where('is_admin_verified', true)->count(),
+        'unverified' => $products->where('is_admin_verified', false)->count(),
+        'total_views' => $products->sum('views'),
+    ];
+
+    $stats['active_percentage'] = $stats['total'] > 0
+        ? round(($stats['active'] / $stats['total']) * 100)
+        : 0;
+
+    $stats['verified_percentage'] = $stats['total'] > 0
+        ? round(($stats['verified'] / $stats['total']) * 100)
+        : 0;
+
+    return view('regional.products.print', compact('region', 'countries', 'products', 'stats'));
+}
+
     /**
      * Display the specified product.
      */

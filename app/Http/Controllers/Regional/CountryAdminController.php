@@ -72,6 +72,68 @@ class CountryAdminController extends Controller
     }
 
     /**
+ * Print country admins report
+ */
+public function print(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user->regionalAdmin) {
+        abort(403, 'You are not authorized to access this page.');
+    }
+
+    $regionalAdmin = $user->regionalAdmin;
+    $region = $regionalAdmin->region;
+
+    // Get all countries in this region
+    $countryIds = $region->countries->pluck('id')->toArray();
+
+    // Query country admins
+    $query = User::where('country_admin', 1)
+        ->whereIn('country_id', $countryIds)
+        ->with('country');
+
+    // Apply filters
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('country_id')) {
+        $query->where('country_id', $request->country_id);
+    }
+
+    if ($request->filled('status')) {
+        if ($request->status === 'active') {
+            $query->whereNull('deleted_at');
+        } else {
+            $query->onlyTrashed();
+        }
+    }
+
+    // Get all country admins
+    $countryAdmins = $query->latest()->get();
+
+    // Calculate stats
+    $stats = [
+        'total' => User::where('country_admin', 1)->whereIn('country_id', $countryIds)->count(),
+        'active' => User::where('country_admin', 1)->whereIn('country_id', $countryIds)->whereNull('deleted_at')->count(),
+        'inactive' => User::where('country_admin', 1)->whereIn('country_id', $countryIds)->onlyTrashed()->count(),
+    ];
+
+    $stats['active_percentage'] = $stats['total'] > 0
+        ? round(($stats['active'] / $stats['total']) * 100)
+        : 0;
+
+    $countries = $region->countries;
+
+    return view('regional.country-admins.print', compact('region', 'countries', 'countryAdmins', 'stats'));
+}
+
+    /**
      * Show the form for creating a new country admin
      */
     public function create()

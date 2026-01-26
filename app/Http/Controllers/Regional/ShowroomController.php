@@ -125,6 +125,91 @@ class ShowroomController extends Controller
         return view('regional.showrooms.index', compact('showrooms', 'stats', 'region', 'countries', 'cities'));
     }
 
+    // Add this method to App\Http\Controllers\Regional\ShowroomController.php
+
+public function print(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user->regional_admin || !$user->regional_id) {
+        abort(403, 'You are not assigned to any region.');
+    }
+
+    $region = Region::with('countries')->findOrFail($user->regional_id);
+    $countryIds = $region->countries->pluck('id');
+
+    // Build query
+    $query = Showroom::with(['user', 'country', 'products'])
+        ->whereIn('country_id', $countryIds);
+
+    // Apply filters if any
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('showroom_number', 'like', "%{$search}%")
+              ->orWhere('city', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('country_id')) {
+        $query->where('country_id', $request->country_id);
+    }
+
+    if ($request->filled('city')) {
+        $query->where('city', $request->city);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('verification')) {
+        $verified = $request->verification === 'verified';
+        $query->where('is_verified', $verified);
+    }
+
+    if ($request->filled('featured')) {
+        $featured = $request->featured === 'yes';
+        $query->where('is_featured', $featured);
+    }
+
+    if ($request->filled('business_type')) {
+        $query->where('business_type', $request->business_type);
+    }
+
+    // Get all showrooms (no pagination for print)
+    $showrooms = $query->get();
+
+    // Calculate stats
+    $stats = [
+        'total' => $showrooms->count(),
+        'active' => $showrooms->where('status', 'active')->count(),
+        'pending' => $showrooms->where('status', 'pending')->count(),
+        'verified' => $showrooms->where('is_verified', true)->count(),
+        'unverified' => $showrooms->where('is_verified', false)->count(),
+        'featured' => $showrooms->where('is_featured', true)->count(),
+        'total_views' => $showrooms->sum('views_count'),
+        'total_inquiries' => $showrooms->sum('inquiries_count'),
+    ];
+
+    $stats['active_percentage'] = $stats['total'] > 0
+        ? round(($stats['active'] / $stats['total']) * 100)
+        : 0;
+
+    $stats['verified_percentage'] = $stats['total'] > 0
+        ? round(($stats['verified'] / $stats['total']) * 100)
+        : 0;
+
+    $stats['featured_percentage'] = $stats['total'] > 0
+        ? round(($stats['featured'] / $stats['total']) * 100)
+        : 0;
+
+    $countries = $region->countries;
+
+    return view('regional.showrooms.print', compact('region', 'countries', 'showrooms', 'stats'));
+}
+
     /**
      * Display the specified showroom.
      */

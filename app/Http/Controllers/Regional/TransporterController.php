@@ -108,6 +108,77 @@ class TransporterController extends Controller
     }
 
     /**
+ * Print transporters report
+ */
+public function print(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user->regional_admin || !$user->regional_id) {
+        abort(403, 'You are not assigned to any region.');
+    }
+
+    $region = \App\Models\Region::with('countries')->findOrFail($user->regional_id);
+    $regionCountries = \App\Models\Country::where('region_id', $user->regional_id)->pluck('id');
+
+    // Build query
+    $query = Transporter::with([
+        'user',
+        'country',
+        'businessProfile'
+    ])->whereIn('country_id', $regionCountries);
+
+    // Apply filters
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('company_name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%")
+              ->orWhere('registration_number', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('country_id')) {
+        $query->where('country_id', $request->country_id);
+    }
+
+    if ($request->filled('is_verified')) {
+        $query->where('is_verified', $request->is_verified === 'verified');
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // Get all transporters
+    $transporters = $query->get();
+
+    // Calculate stats
+    $stats = [
+        'total' => $transporters->count(),
+        'verified' => $transporters->where('is_verified', true)->count(),
+        'unverified' => $transporters->where('is_verified', false)->count(),
+        'active' => $transporters->where('status', 'active')->count(),
+        'suspended' => $transporters->where('status', 'suspended')->count(),
+        'inactive' => $transporters->where('status', 'inactive')->count(),
+        'total_fleet' => $transporters->sum('fleet_size'),
+        'average_rating' => $transporters->avg('average_rating') ?? 0,
+    ];
+
+    $stats['verified_percentage'] = $stats['total'] > 0
+        ? round(($stats['verified'] / $stats['total']) * 100)
+        : 0;
+
+    $stats['active_percentage'] = $stats['total'] > 0
+        ? round(($stats['active'] / $stats['total']) * 100)
+        : 0;
+
+    $countries = \App\Models\Country::whereIn('id', $regionCountries)->get();
+
+    return view('regional.transporters.print', compact('region', 'countries', 'transporters', 'stats'));
+}
+
+    /**
      * Display the specified transporter.
      */
     public function show($id)

@@ -300,6 +300,115 @@ class VendorDashboardController extends Controller
         }
     }
 
+
+        /**
+     * Print dashboard report
+     */
+    public function print(Request $request)
+    {
+        try {
+            $vendor = $this->getVendor();
+
+            if (!$vendor) {
+                abort(404, 'Vendor not found');
+            }
+
+            // Get filter parameters
+            $filter = $request->get('filter', 'weekly');
+            $dateRange = $request->get('date_range');
+
+            // Calculate date ranges
+            $dateRanges = $this->getDateRanges($filter, $dateRange);
+            $currentStart = $dateRanges['current_start'];
+            $currentEnd = $dateRanges['current_end'];
+
+            // Get all stats for print
+            $myRevenue = Order::where('vendor_id', $vendor->user_id)
+                ->whereBetween('created_at', [$currentStart, $currentEnd])
+                ->sum('total') ?? 0;
+
+            $totalProducts = Product::where('user_id', $vendor->user_id)->count();
+            $activeProducts = Product::where('user_id', $vendor->user_id)
+                ->where('status', 'active')
+                ->where('is_admin_verified', true)
+                ->count();
+
+            $myOrders = Order::where('vendor_id', $vendor->user_id)
+                ->whereBetween('created_at', [$currentStart, $currentEnd])
+                ->count();
+
+            $pendingOrders = Order::where('vendor_id', $vendor->user_id)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->count();
+
+            // Recent Orders
+            $recentOrders = Order::where('vendor_id', $vendor->user_id)
+                ->with(['buyer', 'items.product'])
+                ->latest()
+                ->take(5)
+                ->get();
+
+            // Top Products
+            $topProducts = Product::where('user_id', $vendor->user_id)
+                ->where('status', 'active')
+                ->withCount(['orderItems as sales_count' => function($query) use ($currentStart, $currentEnd) {
+                    $query->whereHas('order', function($q) use ($currentStart, $currentEnd) {
+                        $q->whereBetween('created_at', [$currentStart, $currentEnd]);
+                    });
+                }])
+                ->withSum(['orderItems as revenue' => function($query) use ($currentStart, $currentEnd) {
+                    $query->whereHas('order', function($q) use ($currentStart, $currentEnd) {
+                        $q->whereBetween('created_at', [$currentStart, $currentEnd]);
+                    });
+                }], 'unit_price')
+                ->having('sales_count', '>', 0)
+                ->orderBy('revenue', 'desc')
+                ->take(4)
+                ->get();
+
+            // Order Status Overview
+            $orderStatuses = [];
+            $statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+            foreach ($statuses as $status) {
+                $orderStatuses[] = [
+                    'status' => ucfirst($status),
+                    'count' => Order::where('vendor_id', $vendor->user_id)
+                        ->where('status', $status)
+                        ->whereBetween('created_at', [$currentStart, $currentEnd])
+                        ->count(),
+                    'revenue' => Order::where('vendor_id', $vendor->user_id)
+                        ->where('status', $status)
+                        ->whereBetween('created_at', [$currentStart, $currentEnd])
+                        ->sum('total') ?? 0,
+                ];
+            }
+
+            // Sales Chart Data
+            $salesChartData = $this->getSalesChartData($vendor->user_id, $filter, $currentStart, $currentEnd);
+
+            return view('vendor.dashboard.print', compact(
+                'vendor',
+                'myRevenue',
+                'totalProducts',
+                'activeProducts',
+                'myOrders',
+                'pendingOrders',
+                'recentOrders',
+                'topProducts',
+                'orderStatuses',
+                'salesChartData',
+                'filter',
+                'currentStart',
+                'currentEnd'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Dashboard Print Error: ' . $e->getMessage());
+            abort(500, 'Failed to generate report');
+        }
+    }
+
     /**
      * Get date ranges based on filter type
      */
@@ -368,7 +477,7 @@ class VendorDashboardController extends Controller
      */
     private function getVendor()
     {
-        return Vendor::with(['businessProfile', 'plan'])
+        return Vendor::with(['businessProfile'])
             ->where('user_id', auth()->id())
             ->first();
     }

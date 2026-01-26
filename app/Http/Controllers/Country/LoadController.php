@@ -144,6 +144,106 @@ class LoadController extends Controller
     }
 
     /**
+ * Print loads report for the country.
+ */
+public function print(Request $request)
+{
+    $user = Auth::user();
+
+    // Get country admin's country
+    if (!$user->country_admin || !$user->country_id) {
+        abort(403, 'You are not assigned to any country.');
+    }
+
+    $country = \App\Models\Country::findOrFail($user->country_id);
+
+    // Get loads query
+    $query = Load::with(['user', 'originCountry', 'destinationCountry', 'assignedTransporter', 'bids'])
+        ->where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        });
+
+    // Apply filters
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('load_number', 'like', "%{$search}%")
+              ->orWhere('tracking_number', 'like', "%{$search}%")
+              ->orWhere('origin_city', 'like', "%{$search}%")
+              ->orWhere('destination_city', 'like', "%{$search}%")
+              ->orWhereHas('user', function($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              });
+        });
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('cargo_type')) {
+        $query->where('cargo_type', $request->cargo_type);
+    }
+
+    if ($request->filled('origin_city')) {
+        $query->where('origin_city', $request->origin_city);
+    }
+
+    $sortBy = $request->get('sort_by', 'created_at');
+    $sortOrder = $request->get('sort_order', 'desc');
+    $query->orderBy($sortBy, $sortOrder);
+
+    $loads = $query->get();
+
+    // Statistics
+    $stats = [
+        'total' => Load::where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        })->count(),
+        'posted' => Load::where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        })->where('status', 'posted')->count(),
+        'bidding' => Load::where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        })->where('status', 'bidding')->count(),
+        'assigned' => Load::where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        })->where('status', 'assigned')->count(),
+        'in_transit' => Load::where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        })->where('status', 'in_transit')->count(),
+        'delivered' => Load::where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        })->where('status', 'delivered')->count(),
+        'cancelled' => Load::where(function($q) use ($country) {
+            $q->where('origin_country_id', $country->id)
+              ->orWhere('destination_country_id', $country->id);
+        })->where('status', 'cancelled')->count(),
+        'total_bids' => DB::table('load_bids')
+            ->whereIn('load_id', function($query) use ($country) {
+                $query->select('id')
+                    ->from('loads')
+                    ->where(function($q) use ($country) {
+                        $q->where('origin_country_id', $country->id)
+                          ->orWhere('destination_country_id', $country->id);
+                    });
+            })->count(),
+    ];
+
+    $stats['posted_percentage'] = $stats['total'] > 0 ? round((($stats['posted'] + $stats['bidding']) / $stats['total']) * 100) : 0;
+    $stats['delivered_percentage'] = $stats['total'] > 0 ? round(($stats['delivered'] / $stats['total']) * 100) : 0;
+
+    return view('country.loads.print', compact('loads', 'stats', 'country'));
+}
+
+    /**
      * Display the specified load.
      */
     public function show($id)

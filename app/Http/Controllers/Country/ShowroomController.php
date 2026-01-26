@@ -115,6 +115,108 @@ class ShowroomController extends Controller
         return view('country.showrooms.index', compact('showrooms', 'stats', 'cities'));
     }
 
+        /**
+     * Print showrooms report
+     */
+    public function print(Request $request)
+    {
+        $user = Auth::user();
+
+        // Get country admin's country
+        if (!$user->country_admin || !$user->country_id) {
+            abort(403, 'You are not assigned to any country.');
+        }
+
+        $query = Showroom::with(['user', 'country'])
+            ->where('country_id', $user->country_id);
+
+        // Apply filters (same as index)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('showroom_number', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('verification')) {
+            if ($request->verification === 'verified') {
+                $query->where('is_verified', true);
+            } elseif ($request->verification === 'unverified') {
+                $query->where('is_verified', false);
+            }
+        }
+
+        if ($request->filled('featured')) {
+            if ($request->featured === 'yes') {
+                $query->where('is_featured', true);
+            } elseif ($request->featured === 'no') {
+                $query->where('is_featured', false);
+            }
+        }
+
+        if ($request->filled('business_type')) {
+            $query->where('business_type', $request->business_type);
+        }
+
+        if ($request->filled('city')) {
+            $query->where('city', $request->city);
+        }
+
+        if ($request->filled('date_range')) {
+            $dates = explode(' to ', $request->date_range);
+            if (count($dates) === 2) {
+                $query->whereDate('created_at', '>=', $dates[0])
+                      ->whereDate('created_at', '<=', $dates[1]);
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $showrooms = $query->get();
+
+        // Statistics for print
+        $stats = [
+            'total' => Showroom::where('country_id', $user->country_id)->count(),
+            'active' => Showroom::where('country_id', $user->country_id)->where('status', 'active')->count(),
+            'pending' => Showroom::where('country_id', $user->country_id)->where('status', 'pending')->count(),
+            'verified' => Showroom::where('country_id', $user->country_id)->where('is_verified', true)->count(),
+            'unverified' => Showroom::where('country_id', $user->country_id)->where('is_verified', false)->count(),
+            'featured' => Showroom::where('country_id', $user->country_id)->where('is_featured', true)->count(),
+            'total_views' => Showroom::where('country_id', $user->country_id)->sum('views_count'),
+            'total_inquiries' => Showroom::where('country_id', $user->country_id)->sum('inquiries_count'),
+        ];
+
+        // Calculate percentages
+        $stats['active_percentage'] = $stats['total'] > 0 ? round(($stats['active'] / $stats['total']) * 100) : 0;
+        $stats['verified_percentage'] = $stats['total'] > 0 ? round(($stats['verified'] / $stats['total']) * 100) : 0;
+        $stats['featured_percentage'] = $stats['total'] > 0 ? round(($stats['featured'] / $stats['total']) * 100) : 0;
+
+        // Get country
+        $country = \App\Models\Country::find($user->country_id);
+
+        // Get cities for summary
+        $cities = Showroom::where('country_id', $user->country_id)
+            ->select('city')
+            ->distinct()
+            ->orderBy('city')
+            ->pluck('city');
+
+        return view('country.showrooms.print', compact('showrooms', 'stats', 'country', 'cities'));
+    }
+
     /**
      * Display the specified showroom.
      */

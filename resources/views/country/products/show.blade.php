@@ -42,10 +42,6 @@
                     </button>
                 </form>
             @endif
-            <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-sm">
-                <i class="fas fa-print"></i>
-                <span>Print</span>
-            </button>
         </div>
     </div>
 

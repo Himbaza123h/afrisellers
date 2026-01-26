@@ -8,7 +8,7 @@ use App\Models\BusinessProfile;
 use App\Models\Country;
 use App\Models\OwnerID;
 use App\Traits\Auditable;
-use App\Models\Plan;
+use App\Models\UserPlan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,6 +33,7 @@ class Vendor extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
 
     public function businessProfile()
     {
