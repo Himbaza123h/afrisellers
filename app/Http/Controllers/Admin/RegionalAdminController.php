@@ -168,6 +168,95 @@ public function store(Request $request)
     }
 }
 
+public function print()
+{
+    $regionalAdmins = RegionalAdmin::with(['user', 'region'])
+        ->get();
+
+    $regions = Region::all();
+
+    $stats = [
+        'total' => RegionalAdmin::count(),
+        'active' => RegionalAdmin::where('status', 'active')->count(),
+        'inactive' => RegionalAdmin::where('status', 'inactive')->count(),
+        'suspended' => RegionalAdmin::where('status', 'suspended')->count(),
+        'active_percentage' => RegionalAdmin::count() > 0
+            ? round((RegionalAdmin::where('status', 'active')->count() / RegionalAdmin::count()) * 100, 1)
+            : 0,
+        'inactive_percentage' => RegionalAdmin::count() > 0
+            ? round((RegionalAdmin::where('status', 'inactive')->count() / RegionalAdmin::count()) * 100, 1)
+            : 0,
+        'regions_covered' => RegionalAdmin::distinct('region_id')->count('region_id'),
+        'unassigned_regions' => Region::whereNotIn('id', RegionalAdmin::pluck('region_id'))->count(),
+    ];
+
+    return view('admin.regional-admins.print', compact('regionalAdmins', 'stats'));
+}
+
+public function switchToRegional(RegionalAdmin $regionalAdmin)
+{
+    try {
+        // Get the user
+        $user = $regionalAdmin->user;
+
+        // Check if user already has regional_admin role
+        $regionalAdminRole = \App\Models\Role::where('slug', 'regional_admin')->first();
+
+        if (!$regionalAdminRole) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Regional Admin role not found in system.'
+            ], 404);
+        }
+
+        // Check if user already has this role
+        if ($user->roles()->where('role_id', $regionalAdminRole->id)->exists()) {
+            // Generate login token
+            $token = \Illuminate\Support\Str::random(60);
+
+            // Store token in cache for 5 minutes
+            \Illuminate\Support\Facades\Cache::put(
+                'regional_login_token_' . $token,
+                $user->id,
+                now()->addMinutes(5)
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User already has Regional Admin access',
+                'login_url' => route('auth.regional.token-login', ['token' => $token])
+            ]);
+        }
+
+        // Attach regional_admin role to user
+        $user->roles()->attach($regionalAdminRole->id);
+
+        // Generate login token
+        $token = \Illuminate\Support\Str::random(60);
+
+        // Store token in cache for 5 minutes
+        \Illuminate\Support\Facades\Cache::put(
+            'regional_login_token_' . $token,
+            $user->id,
+            now()->addMinutes(5)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User successfully switched to Regional Admin',
+            'login_url' => route('auth.regional.token-login', ['token' => $token])
+        ]);
+
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Switch to Regional Admin failed: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to switch user role: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
     /**
      * Display the specified regional admin.
      */

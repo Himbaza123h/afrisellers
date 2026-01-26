@@ -179,6 +179,105 @@ class ReportController extends Controller
     }
 
     /**
+ * Print report
+ */
+public function print(Request $request)
+{
+    // Report type
+    $reportType = $request->get('type', 'daily');
+
+    // Date range
+    $startDate = $request->get('start_date', now()->startOfMonth());
+    $endDate = $request->get('end_date', now());
+
+    if ($request->filled('date_range')) {
+        $dates = explode(' to ', $request->date_range);
+        if (count($dates) == 2) {
+            $startDate = Carbon::parse($dates[0]);
+            $endDate = Carbon::parse($dates[1]);
+        }
+    } else {
+        $startDate = Carbon::parse($startDate);
+        $endDate = Carbon::parse($endDate);
+    }
+
+    // Generate report based on type
+    $reportData = $this->generateReport($reportType, $startDate, $endDate);
+
+    // Calculate statistics
+    $stats = $this->calculateStats($startDate, $endDate);
+
+    // Sales by payment method
+    $salesByPaymentMethod = Transaction::where('status', 'completed')
+        ->whereBetween('completed_at', [$startDate, $endDate])
+        ->select('payment_method', DB::raw('SUM(amount) as total'), DB::raw('COUNT(*) as count'))
+        ->groupBy('payment_method')
+        ->get();
+
+    // Top Products
+    $topProducts = DB::table('order_items')
+        ->join('orders', 'order_items.order_id', '=', 'orders.id')
+        ->join('products', 'order_items.product_id', '=', 'products.id')
+        ->whereBetween('orders.created_at', [$startDate, $endDate])
+        ->select(
+            'products.id',
+            'products.name',
+            DB::raw('SUM(order_items.quantity) as total_quantity'),
+            DB::raw('SUM(order_items.subtotal) as total_revenue')
+        )
+        ->groupBy('products.id', 'products.name')
+        ->orderBy('total_revenue', 'desc')
+        ->limit(10)
+        ->get();
+
+    // Top Vendors
+    $topVendors = Order::whereBetween('created_at', [$startDate, $endDate])
+        ->select(
+            'vendor_id',
+            DB::raw('COUNT(*) as order_count'),
+            DB::raw('SUM(total) as total_revenue')
+        )
+        ->groupBy('vendor_id')
+        ->with('vendor')
+        ->orderBy('total_revenue', 'desc')
+        ->limit(10)
+        ->get();
+
+    // Top Customers
+    $topCustomers = Order::whereBetween('created_at', [$startDate, $endDate])
+        ->select(
+            'buyer_id',
+            DB::raw('COUNT(*) as order_count'),
+            DB::raw('SUM(total) as total_spent')
+        )
+        ->groupBy('buyer_id')
+        ->with('buyer')
+        ->orderBy('total_spent', 'desc')
+        ->limit(10)
+        ->get();
+
+    // Order Status Breakdown
+    $orderStatusBreakdown = Order::whereBetween('created_at', [$startDate, $endDate])
+        ->select('status', DB::raw('COUNT(*) as count'))
+        ->groupBy('status')
+        ->pluck('count', 'status')
+        ->toArray();
+
+    return view('admin.reports.print', compact(
+        'reportData',
+        'stats',
+        'salesByPaymentMethod',
+        'reportType',
+        'startDate',
+        'endDate',
+        'topProducts',
+        'topVendors',
+        'topCustomers',
+        'orderStatusBreakdown'
+    ));
+}
+
+    /**
      * Generate report based on type
      */
     private function generateReport($type, $startDate, $endDate)

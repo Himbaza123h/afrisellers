@@ -6,7 +6,7 @@
     <title>{{ __('messages.vendor_login_title') }} - AfriSellers</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="https://afrisellers.com/public/uploads/all/rcIW6v7SfbxlCbrTIBU6CXQNggsQbKVO1a8vXheE.png" type="image/png">
+    <link rel="icon" href="{{ asset('logofavicon.png') }}" type="image/png">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@
             <div class="text-center space-y-3 pt-20 mt-10">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="inline-block mb-2">
-                    <img src="https://afrisellers.com/public/uploads/all/rcIW6v7SfbxlCbrTIBU6CXQNggsQbKVO1a8vXheE.png"
+                    <img src="{{ asset('mainlogo.png')}}"
                          alt="AfriSellers"
                          class="h-10 w-auto mx-auto">
                 </a>
@@ -159,27 +159,41 @@
             <!-- Social Login Buttons -->
             <div class="space-y-3">
                 <!-- Google Login -->
-                <button
-                    type="button"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    {{ __('messages.continue_with_google') }}
-                </button>
+                <a href="{{ route('auth.google') }}"
+                id="googleAuthBtn"
+                onclick="showSocialLoader(event, 'google')"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all">
+                    <span id="googleBtnContent" class="flex items-center gap-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        {{ __('messages.continue_with_google') }}
+                    </span>
+                    <span id="googleBtnLoader" class="hidden">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Connecting to Google...
+                    </span>
+                </a>
 
                 <!-- Facebook Login -->
-                <button
-                    type="button"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    {{ __('messages.continue_with_facebook') }}
-                </button>
+                <a href="{{ route('auth.facebook') }}"
+                id="facebookAuthBtn"
+                onclick="showSocialLoader(event, 'facebook')"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all">
+                    <span id="facebookBtnContent" class="flex items-center gap-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                        {{ __('messages.continue_with_facebook') }}
+                    </span>
+                    <span id="facebookBtnLoader" class="hidden">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Connecting to Facebook...
+                    </span>
+                </a>
             </div>
 
             <!-- Register Links -->
@@ -247,5 +261,25 @@
             });
         }, 5000);
     </script>
+    <script>
+    // Social auth loader
+    function showSocialLoader(event, provider) {
+        const btnId = provider + 'AuthBtn';
+        const contentId = provider + 'BtnContent';
+        const loaderId = provider + 'BtnLoader';
+
+        const btn = document.getElementById(btnId);
+        const content = document.getElementById(contentId);
+        const loader = document.getElementById(loaderId);
+
+        // Show loader
+        content.classList.add('hidden');
+        loader.classList.remove('hidden');
+
+        // Disable button
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.7';
+    }
+</script>
 </body>
 </html>

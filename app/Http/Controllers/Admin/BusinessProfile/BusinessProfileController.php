@@ -238,6 +238,99 @@ public function index(Request $request)
         }
     }
 
+
+    public function print()
+{
+    $businessProfiles = BusinessProfile::with(['user', 'country'])
+        ->get();
+
+    // Calculate statistics
+    $total = BusinessProfile::count();
+    $pending = BusinessProfile::where('is_admin_verified', false)
+        ->where('verification_status', 'pending')
+        ->count();
+    $verified = BusinessProfile::where('is_admin_verified', true)
+        ->where('verification_status', 'verified')
+        ->count();
+    $rejected = BusinessProfile::where('verification_status', 'rejected')
+        ->count();
+
+    $today = BusinessProfile::whereDate('created_at', today())->count();
+    $thisWeek = BusinessProfile::whereBetween('created_at', [
+        now()->startOfWeek(),
+        now()->endOfWeek()
+    ])->count();
+    $thisMonth = BusinessProfile::whereMonth('created_at', now()->month)
+        ->whereYear('created_at', now()->year)
+        ->count();
+
+    $stats = [
+        'total' => $total,
+        'pending' => $pending,
+        'verified' => $verified,
+        'rejected' => $rejected,
+        'pending_percentage' => $total > 0 ? round(($pending / $total) * 100, 1) : 0,
+        'verified_percentage' => $total > 0 ? round(($verified / $total) * 100, 1) : 0,
+        'today' => $today,
+        'this_week' => $thisWeek,
+        'this_month' => $thisMonth,
+    ];
+
+    return view('admin.business-profile.print', compact('businessProfiles', 'stats'));
+}
+
+public function switchToVendor(BusinessProfile $businessProfile)
+{
+    try {
+        // Get the vendor for this business profile
+        $vendor = Vendor::where('business_profile_id', $businessProfile->id)->first();
+
+        if (!$vendor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No Vendor account found for this business profile.'
+            ], 404);
+        }
+
+        $vendorRole = Role::where('slug', 'vendor')->first();
+
+        if (!$vendorRole) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vendor role not found in system.'
+            ], 404);
+        }
+
+        // Get user
+        $user = $vendor->user;
+
+        // Attach role if not exists
+        if (!$user->roles()->where('role_id', $vendorRole->id)->exists()) {
+            $user->roles()->attach($vendorRole->id);
+        }
+
+        // Generate login token
+        $token = \Illuminate\Support\Str::random(60);
+        \Illuminate\Support\Facades\Cache::put(
+            'vendor_login_token_' . $token,
+            $user->id,
+            now()->addMinutes(5)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ready to switch to Vendor Dashboard',
+            'login_url' => route('auth.vendor.token-login', ['token' => $token])
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to switch: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
     /**
      * Reject the business profile.
      */

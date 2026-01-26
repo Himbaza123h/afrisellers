@@ -8,6 +8,9 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\RFQs;
 use App\Models\Region;
+use App\Models\Country;
+use App\Models\RegionalAdmin;
+use App\Models\CountryAdmin;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -63,6 +66,9 @@ class AdminDashboardController extends Controller
         ));
     }
 
+
+
+
     private function getRecentActivities()
     {
         $activities = [];
@@ -81,8 +87,18 @@ class AdminDashboardController extends Controller
                 'color' => 'purple',
                 'icon' => 'box',
                 'actions' => [
-                    ['label' => 'Approve', 'icon' => 'check', 'color' => 'green'],
-                    ['label' => 'Reject', 'icon' => 'times', 'color' => 'red']
+                    [
+                        'label' => 'Approve',
+                        'icon' => 'check',
+                        'color' => 'green',
+                        'route' => route('admin.products.approve', $product->id)
+                    ],
+                    [
+                        'label' => 'Reject',
+                        'icon' => 'times',
+                        'color' => 'red',
+                        'route' => route('admin.products.reject', $product->id)
+                    ]
                 ]
             ];
         }
@@ -101,8 +117,18 @@ class AdminDashboardController extends Controller
                 'color' => 'blue',
                 'icon' => 'file-invoice',
                 'actions' => [
-                    ['label' => 'Review', 'icon' => 'eye', 'color' => 'blue'],
-                    ['label' => 'Approve', 'icon' => 'check', 'color' => 'green']
+                    [
+                        'label' => 'Review',
+                        'icon' => 'eye',
+                        'color' => 'blue',
+                        'route' => route('admin.rfq.vendors', $rfq->id)
+                    ],
+                    [
+                        'label' => 'Chat',
+                        'icon' => 'message',
+                        'color' => 'green',
+                        'route' => route('admin.rfq.messages', ['rfq' =>$rfq->id, 'vendor' => $rfq->user->id])
+                    ]
                 ]
             ];
         }
@@ -228,6 +254,27 @@ class AdminDashboardController extends Controller
                 'pending' => User::whereHas('roles', fn($q) => $q->where('slug', 'admin'))
                     ->whereNull('email_verified_at')->count(),
                 'suspended' => 0,
+                'manage_route' => route('admin.users.index', ['role' => 'admin'])
+            ],
+            [
+                'role' => 'Regional Admins',
+                'icon' => 'globe-africa',
+                'color' => 'indigo',
+                'total' => RegionalAdmin::count(),
+                'active' => RegionalAdmin::where('status', 'active')->count(),
+                'pending' => RegionalAdmin::where('status', 'pending')->count(),
+                'suspended' => RegionalAdmin::where('status', 'suspended')->count(),
+                'manage_route' => route('admin.regional-admins.index')
+            ],
+            [
+                'role' => 'Country Admins',
+                'icon' => 'flag',
+                'color' => 'teal',
+                'total' => User::where('country_admin', true)->count(),
+                'active' => User::where('country_admin', true)->whereNotNull('email_verified_at')->count(),
+                'pending' => User::where('country_admin', true)->whereNull('email_verified_at')->count(),
+                'suspended' => 0,
+                'manage_route' => route('admin.country.index')
             ],
             [
                 'role' => 'Vendors',
@@ -239,6 +286,7 @@ class AdminDashboardController extends Controller
                 'pending' => User::whereHas('roles', fn($q) => $q->where('slug', 'vendor'))
                     ->whereNull('email_verified_at')->count(),
                 'suspended' => 0,
+                'manage_route' => route('admin.business-profile.index')
             ],
             [
                 'role' => 'Buyers',
@@ -250,6 +298,17 @@ class AdminDashboardController extends Controller
                 'pending' => User::whereHas('roles', fn($q) => $q->where('slug', 'buyer'))
                     ->whereNull('email_verified_at')->count(),
                 'suspended' => 0,
+                'manage_route' => route('admin.buyer.index')
+            ],
+            [
+                'role' => 'Agents',
+                'icon' => 'handshake',
+                'color' => 'orange',
+                'total' => User::where('agent', true)->count(),
+                'active' => User::where('agent', true)->whereNotNull('email_verified_at')->count(),
+                'pending' => User::where('agent', true)->whereNull('email_verified_at')->count(),
+                'suspended' => 0,
+                'manage_route' => route('admin.agents.index')
             ],
             [
                 'role' => 'Transporters',
@@ -261,17 +320,7 @@ class AdminDashboardController extends Controller
                 'pending' => User::whereHas('roles', fn($q) => $q->where('slug', 'transporter'))
                     ->whereNull('email_verified_at')->count(),
                 'suspended' => 0,
-            ],
-            [
-                'role' => 'Agents',
-                'icon' => 'handshake',
-                'color' => 'orange',
-                'total' => User::whereHas('roles', fn($q) => $q->where('slug', 'agent'))->count(),
-                'active' => User::whereHas('roles', fn($q) => $q->where('slug', 'agent'))
-                    ->whereNotNull('email_verified_at')->count(),
-                'pending' => User::whereHas('roles', fn($q) => $q->where('slug', 'agent'))
-                    ->whereNull('email_verified_at')->count(),
-                'suspended' => 0,
+                'manage_route' => route('admin.transporters.index')
             ],
         ];
     }

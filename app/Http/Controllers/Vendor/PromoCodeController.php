@@ -134,6 +134,106 @@ class PromoCodeController extends Controller
     }
 
     /**
+ * Print promo codes report.
+ */
+public function print(Request $request)
+{
+    try {
+        $vendor = $this->getVendor();
+
+        $query = PromoCode::where('created_by', auth()->id())
+            ->withCount('products');
+
+        // Apply same filters as index
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('discount_type')) {
+            $query->where('discount_type', $request->discount_type);
+        }
+
+        if ($request->filled('validity')) {
+            $now = now();
+            switch ($request->validity) {
+                case 'upcoming':
+                    $query->where('start_date', '>', $now);
+                    break;
+                case 'current':
+                    $query->where('start_date', '<=', $now)
+                        ->where('end_date', '>=', $now);
+                    break;
+                case 'expired':
+                    $query->where('end_date', '<', $now);
+                    break;
+            }
+        }
+
+        if ($request->filled('date_range')) {
+            $dateRange = $request->date_range;
+            if (strpos($dateRange, ' to ') !== false) {
+                $dates = explode(' to ', $dateRange);
+                if (count($dates) === 2) {
+                    try {
+                        $start = \Carbon\Carbon::parse(trim($dates[0]))->startOfDay();
+                        $end = \Carbon\Carbon::parse(trim($dates[1]))->endOfDay();
+                        $query->whereBetween('start_date', [$start, $end]);
+                    } catch (\Exception $e) {
+                        Log::warning('Invalid date range format: ' . $dateRange);
+                    }
+                }
+            }
+        }
+
+        // Get promo codes without pagination for print
+        $promoCodes = $query->orderBy('created_at', 'desc')->get();
+
+        // Calculate stats
+        $allPromoCodes = PromoCode::where('created_by', auth()->id());
+        $stats = [
+            'total' => (clone $allPromoCodes)->count(),
+            'active' => (clone $allPromoCodes)->where('status', 'active')->count(),
+            'inactive' => (clone $allPromoCodes)->where('status', 'inactive')->count(),
+            'expired' => (clone $allPromoCodes)->where('end_date', '<', now())->count(),
+            'total_uses' => (clone $allPromoCodes)->sum('usage_count'),
+            'active_percentage' => 0,
+        ];
+
+        // Calculate active percentage
+        if ($stats['total'] > 0) {
+            $stats['active_percentage'] = round(($stats['active'] / $stats['total']) * 100, 1);
+        }
+
+        // Get status distribution
+        $statusDistribution = PromoCode::where('created_by', auth()->id())
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->orderBy('count', 'desc')
+            ->get();
+
+        // Get discount type distribution
+        $discountTypeDistribution = PromoCode::where('created_by', auth()->id())
+            ->select('discount_type', DB::raw('count(*) as count'))
+            ->groupBy('discount_type')
+            ->orderBy('count', 'desc')
+            ->get();
+
+        return view('vendor.promo-code.print', compact('promoCodes', 'vendor', 'stats', 'statusDistribution', 'discountTypeDistribution'));
+    } catch (\Exception $e) {
+        Log::error('Promo Code Print Error: ' . $e->getMessage());
+        abort(500, 'An error occurred while generating the print report.');
+    }
+}
+
+    /**
      * Show the form for creating a new promo code.
      */
     public function create()

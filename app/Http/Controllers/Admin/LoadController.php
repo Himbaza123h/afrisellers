@@ -188,4 +188,46 @@ class LoadController extends Controller
             return ['text' => 'Scheduled', 'class' => 'bg-green-100 text-green-800'];
         }
     }
+
+    public function print()
+{
+    // Calculate statistics using separate queries for better performance
+    $total = Load::count();
+    $posted = Load::where('status', 'posted')->count();
+    $inTransit = Load::where('status', 'in_transit')->count();
+    $delivered = Load::where('status', 'delivered')->count();
+    $cancelled = Load::where('status', 'cancelled')->count();
+    $totalBids = Load::withCount('bids')->get()->sum('bids_count');
+    $avgBids = Load::withCount('bids')->get()->avg('bids_count');
+    $totalWeight = Load::sum('weight');
+    $thisMonth = Load::whereMonth('created_at', now()->month)
+                     ->whereYear('created_at', now()->year)
+                     ->count();
+
+    $stats = [
+        'total' => $total,
+        'posted' => $posted,
+        'in_transit' => $inTransit,
+        'delivered' => $delivered,
+        'cancelled' => $cancelled,
+        'total_bids' => $totalBids,
+        'avg_bids' => $avgBids ? number_format($avgBids, 1) : '0.0',
+        'total_weight' => number_format($totalWeight, 0),
+        'this_month' => $thisMonth,
+    ];
+
+    $stats['in_transit_percentage'] = $stats['total'] > 0
+        ? round(($stats['in_transit'] / $stats['total']) * 100, 1)
+        : 0;
+    $stats['delivered_percentage'] = $stats['total'] > 0
+        ? round(($stats['delivered'] / $stats['total']) * 100, 1)
+        : 0;
+
+    // Get all loads for print (no pagination)
+    $loads = Load::with(['user', 'originCountry', 'destinationCountry', 'assignedTransporter'])
+        ->latest()
+        ->get();
+
+    return view('admin.loads.print', compact('loads', 'stats'));
+}
 }

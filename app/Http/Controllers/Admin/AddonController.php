@@ -114,6 +114,29 @@ class AddonController extends Controller
             ->with('success', 'Addon created successfully!');
     }
 
+    public function print()
+{
+    // Get all addons for print (no pagination) with necessary relationships
+    $addons = Addon::with(['country', 'addonUsers'])
+        ->latest()
+        ->get();
+
+    // Calculate statistics
+    $stats = [
+        'total' => Addon::count(),
+        'global' => Addon::whereNull('country_id')->count(),
+        'country_specific' => Addon::whereNotNull('country_id')->count(),
+        'active_subscriptions' => Addon::whereHas('activeAddonUsers')->count(),
+        'total_revenue' => $addons->sum(function($addon) {
+            // Count only paid subscriptions (those with paid_at)
+            $paidCount = $addon->addonUsers->whereNotNull('paid_at')->count();
+            return $addon->price * $paidCount;
+        }),
+    ];
+
+    return view('admin.addons.print', compact('addons', 'stats'));
+}
+
     /**
      * Display the specified addon.
      */

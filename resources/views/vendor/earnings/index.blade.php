@@ -15,17 +15,13 @@
     <!-- Page Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Earnings Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-500">Track your revenue and completed transactions</p>
+            <h1 class="text-xl font-bold text-gray-900">Earnings Dashboard</h1>
+            <p class="mt-1 text-xs text-gray-500">Track your revenue and completed transactions</p>
         </div>
         <div class="flex flex-wrap gap-3">
-            <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-sm">
+            <button onclick="window.open('{{ route('vendor.earnings.print') }}' + window.location.search, '_blank')" class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-sm text-sm">
                 <i class="fas fa-print"></i>
                 <span>Print</span>
-            </button>
-            <button class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-sm">
-                <i class="fas fa-download"></i>
-                <span>Export</span>
             </button>
         </div>
     </div>

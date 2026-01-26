@@ -106,29 +106,7 @@ class ShowroomController extends Controller
         $showrooms = $query->paginate(20)->withQueryString();
 
         // Calculate statistics
-        $stats = [
-            'total' => Showroom::count(),
-            'active' => Showroom::where('status', 'active')->count(),
-            'verified' => Showroom::where('is_verified', true)->count(),
-            'featured' => Showroom::where('is_featured', true)->count(),
-            'total_views' => Showroom::sum('views_count'),
-            'total_inquiries' => Showroom::sum('inquiries_count'),
-            'avg_rating' => number_format(Showroom::avg('rating'), 1),
-            'this_month' => Showroom::whereMonth('created_at', now()->month)
-                                    ->whereYear('created_at', now()->year)
-                                    ->count(),
-            'pending' => Showroom::where('status', 'pending')->count(),
-        ];
-
-        $stats['active_percentage'] = $stats['total'] > 0
-            ? round(($stats['active'] / $stats['total']) * 100, 1)
-            : 0;
-        $stats['verified_percentage'] = $stats['total'] > 0
-            ? round(($stats['verified'] / $stats['total']) * 100, 1)
-            : 0;
-        $stats['featured_percentage'] = $stats['total'] > 0
-            ? round(($stats['featured'] / $stats['total']) * 100, 1)
-            : 0;
+        $stats = $this->getShowroomStats();
 
         // Add status badge to each showroom
         $showrooms->getCollection()->transform(function ($showroom) {
@@ -139,6 +117,75 @@ class ShowroomController extends Controller
         $countries = Country::orderBy('name')->get();
 
         return view('admin.showrooms.index', compact('showrooms', 'stats', 'countries'));
+    }
+
+    /**
+     * Print showrooms report
+     */
+    public function print()
+    {
+        $showrooms = Showroom::with(['country'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $stats = $this->getShowroomStats();
+
+        return view('admin.showrooms.print', compact('showrooms', 'stats'));
+    }
+
+    /**
+     * Get showroom statistics
+     */
+    private function getShowroomStats()
+    {
+        $total = Showroom::count();
+        $active = Showroom::where('status', 'active')->count();
+        $pending = Showroom::where('status', 'pending')->count();
+        $suspended = Showroom::where('status', 'suspended')->count();
+        $inactive = Showroom::where('status', 'inactive')->count();
+        $verified = Showroom::where('is_verified', true)->count();
+        $featured = Showroom::where('is_featured', true)->count();
+
+        $totalViews = Showroom::sum('views_count');
+        $totalInquiries = Showroom::sum('inquiries_count');
+        $avgRating = Showroom::avg('rating');
+
+        $today = Showroom::whereDate('created_at', today())->count();
+        $thisWeek = Showroom::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $thisMonth = Showroom::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        $stats = [
+            'total' => $total,
+            'active' => $active,
+            'pending' => $pending,
+            'suspended' => $suspended,
+            'inactive' => $inactive,
+            'verified' => $verified,
+            'featured' => $featured,
+            'total_views' => $totalViews,
+            'total_inquiries' => $totalInquiries,
+            'avg_rating' => number_format($avgRating ?? 0, 1),
+            'today' => $today,
+            'this_week' => $thisWeek,
+            'this_month' => $thisMonth,
+        ];
+
+        // Calculate percentages
+        if ($total > 0) {
+            $stats['active_percentage'] = round(($active / $total) * 100, 1);
+            $stats['verified_percentage'] = round(($verified / $total) * 100, 1);
+            $stats['featured_percentage'] = round(($featured / $total) * 100, 1);
+            $stats['pending_percentage'] = round(($pending / $total) * 100, 1);
+        } else {
+            $stats['active_percentage'] = 0;
+            $stats['verified_percentage'] = 0;
+            $stats['featured_percentage'] = 0;
+            $stats['pending_percentage'] = 0;
+        }
+
+        return $stats;
     }
 
     public function show(Showroom $showroom)

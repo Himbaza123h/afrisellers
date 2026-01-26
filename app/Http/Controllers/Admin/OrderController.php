@@ -8,8 +8,8 @@ use App\Models\OrderItem;
 use App\Models\User;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use PDF;
 
 class OrderController extends Controller
 {
@@ -40,9 +40,9 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Vendor filter
-        if ($request->has('vendor') && $request->vendor != '') {
-            $query->where('vendor_id', $request->vendor);
+        // Payment status filter
+        if ($request->has('payment_status') && $request->payment_status != '') {
+            $query->where('payment_status', $request->payment_status);
         }
 
         // Date range filter
@@ -53,21 +53,91 @@ class OrderController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $orders = $query->latest()->paginate(15);
+        // Vendor filter
+        if ($request->has('vendor') && $request->vendor != '') {
+            $query->where('vendor_id', $request->vendor);
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $orders = $query->paginate(15);
 
         // Get vendors for filter
         $vendors = User::whereHas('vendor')->get();
 
         // Statistics
-        $stats = [
-            'total' => Order::count(),
-            'pending' => Order::pending()->count(),
-            'processing' => Order::processing()->count(),
-            'completed' => Order::delivered()->count(),
-            'total_revenue' => Order::whereIn('status', ['delivered', 'shipped'])->sum('total'),
-        ];
+        $stats = $this->getOrderStats();
 
         return view('orders.index', compact('orders', 'vendors', 'stats'));
+    }
+
+    /**
+     * Print orders report
+     */
+    public function print()
+    {
+        $user = Auth::user();
+        // check if user is admin
+
+        if($user->vendor){
+        $orders = Order::with(['buyer', 'vendor', 'items.product'])
+        ->where('vendor_id', $user->id)
+        ->orderBy('created_at', 'desc')->get();
+        } else {
+         $orders = Order::with(['buyer', 'vendor', 'items.product'])
+        ->orderBy('created_at', 'desc')->get();
+        }
+
+        $stats = $this->getOrderStats();
+
+        return view('orders.print', compact('orders', 'stats'));
+    }
+
+    /**
+     * Get order statistics
+     */
+    private function getOrderStats()
+    {
+        $total = Order::count();
+        $pending = Order::where('status', 'pending')->count();
+        $processing = Order::where('status', 'processing')->count();
+        $confirmed = Order::where('status', 'confirmed')->count();
+        $shipped = Order::where('status', 'shipped')->count();
+        $delivered = Order::where('status', 'delivered')->count();
+        $cancelled = Order::where('status', 'cancelled')->count();
+
+        $paid = Order::where('payment_status', 'paid')->count();
+        $pendingPayment = Order::where('payment_status', 'pending')->count();
+
+        $totalRevenue = Order::whereIn('status', ['delivered', 'shipped'])->sum('total');
+        $averageOrderValue = $delivered > 0 ? $totalRevenue / $delivered : 0;
+        $todayOrders = Order::whereDate('created_at', today())->count();
+        $thisWeekOrders = Order::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+
+        return [
+            'total' => $total,
+            'pending' => $pending,
+            'processing' => $processing,
+            'confirmed' => $confirmed,
+            'shipped' => $shipped,
+            'delivered' => $delivered,
+            'cancelled' => $cancelled,
+            'paid' => $paid,
+            'pending_payment' => $pendingPayment,
+            'total_revenue' => $totalRevenue,
+            'avg_order_value' => $averageOrderValue,
+            'today' => $todayOrders,
+            'this_week' => $thisWeekOrders,
+
+            // Percentages
+            'pending_percentage' => $total > 0 ? round(($pending / $total) * 100, 1) : 0,
+            'processing_percentage' => $total > 0 ? round(($processing / $total) * 100, 1) : 0,
+            'delivered_percentage' => $total > 0 ? round(($delivered / $total) * 100, 1) : 0,
+            'paid_percentage' => $total > 0 ? round(($paid / $total) * 100, 1) : 0,
+        ];
     }
 
     /**
@@ -291,7 +361,7 @@ class OrderController extends Controller
     {
         $order->load(['buyer', 'vendor', 'items.product', 'shippingAddress', 'billingAddress']);
 
-        $pdf = PDF::loadView('orders.invoice-pdf', compact('order'));
+        $pdf = PDF::loadView('admin.order.invoice-pdf', compact('order'));
 
         return $pdf->download('invoice-' . $order->order_number . '.pdf');
     }

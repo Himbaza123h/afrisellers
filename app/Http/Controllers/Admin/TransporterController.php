@@ -189,6 +189,49 @@ class TransporterController extends Controller
         }
     }
 
+    public function print()
+{
+    $transporters = Transporter::with(['user', 'country'])->get();
+
+    $total = Transporter::count();
+    $active = Transporter::where('status', 'active')->count();
+    $inactive = Transporter::where('status', 'inactive')->count();
+    $suspended = Transporter::where('status', 'suspended')->count();
+    $verified = Transporter::where('is_verified', true)->count();
+    $unverified = Transporter::where('is_verified', false)->count();
+    $totalDeliveries = Transporter::sum('total_deliveries');
+    $successfulDeliveries = Transporter::sum('successful_deliveries');
+    $totalFleetSize = Transporter::sum('fleet_size');
+    $avgRating = Transporter::avg('average_rating');
+    $successRate = $totalDeliveries > 0 ? round(($successfulDeliveries / $totalDeliveries) * 100, 1) : 0;
+
+    $today = Transporter::whereDate('created_at', today())->count();
+    $thisWeek = Transporter::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+    $thisMonth = Transporter::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+
+    $stats = [
+        'total' => $total,
+        'active' => $active,
+        'inactive' => $inactive,
+        'suspended' => $suspended,
+        'verified' => $verified,
+        'unverified' => $unverified,
+        'total_deliveries' => $totalDeliveries,
+        'successful_deliveries' => $successfulDeliveries,
+        'total_fleet_size' => $totalFleetSize,
+        'avg_rating' => round($avgRating, 2),
+        'success_rate' => $successRate,
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'suspended_percentage' => $total > 0 ? round(($suspended / $total) * 100, 1) : 0,
+        'verified_percentage' => $total > 0 ? round(($verified / $total) * 100, 1) : 0,
+        'today' => $today,
+        'this_week' => $thisWeek,
+        'this_month' => $thisMonth,
+    ];
+
+    return view('admin.transporter.print', compact('transporters', 'stats'));
+}
+
     public function show(Transporter $transporter)
     {
         $transporter->load(['user', 'country']);

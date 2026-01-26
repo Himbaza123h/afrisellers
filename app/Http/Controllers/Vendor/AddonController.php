@@ -8,6 +8,8 @@ use App\Models\AddonUser;
 use App\Models\BusinessProfile;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AddonController extends Controller
 {
@@ -127,6 +129,152 @@ class AddonController extends Controller
 
         return view('vendor.addons.available', compact('availableAddons', 'userAddonIds', 'businessProfile'));
     }
+
+    /**
+ * Print addons report
+ */
+public function print(Request $request)
+{
+    $query = \App\Models\AddonUser::with(['addon.country', 'user', 'product', 'supplier', 'showroom', 'tradeshow', 'loadboad', 'car'])
+        ->where('user_id', auth()->id());
+
+    // Apply same filters as index
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->whereHas('addon', function($q) use ($search) {
+            $q->where('locationX', 'like', "%{$search}%")
+              ->orWhere('locationY', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
+    }
+
+    if ($request->filled('status')) {
+        $now = now();
+        switch ($request->status) {
+            case 'active':
+                $query->whereNotNull('paid_at')
+                    ->where('ended_at', '>', $now);
+                break;
+            case 'expired':
+                $query->whereNotNull('paid_at')
+                    ->where('ended_at', '<=', $now);
+                break;
+            case 'pending':
+                $query->whereNull('paid_at');
+                break;
+        }
+    }
+
+    if ($request->filled('date_range')) {
+        $dateRange = $request->date_range;
+        if (strpos($dateRange, ' to ') !== false) {
+            $dates = explode(' to ', $dateRange);
+            if (count($dates) === 2) {
+                try {
+                    $start = \Carbon\Carbon::parse(trim($dates[0]))->startOfDay();
+                    $end = \Carbon\Carbon::parse(trim($dates[1]))->endOfDay();
+                    $query->whereBetween('created_at', [$start, $end]);
+                } catch (\Exception $e) {
+                    Log::warning('Invalid date range format: ' . $dateRange);
+                }
+            }
+        }
+    }
+
+    // Get addons without pagination for print
+    $addonUsers = $query->orderBy('created_at', 'desc')->get();
+
+    // Get stats
+    $stats = $this->getStats($request);
+
+    // Get type distribution
+    $typeDistribution = \App\Models\AddonUser::where('user_id', auth()->id())
+        ->select('type', DB::raw('count(*) as count'))
+        ->groupBy('type')
+        ->orderBy('count', 'desc')
+        ->get();
+
+    // Get status distribution
+    $now = now();
+    $statusDistribution = [
+        'active' => \App\Models\AddonUser::where('user_id', auth()->id())
+            ->whereNotNull('paid_at')
+            ->where('ended_at', '>', $now)
+            ->count(),
+        'expired' => \App\Models\AddonUser::where('user_id', auth()->id())
+            ->whereNotNull('paid_at')
+            ->where('ended_at', '<=', $now)
+            ->count(),
+        'pending' => \App\Models\AddonUser::where('user_id', auth()->id())
+            ->whereNull('paid_at')
+            ->count(),
+    ];
+
+    return view('vendor.addons.print', compact('addonUsers', 'stats', 'typeDistribution', 'statusDistribution'));
+}
+
+/**
+ * Get statistics (helper function for index and print)
+ */
+private function getStats($request = null)
+{
+    $query = \App\Models\AddonUser::where('user_id', auth()->id());
+
+    // Apply date filters if present
+    if ($request && $request->filled('date_range')) {
+        $dateRange = $request->date_range;
+        if (strpos($dateRange, ' to ') !== false) {
+            $dates = explode(' to ', $dateRange);
+            if (count($dates) === 2) {
+                try {
+                    $start = \Carbon\Carbon::parse(trim($dates[0]))->startOfDay();
+                    $end = \Carbon\Carbon::parse(trim($dates[1]))->endOfDay();
+                    $query->whereBetween('created_at', [$start, $end]);
+                } catch (\Exception $e) {}
+            }
+        }
+    }
+
+    $total = $query->count();
+    $now = now();
+
+    $active = (clone $query)->whereNotNull('paid_at')
+        ->where('ended_at', '>', $now)
+        ->count();
+
+    $expired = (clone $query)->whereNotNull('paid_at')
+        ->where('ended_at', '<=', $now)
+        ->count();
+
+    $pending = (clone $query)->whereNull('paid_at')->count();
+
+    $totalSpent = (clone $query)->whereNotNull('paid_at')
+        ->get()
+        ->sum(function($addon) {
+            return $addon->addon->price ?? 0;
+        });
+
+    $activeValue = (clone $query)->whereNotNull('paid_at')
+        ->where('ended_at', '>', $now)
+        ->get()
+        ->sum(function($addon) {
+            return $addon->addon->price ?? 0;
+        });
+
+    return [
+        'total' => $total,
+        'active' => $active,
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'expired' => $expired,
+        'expired_percentage' => $total > 0 ? round(($expired / $total) * 100, 1) : 0,
+        'pending' => $pending,
+        'total_spent' => $totalSpent,
+        'active_value' => $activeValue,
+    ];
+}
 
     /**
      * Show the form for purchasing an addon.

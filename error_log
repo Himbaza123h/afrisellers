@@ -1,0 +1,132 @@
+[19-Jan-2026 11:05:15 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:05:15 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:05:55 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:08:11 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:09:08 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:21:25 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:21:40 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:58:18 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:58:22 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:58:24 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 11:58:32 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 12:14:49 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 12:22:15 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 13:04:04 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 13:25:45 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[19-Jan-2026 13:41:54 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.2.29. in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/autoload_real.php(25): require()
+#1 /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/autoload.php(22): ComposerAutoloaderInitc514d8f7b9fc5970bdd94287905ef584::getLoader()
+#2 /home/afrino3/afrisellers.afrinnovators.co.rw/public/index.php(14): require('/home/afrino3/a...')
+#3 /home/afrino3/afrisellers.afrinnovators.co.rw/index.php(21): require_once('/home/afrino3/a...')
+#4 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/vendor/composer/platform_check.php on line 26
+[20-Jan-2026 03:31:31 UTC] PHP Deprecated:  urldecode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/afrino3/afrisellers.afrinnovators.co.rw/index.php on line 10
+[20-Jan-2026 03:31:40 UTC] PHP Deprecated:  urldecode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/afrino3/afrisellers.afrinnovators.co.rw/index.php on line 10
+[21-Jan-2026 14:49:07 UTC] PHP Deprecated:  urldecode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/afrino3/afrisellers.afrinnovators.co.rw/index.php on line 10
+[21-Jan-2026 14:49:09 UTC] PHP Deprecated:  urldecode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/afrino3/afrisellers.afrinnovators.co.rw/index.php on line 10

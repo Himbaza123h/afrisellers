@@ -58,7 +58,7 @@
                         <span id="selected-region-name">Featured Countries</span>
                     </h3>
                     <a href="{{ route('featured-suppliers') }}" class="text-blue-600 hover:text-blue-700 font-semibold text-xs md:text-sm flex items-center gap-2">
-                        View All Regions
+                        View All
                         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
@@ -73,9 +73,9 @@
                     @endphp
                     @foreach($displayCountries->take(6) as $country)
                         <a href="{{ route('featured-suppliers', ['country' => $country->id]) }}"
-                           class="block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all group">
+                            class="block bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-xl rounded-xl transition-all group border-2 border-transparent hover:border-blue-400">
                             <!-- Country Image -->
-                            <div class="relative h-20 sm:h-24 md:h-28 overflow-hidden">
+                            <div class="relative h-20 sm:h-24 md:h-28 overflow-hidden rounded-t-xl">
                                 @if($country->image)
                                     <img src="{{  $country->image }}"
                                          alt="{{ $country->name }}"
@@ -97,7 +97,7 @@
                                              alt="{{ $country->name }}"
                                              class="w-5 h-4 sm:w-6 sm:h-5 md:w-8 md:h-6 object-cover rounded shadow-sm flex-shrink-0">
                                     @endif
-                                    <h4 class="text-xs sm:text-sm md:text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                                    <h4 class="text-xs sm:text-sm md:text-base font-bold text-gray-900 transition-colors group-hover:text-blue-600 truncate">
                                         {{ $country->name }}
                                     </h4>
                                 </div>
@@ -119,9 +119,9 @@
                     <div class="mt-3 md:mt-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                         @foreach($displayCountries->slice(6)->take(6) as $country)
                             <a href="{{ route('featured-suppliers', ['country' => $country->id]) }}"
-                               class="block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all group">
+                            class="block bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-xl rounded-xl transition-all group border-2 border-transparent hover:border-blue-400">
                                 <!-- Country Image -->
-                                <div class="relative h-20 sm:h-24 md:h-28 overflow-hidden">
+                                <div class="relative h-20 sm:h-24 md:h-28 overflow-hidden rounded-t-xl">
                                     @if($country->image)
                                         <img src="{{  $country->image }}"
                                              alt="{{ $country->name }}"
@@ -143,7 +143,7 @@
                                                  alt="{{ $country->name }}"
                                                  class="w-5 h-4 sm:w-6 sm:h-5 md:w-8 md:h-6 object-cover rounded shadow-sm flex-shrink-0">
                                         @endif
-                                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-gray-900 transition-colors group-hover:text-blue-600 truncate">
                                             {{ $country->name }}
                                         </h4>
                                     </div>

@@ -5,8 +5,8 @@
 <div class="mb-4 sm:mb-6 lg:mb-8">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-xl font-black text-gray-900 uppercase sm:text-2xl lg:text-lg">My Profile</h1>
-            <p class="mt-1 text-xs text-gray-600 sm:text-sm">View and manage your profile information</p>
+            <h1 class="text-xl font-bold text-gray-900">My Profile</h1>
+            <p class="mt-1 text-xs text-gray-500">View and manage your profile information</p>
         </div>
     </div>
 </div>
@@ -158,7 +158,7 @@
 
                     <div class="mt-6">
                         <button type="submit"
-                                class="px-6 py-2.5 bg-[#ff0808] text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                                class="px-3 py-2 bg-[#ff0808] text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
                             Update Profile
                         </button>
                     </div>
@@ -211,7 +211,7 @@
                     </div>
                     <div class="mt-6">
                         <button type="submit"
-                                class="px-6 py-2.5 bg-[#ff0808] text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                                class="px-4 py-2 bg-[#ff0808] text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
                             Update Password
                         </button>
                     </div>

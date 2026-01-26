@@ -86,6 +86,7 @@ class Country extends Model
         });
     }
 
+
 public function products()
 {
     return \App\Models\Product::query()

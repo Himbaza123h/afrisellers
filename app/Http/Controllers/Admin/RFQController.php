@@ -13,85 +13,124 @@ class RFQController extends Controller
     /**
      * Display a listing of all RFQs (Admin has no limits).
      */
-/**
- * Display a listing of all RFQs (Admin has no limits).
- */
-public function index(Request $request)
-{
-    try {
-        // Calculate statistics
+    public function index(Request $request)
+    {
+        try {
+            // Calculate statistics
+            $stats = $this->getRFQStats();
+
+            // Query builder
+            $query = RFQs::with(['product', 'country', 'user'])
+                ->withCount('messages');
+
+            // Search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('message', 'like', "%{$search}%")
+                      ->orWhereHas('product', function($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            // Date range filter
+            if ($request->filled('date_range')) {
+                $dates = explode(' to ', $request->date_range);
+                if (count($dates) === 2) {
+                    $query->whereBetween('created_at', [
+                        \Carbon\Carbon::parse($dates[0])->startOfDay(),
+                        \Carbon\Carbon::parse($dates[1])->endOfDay()
+                    ]);
+                }
+            }
+
+            // Status filter
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Sorting
+            $sortBy = $request->get('sort_by', 'created_at');
+            $sortOrder = $request->get('sort_order', 'desc');
+            $query->orderBy($sortBy, $sortOrder);
+
+            $rfqs = $query->paginate(20)->withQueryString();
+
+            return view('admin.rfq.index', compact('rfqs', 'stats'));
+        } catch (\Exception $e) {
+            Log::error('Admin RFQ Index Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()->route('admin.dashboard.home')->with('error', 'An error occurred while loading RFQs.');
+        }
+    }
+
+    /**
+     * Print RFQs report
+     */
+    public function print()
+    {
+        $rfqs = RFQs::with(['product', 'country', 'user'])
+            ->withCount('messages')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $stats = $this->getRFQStats();
+
+        return view('admin.rfq.print', compact('rfqs', 'stats'));
+    }
+
+    /**
+     * Get RFQ statistics
+     */
+    private function getRFQStats()
+    {
+        $total = RFQs::count();
+        $pending = RFQs::where('status', 'pending')->count();
+        $accepted = RFQs::where('status', 'accepted')->count();
+        $rejected = RFQs::where('status', 'rejected')->count();
+        $closed = RFQs::where('status', 'closed')->count();
+
+        $todayRFQs = RFQs::whereDate('created_at', today())->count();
+        $thisWeekRFQs = RFQs::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $thisMonthRFQs = RFQs::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
         $stats = [
-            'total' => RFQs::count(),
-            'pending' => RFQs::where('status', 'pending')->count(),
-            'accepted' => RFQs::where('status', 'accepted')->count(),
-            'rejected' => RFQs::where('status', 'rejected')->count(),
-            'closed' => RFQs::where('status', 'closed')->count(),
+            'total' => $total,
+            'pending' => $pending,
+            'accepted' => $accepted,
+            'rejected' => $rejected,
+            'closed' => $closed,
+            'today' => $todayRFQs,
+            'this_week' => $thisWeekRFQs,
+            'this_month' => $thisMonthRFQs,
         ];
 
         // Calculate percentages
-        if ($stats['total'] > 0) {
-            $stats['pending_percentage'] = round(($stats['pending'] / $stats['total']) * 100, 1);
-            $stats['accepted_percentage'] = round(($stats['accepted'] / $stats['total']) * 100, 1);
-            $stats['rejected_percentage'] = round(($stats['rejected'] / $stats['total']) * 100, 1);
-            $stats['closed_percentage'] = round(($stats['closed'] / $stats['total']) * 100, 1);
+        if ($total > 0) {
+            $stats['pending_percentage'] = round(($pending / $total) * 100, 1);
+            $stats['accepted_percentage'] = round(($accepted / $total) * 100, 1);
+            $stats['rejected_percentage'] = round(($rejected / $total) * 100, 1);
+            $stats['closed_percentage'] = round(($closed / $total) * 100, 1);
+            $stats['response_rate'] = $total > 0 ? round((RFQs::has('messages')->count() / $total) * 100, 1) : 0;
         } else {
             $stats['pending_percentage'] = 0;
             $stats['accepted_percentage'] = 0;
             $stats['rejected_percentage'] = 0;
             $stats['closed_percentage'] = 0;
+            $stats['response_rate'] = 0;
         }
 
-        // Query builder
-        $query = RFQs::with(['product', 'country', 'user'])
-            ->withCount('messages');
-
-        // Search filter
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('message', 'like', "%{$search}%")
-                  ->orWhereHas('product', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        // Date range filter
-        if ($request->filled('date_range')) {
-            $dates = explode(' to ', $request->date_range);
-            if (count($dates) === 2) {
-                $query->whereBetween('created_at', [
-                    \Carbon\Carbon::parse($dates[0])->startOfDay(),
-                    \Carbon\Carbon::parse($dates[1])->endOfDay()
-                ]);
-            }
-        }
-
-        // Status filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
-
-        $rfqs = $query->paginate(20)->withQueryString();
-
-        return view('admin.rfq.index', compact('rfqs', 'stats'));
-    } catch (\Exception $e) {
-        Log::error('Admin RFQ Index Error: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString(),
-            'user_id' => auth()->id(),
-        ]);
-
-        return redirect()->route('admin.dashboard.home')->with('error', 'An error occurred while loading RFQs.');
+        return $stats;
     }
-}
 
     /**
      * Show vendors who responded to a specific RFQ.

@@ -135,6 +135,66 @@ class VendorShowroomController extends Controller
         }
     }
 
+
+/**
+ * Print showrooms report.
+ */
+public function print(Request $request)
+{
+    try {
+        $user = Auth::user();
+
+        if (!$user->isVendor()) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You must be a vendor to access this page.');
+        }
+
+        $showrooms = Showroom::where('user_id', $user->id)
+            ->withCount(['products'])
+            ->with('country')
+            ->latest()
+            ->get();
+
+        // Calculate statistics
+        $stats = [
+            'total_showrooms' => $showrooms->count(),
+            'total_products' => $showrooms->sum('products_count'),
+            'total_views' => $showrooms->sum('views_count'),
+            'total_inquiries' => $showrooms->sum('inquiries_count'),
+            'active_showrooms' => $showrooms->where('status', 'active')->count(),
+            'verified_showrooms' => $showrooms->where('is_verified', true)->count(),
+            'featured_showrooms' => $showrooms->where('is_featured', true)->count(),
+        ];
+
+        // Country distribution - FIXED: pass $stats using 'use'
+        $countryDistribution = $showrooms->groupBy('country_id')->map(function ($countryShowrooms) use ($stats) {
+            return [
+                'country' => $countryShowrooms->first()->country ?? null,
+                'count' => $count = $countryShowrooms->count(),
+                'percentage' => $stats['total_showrooms'] > 0 ? round(($count / $stats['total_showrooms']) * 100, 1) : 0
+            ];
+        })->sortByDesc('count');
+
+        // Status distribution - FIXED: pass $stats using 'use'
+        $statusDistribution = $showrooms->groupBy('status')->map(function ($statusShowrooms, $status) use ($stats) {
+            return [
+                'status' => $status,
+                'count' => $count = $statusShowrooms->count(),
+                'percentage' => $stats['total_showrooms'] > 0 ? round(($count / $stats['total_showrooms']) * 100, 1) : 0
+            ];
+        });
+
+        return view('vendor.showrooms.print', compact(
+            'showrooms',
+            'stats',
+            'countryDistribution',
+            'statusDistribution'
+        ));
+    } catch (\Exception $e) {
+        Log::error('Showrooms Print Error: ' . $e->getMessage());
+        abort(500, 'An error occurred while generating the print report.');
+    }
+}
     /**
      * Display the specified showroom
      */

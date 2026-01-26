@@ -161,6 +161,55 @@ class TransactionController extends Controller
         return view('admin.transactions.show', compact('transaction'));
     }
 
+    public function print()
+{
+    // Calculate statistics using separate queries for better performance
+    $total = Transaction::count();
+    $pending = Transaction::where('status', 'pending')->count();
+    $processing = Transaction::where('status', 'processing')->count();
+    $completed = Transaction::where('status', 'completed')->count();
+    $failed = Transaction::where('status', 'failed')->count();
+    $refunded = Transaction::where('status', 'refunded')->count();
+    $totalAmount = Transaction::where('status', 'completed')->sum('amount');
+    $pendingAmount = Transaction::where('status', 'pending')->sum('amount');
+    $avgTransaction = Transaction::where('status', 'completed')->avg('amount');
+    $thisMonth = Transaction::whereMonth('created_at', now()->month)
+                           ->whereYear('created_at', now()->year)
+                           ->count();
+    $thisMonthAmount = Transaction::whereMonth('created_at', now()->month)
+                                 ->whereYear('created_at', now()->year)
+                                 ->where('status', 'completed')
+                                 ->sum('amount');
+
+    $stats = [
+        'total' => $total,
+        'pending' => $pending,
+        'processing' => $processing,
+        'completed' => $completed,
+        'failed' => $failed,
+        'refunded' => $refunded,
+        'total_amount' => $totalAmount,
+        'pending_amount' => $pendingAmount,
+        'avg_transaction' => $avgTransaction ?: 0,
+        'this_month' => $thisMonth,
+        'this_month_amount' => $thisMonthAmount,
+    ];
+
+    $stats['completed_percentage'] = $stats['total'] > 0
+        ? round(($stats['completed'] / $stats['total']) * 100, 1)
+        : 0;
+    $stats['failed_percentage'] = $stats['total'] > 0
+        ? round(($stats['failed'] / $stats['total']) * 100, 1)
+        : 0;
+
+    // Get all transactions for print (no pagination)
+    $transactions = Transaction::with(['buyer', 'vendor'])
+        ->latest()
+        ->get();
+
+    return view('admin.transactions.print', compact('transactions', 'stats'));
+}
+
     public function refund(Transaction $transaction, Request $request)
     {
         $request->validate([

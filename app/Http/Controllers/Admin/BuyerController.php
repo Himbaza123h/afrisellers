@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Buyer\Buyer;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -184,4 +185,92 @@ class BuyerController extends Controller
                 ->withErrors(['error' => 'Failed to update buyer account status. Please try again.']);
         }
     }
+
+    public function print()
+{
+    $buyers = Buyer::with(['user', 'country'])->get();
+
+    // Calculate statistics
+    $total = Buyer::count();
+    $active = Buyer::where('account_status', 'active')->count();
+    $pending = Buyer::where('account_status', 'pending')->count();
+    $suspended = Buyer::where('account_status', 'suspended')->count();
+    $emailVerified = Buyer::where('email_verified', true)->count();
+    $emailPending = Buyer::where('email_verified', false)->count();
+
+    $today = Buyer::whereDate('created_at', today())->count();
+    $thisWeek = Buyer::whereBetween('created_at', [
+        now()->startOfWeek(),
+        now()->endOfWeek()
+    ])->count();
+    $thisMonth = Buyer::whereMonth('created_at', now()->month)
+        ->whereYear('created_at', now()->year)
+        ->count();
+
+    $stats = [
+        'total' => $total,
+        'active' => $active,
+        'pending' => $pending,
+        'suspended' => $suspended,
+        'email_verified' => $emailVerified,
+        'email_pending' => $emailPending,
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'pending_percentage' => $total > 0 ? round(($pending / $total) * 100, 1) : 0,
+        'suspended_percentage' => $total > 0 ? round(($suspended / $total) * 100, 1) : 0,
+        'verified_percentage' => $total > 0 ? round(($emailVerified / $total) * 100, 1) : 0,
+        'today' => $today,
+        'this_week' => $thisWeek,
+        'this_month' => $thisMonth,
+    ];
+
+    return view('admin.buyer.print', compact('buyers', 'stats'));
+}
+
+public function switchToBuyer(Buyer $buyer)
+{
+    try {
+        $user = $buyer->user;
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No user account found for this buyer.'
+            ], 404);
+        }
+
+        $buyerRole = Role::where('slug', 'buyer')->first();
+
+        if (!$buyerRole) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Buyer role not found in system.'
+            ], 404);
+        }
+
+        // Attach role if not exists
+        if (!$user->roles()->where('role_id', $buyerRole->id)->exists()) {
+            $user->roles()->attach($buyerRole->id);
+        }
+
+        // Generate login token
+        $token = \Illuminate\Support\Str::random(60);
+        \Illuminate\Support\Facades\Cache::put(
+            'buyer_login_token_' . $token,
+            $user->id,
+            now()->addMinutes(5)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ready to switch to Buyer Dashboard',
+            'login_url' => route('auth.buyer.token-login', ['token' => $token])
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to switch: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

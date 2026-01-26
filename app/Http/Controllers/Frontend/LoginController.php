@@ -254,4 +254,122 @@ protected function redirectBasedOnRole()
     return redirect()->route('buyer.dashboard.home')
         ->with('success', 'Welcome back, ' . $user->name . '!');
 }
+
+public function regionalTokenLogin($token)
+{
+    try {
+        // Get user ID from cache
+        $userId = \Illuminate\Support\Facades\Cache::get('regional_login_token_' . $token);
+
+        if (!$userId) {
+            Log::warning('Invalid or expired regional login token', ['token' => $token]);
+            return redirect()->route('auth.signin')
+                ->withErrors(['email' => 'Invalid or expired login link. Please try again.']);
+        }
+
+        // Find user
+        $user = User::find($userId);
+
+        if (!$user) {
+            Log::warning('User not found for regional login', ['user_id' => $userId]);
+            return redirect()->route('auth.signin')
+                ->withErrors(['email' => 'User not found.']);
+        }
+
+        // Check if user has regional_admin role
+        $isRegionalAdmin = $user->roles()
+            ->where('roles.slug', 'regional_admin')
+            ->exists();
+
+        if (!$isRegionalAdmin) {
+            Log::warning('User does not have regional admin role', ['user_id' => $userId]);
+            return redirect()->route('auth.signin')
+                ->withErrors(['email' => 'You do not have Regional Admin access.']);
+        }
+
+        // Delete the token
+        \Illuminate\Support\Facades\Cache::forget('regional_login_token_' . $token);
+
+        // Log in the user
+        Auth::login($user);
+        request()->session()->regenerate();
+
+        Log::info('Regional Admin Token Login Successful', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+        ]);
+
+        // Redirect to regional dashboard
+        return redirect()->route('regional.dashboard.home')
+            ->with('success', 'Welcome to Regional Admin Dashboard, ' . $user->name . '!');
+
+    } catch (\Exception $e) {
+        Log::error('Regional Token Login Error: ' . $e->getMessage());
+        return redirect()->route('auth.signin')
+            ->withErrors(['email' => 'An error occurred during login. Please try again.']);
+    }
+}
+
+public function vendorTokenLogin($token)
+{
+    return $this->handleTokenLogin($token, 'vendor_login_token_', 'vendor', 'vendor.dashboard.home');
+}
+public function countryTokenLogin($token)
+{
+    return $this->handleTokenLogin($token, 'country_login_token_', 'country_admin', 'country.dashboard.home');
+}
+
+public function buyerTokenLogin($token)
+{
+    return $this->handleTokenLogin($token, 'buyer_login_token_', 'buyer', 'buyer.dashboard.home');
+}
+
+public function agentTokenLogin($token)
+{
+    return $this->handleTokenLogin($token, 'agent_login_token_', 'agent', 'agent.dashboard.home');
+}
+
+// Generic token login handler
+private function handleTokenLogin($token, $cachePrefix, $roleSlug, $dashboardRoute)
+{
+    try {
+        $userId = \Illuminate\Support\Facades\Cache::get($cachePrefix . $token);
+
+        if (!$userId) {
+            Log::warning('Invalid or expired login token', ['token' => $token]);
+            return redirect()->route('auth.signin')
+                ->withErrors(['email' => 'Invalid or expired login link.']);
+        }
+
+        $user = User::find($userId);
+        if (!$user) {
+            return redirect()->route('auth.signin')
+                ->withErrors(['email' => 'User not found.']);
+        }
+
+        $hasRole = $user->roles()->where('roles.slug', $roleSlug)->exists();
+        if (!$hasRole) {
+            return redirect()->route('auth.signin')
+                ->withErrors(['email' => 'You do not have required access.']);
+        }
+
+        \Illuminate\Support\Facades\Cache::forget($cachePrefix . $token);
+
+        Auth::login($user);
+        request()->session()->regenerate();
+
+        Log::info('Token Login Successful', [
+            'user_id' => $user->id,
+            'role' => $roleSlug,
+        ]);
+
+        return redirect()->route($dashboardRoute)
+            ->with('success', 'Welcome, ' . $user->name . '!');
+
+    } catch (\Exception $e) {
+        Log::error('Token Login Error: ' . $e->getMessage());
+        return redirect()->route('auth.signin')
+            ->withErrors(['email' => 'Login failed.']);
+    }
+}
 }

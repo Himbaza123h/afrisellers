@@ -192,6 +192,47 @@ class TradeshowController extends Controller
         };
     }
 
+public function print()
+{
+    // Get all tradeshows (no pagination for print)
+    $tradeshows = Tradeshow::with(['country'])
+        ->latest()
+        ->get();
+
+    // Calculate statistics for print - FIXED: Use collection methods
+    $stats = [
+        'total' => $tradeshows->count(),
+        'upcoming' => $tradeshows->filter(function ($tradeshow) {
+            return $tradeshow->start_date > now();
+        })->count(),
+        'ongoing' => $tradeshows->filter(function ($tradeshow) {
+            return $tradeshow->start_date <= now() && $tradeshow->end_date >= now();
+        })->count(),
+        'completed' => $tradeshows->filter(function ($tradeshow) {
+            return $tradeshow->end_date < now();
+        })->count(),
+        'verified' => $tradeshows->where('is_verified', true)->count(),
+        'featured' => $tradeshows->where('is_featured', true)->count(),
+        'total_expected_visitors' => $tradeshows->sum('expected_visitors'),
+        'avg_visitors' => $tradeshows->count() > 0
+            ? number_format($tradeshows->avg('expected_visitors'), 0)
+            : 0,
+        'this_month' => $tradeshows->filter(function ($tradeshow) {
+            return $tradeshow->start_date->month == now()->month
+                && $tradeshow->start_date->year == now()->year;
+        })->count(),
+    ];
+
+    $stats['upcoming_percentage'] = $stats['total'] > 0
+        ? round(($stats['upcoming'] / $stats['total']) * 100, 1)
+        : 0;
+    $stats['verified_percentage'] = $stats['total'] > 0
+        ? round(($stats['verified'] / $stats['total']) * 100, 1)
+        : 0;
+
+    return view('admin.tradeshows.print', compact('tradeshows', 'stats'));
+}
+
     private function getEventStatusBadge($tradeshow)
     {
         $now = now();

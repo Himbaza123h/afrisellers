@@ -219,7 +219,7 @@ return [
     'why_24_7_support_desc' => 'Dedicated multilingual customer support team always ready to help',
 
     'recommended_suppliers' => 'Recommended Suppliers',
-    'most_recommended_suppliers' => 'Most Recommended Suppliers',
+    'most_recommended_suppliers' => 'Most Recommended Sales',
     'hot_deals' => 'Hot Deals',
     'top_exporter' => 'Top Exporter',
     'view_more_supplier' => 'View More Supplier',

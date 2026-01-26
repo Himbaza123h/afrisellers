@@ -6,7 +6,9 @@
     <title>{{ config('app.name', 'AfriSellers') }} - @yield('title', 'User Account')</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="https://afrisellers.com/public/uploads/all/aAFWziNCGSdUDnBytozBZvp1XwYptPReQm39pDi1.png" type="image/png">
+       <link rel="icon" href="{{ asset('logofavicon.png') }}" type="image/png">
+
+
 
     <!-- Google Fonts - Inter (Modern & Professional) -->
     <!-- Google Fonts - Professional E-commerce Pairing -->
@@ -23,6 +25,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/dashboard-switch.js') }}" defer></script>
 
 
 

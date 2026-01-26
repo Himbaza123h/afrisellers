@@ -144,6 +144,41 @@ class CommissionController extends Controller
         return redirect()->back()->with('success', 'Commission approved successfully');
     }
 
+    public function print()
+{
+    // Calculate statistics using separate queries for better performance
+    $total = Commission::count();
+    $pending = Commission::where('status', 'pending')->count();
+    $approved = Commission::where('status', 'approved')->count();
+    $paid = Commission::where('status', 'paid')->count();
+    $cancelled = Commission::where('status', 'cancelled')->count();
+
+    // Calculate financial statistics
+    $totalAmount = Commission::where('status', 'paid')->sum('commission_amount');
+    $pendingAmount = Commission::where('status', 'pending')->orWhere('status', 'approved')->sum('commission_amount');
+    $thisMonth = Commission::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+    $thisMonthAmount = Commission::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('commission_amount');
+
+    $stats = [
+        'total' => $total,
+        'pending' => $pending,
+        'approved' => $approved,
+        'paid' => $paid,
+        'cancelled' => $cancelled,
+        'total_amount' => $totalAmount,
+        'pending_amount' => $pendingAmount,
+        'this_month' => $thisMonth,
+        'this_month_amount' => $thisMonthAmount,
+    ];
+
+    // Get all commissions for print (no pagination)
+    $commissions = Commission::with(['user', 'transaction'])
+        ->latest()
+        ->get();
+
+    return view('admin.commissions.print', compact('commissions', 'stats'));
+}
+
     public function markAsPaid(Commission $commission, Request $request)
     {
         $request->validate([

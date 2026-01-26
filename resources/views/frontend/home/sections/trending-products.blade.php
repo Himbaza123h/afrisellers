@@ -3,18 +3,19 @@
 
         <!-- Trending Products Section -->
         <div>
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
                 <div class="flex items-center gap-3">
                     <div class="w-1 h-8 bg-[#ff0808]"></div>
                     <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.trending_products') }}</h2>
                 </div>
-                <div class="flex gap-2">
-                    <!-- Region Dropdown -->
+                <div class="flex flex-wrap gap-2">
+                    <!-- Show All Dropdown -->
                     <div class="relative">
-                        <select id="trending-region-filter"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
-                                onchange="filterTrendingByRegion(this.value)">
-                            <option value="all">{{ __('messages.all_regions') }}</option>
+                        <select id="trending-show-all-filter"
+                                class="px-4 py-2 text-sm font-medium text-[#ff0808] bg-white border border-[#ff0808] rounded hover:bg-[#fff5f5] transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                onchange="if(this.value) window.location.href=this.value">
+                            <option value="">{{ __('messages.show_all') }}</option>
+                            <option value="">{{ __('messages.show_all_in_all_regions') }}</option>
                             @php
                                 $trendingRegions = App\Models\Region::where('status', 'active')
                                     ->orderByRaw("
@@ -31,6 +32,25 @@
                                     ")
                                     ->get();
                             @endphp
+                            @foreach($trendingRegions as $region)
+                                <option value="">
+                                    {{ __('messages.show_all_in') }} {{ $region->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-[#ff0808]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Region Dropdown -->
+                    <div class="relative">
+                        <select id="trending-region-filter"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                onchange="filterTrendingByRegion(this.value)">
+                            <option value="all">{{ __('messages.all_regions') }}</option>
                             @foreach($trendingRegions as $region)
                                 <option value="{{ $region->id }}">{{ $region->name }}</option>
                             @endforeach
@@ -105,8 +125,8 @@
                     ->keyBy('id');
             @endphp
 
-            <!-- Countries Grid - 6 per row -->
-            <div id="trending-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            <!-- Countries Grid - 5 per row -->
+            <div id="trending-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 @forelse($countriesWithProducts as $country)
                     @php
                         $products = $productsByCountry->get($country->id);
@@ -115,7 +135,7 @@
                     <div class="trending-country-card bg-white rounded-md border-2 border-transparent shadow-sm overflow-hidden hover:shadow-lg hover:border-[#faafaf] transition-all"
                          data-region="{{ $regionId }}">
                         <!-- Country Header -->
-                        <div class="p-3 bg-blue-50 border-b border-gray-200">
+                        <div class="p-3 border-b border-gray-200">
                             <div class="flex items-center gap-2">
                                 @if($country->flag_url)
                                     <img src="{{ $country->flag_url }}"
@@ -252,28 +272,6 @@
                         </div>
                     </div>
                 @endforelse
-            </div>
-
-            <!-- Show All Dropdown -->
-            <div class="mt-6 flex justify-end">
-                <div class="relative">
-                    <select id="trending-show-all-filter"
-                            class="px-4 py-2 text-sm font-medium text-[#ff0808] bg-white border border-[#ff0808] rounded hover:bg-[#fff5f5] transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808]"
-                            onchange="if(this.value) window.location.href=this.value">
-                        <option value="">{{ __('messages.show_all') }}</option>
-                        <option value="">{{ __('messages.show_all_in_all_regions') }}</option>
-                        @foreach($trendingRegions as $region)
-                            <option value="">
-                                {{ __('messages.show_all_in') }} {{ $region->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-[#ff0808]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </div>
-                </div>
             </div>
         </div>
 

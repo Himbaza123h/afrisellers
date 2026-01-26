@@ -70,7 +70,7 @@ public function index(Request $request)
             $query->orderBy('created_at', $sortOrder);
     }
 
-    $countries = $query->paginate(15)->withQueryString();
+    $countries = $query->paginate(10)->withQueryString();
 
     // Add vendors count for each country after fetching
     $countries->each(function($country) {
@@ -170,6 +170,102 @@ public function index(Request $request)
                 ->withErrors(['error' => 'Failed to create country. Please try again.']);
         }
     }
+
+    public function print()
+{
+    $countries = Country::with(['region'])
+        ->get();
+
+    $total = Country::count();
+    $active = Country::where('status', 'active')->count();
+    $inactive = Country::where('status', 'inactive')->count();
+
+    $totalVendors = \App\Models\Vendor\Vendor::whereHas('businessProfile')->count();
+    $totalRegions = Region::count();
+    $countriesWithFlags = Country::whereNotNull('flag_url')
+        ->where('flag_url', '!=', '')
+        ->count();
+
+    $avgCountriesPerRegion = $totalRegions > 0
+        ? round($total / $totalRegions, 1)
+        : 0;
+
+    // Add vendors count for each country
+    $countries->each(function($country) {
+        $country->vendors_count = DB::table('vendors')
+            ->join('business_profiles', 'vendors.business_profile_id', '=', 'business_profiles.id')
+            ->where('business_profiles.country_id', $country->id)
+            ->whereNull('vendors.deleted_at')
+            ->whereNull('business_profiles.deleted_at')
+            ->count();
+    });
+
+    $stats = [
+        'total' => $total,
+        'active' => $active,
+        'inactive' => $inactive,
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'inactive_percentage' => $total > 0 ? round(($inactive / $total) * 100, 1) : 0,
+        'total_vendors' => $totalVendors,
+        'total_regions' => $totalRegions,
+        'avg_countries_per_region' => $avgCountriesPerRegion,
+        'countries_with_flags' => $countriesWithFlags,
+        'flags_percentage' => $total > 0 ? round(($countriesWithFlags / $total) * 100, 1) : 0,
+    ];
+
+    return view('admin.country.print', compact('countries', 'stats'));
+}
+
+public function switchToCountry(Country $country)
+{
+    try {
+        // Get the country admin for this country
+        $countryAdmin = User::where('country_id', $country->id)
+            ->where('country_admin', true)
+            ->first();
+
+        if (!$countryAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No Country Admin assigned to this country yet.'
+            ], 404);
+        }
+
+        $countryAdminRole = Role::where('slug', 'country_admin')->first();
+
+        if (!$countryAdminRole) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Country Admin role not found in system.'
+            ], 404);
+        }
+
+        // Attach role if not exists
+        if (!$countryAdmin->roles()->where('role_id', $countryAdminRole->id)->exists()) {
+            $countryAdmin->roles()->attach($countryAdminRole->id);
+        }
+
+        // Generate login token
+        $token = \Illuminate\Support\Str::random(60);
+        \Illuminate\Support\Facades\Cache::put(
+            'country_login_token_' . $token,
+            $countryAdmin->id,
+            now()->addMinutes(5)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ready to switch to Country Admin Dashboard',
+            'login_url' => route('auth.country.token-login', ['token' => $token])
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to switch: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
     /**
      * Display the specified country.

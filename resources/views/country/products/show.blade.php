@@ -236,7 +236,7 @@
                                 @if($variation->sku)
                                     <p class="text-xs text-gray-500">SKU: {{ $variation->sku }}</p>
                                 @endif
-                                @if($variation->stock_quantity !== null)
+                                @if($variation->min_order_quantity !== null)
                                     <p class="text-xs text-gray-600 mt-1">
                                         Stock: <span class="font-medium">{{ $variation->stock_quantity }}</span>
                                     </p>

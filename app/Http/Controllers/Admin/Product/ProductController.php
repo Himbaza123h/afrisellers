@@ -89,6 +89,45 @@ public function index()
     return view('admin.product.index', compact('products', 'stats', 'categories'));
 }
 
+// In your ProductController
+public function print()
+{
+    $user = auth()->user();
+
+    // Build query similar to index
+    $query = Product::with(['user.vendor.businessProfile', 'productCategory', 'country', 'images', 'prices']);
+
+    // If vendor (non-admin), only show their products
+    if ($user->isVendor() && !$user->hasRole('admin')) {
+        $query->where('user_id', $user->id);
+    }
+
+    $products = $query->orderBy('created_at', 'desc')->get();
+
+    // Get statistics (similar to index method)
+    $statsQuery = Product::query();
+
+    if ($user->isVendor() && !$user->hasRole('admin')) {
+        $statsQuery->where('user_id', $user->id);
+    }
+
+    $stats = [
+        'total' => $statsQuery->count(),
+        'active' => (clone $statsQuery)->where('status', 'active')->count(),
+        'inactive' => (clone $statsQuery)->where('status', 'inactive')->count(),
+        'draft' => (clone $statsQuery)->where('status', 'draft')->count(),
+        'active_percentage' => $statsQuery->count() > 0 ? round(((clone $statsQuery)->where('status', 'active')->count() / $statsQuery->count()) * 100, 1) : 0,
+        'inactive_percentage' => $statsQuery->count() > 0 ? round(((clone $statsQuery)->where('status', 'inactive')->count() / $statsQuery->count()) * 100, 1) : 0,
+    ];
+
+    if ($user->hasRole('admin')) {
+        $stats['verified'] = (clone $statsQuery)->where('is_admin_verified', true)->count();
+        $stats['unverified'] = (clone $statsQuery)->where('is_admin_verified', false)->count();
+    }
+
+    return view('admin.product.print', compact('products', 'stats'));
+}
+
     /**
      * Display the specified product.
      */

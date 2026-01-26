@@ -93,6 +93,57 @@ class AuditLogController extends Controller
     }
 
     /**
+ * Print audit logs report
+ */
+public function print(Request $request)
+{
+    $query = AuditLog::with('user');
+
+    // Apply same filters as index
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('description', 'like', "%{$search}%")
+              ->orWhere('model_type', 'like', "%{$search}%")
+              ->orWhere('ip_address', 'like', "%{$search}%")
+              ->orWhereHas('user', function($userQuery) use ($search) {
+                  $userQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+              });
+        });
+    }
+
+    if ($request->filled('action')) {
+        $query->where('action', $request->action);
+    }
+
+    if ($request->filled('model')) {
+        $query->where('model_type', $request->model);
+    }
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('created_at', '>=', $request->date_from);
+    }
+    if ($request->filled('date_to')) {
+        $query->whereDate('created_at', '<=', $request->date_to);
+    }
+
+    // Get logs without pagination for print
+    $logs = $query->orderBy('created_at', 'desc')->get();
+
+    // Get stats
+    $stats = $this->getStats($request);
+
+    // Get action distribution for print
+    $actionDistribution = AuditLog::select('action', DB::raw('count(*) as count'))
+        ->groupBy('action')
+        ->orderBy('count', 'desc')
+        ->get();
+
+    return view('admin.audit-logs.print', compact('logs', 'stats', 'actionDistribution'));
+}
+
+    /**
      * Export audit logs
      */
     public function export(Request $request)

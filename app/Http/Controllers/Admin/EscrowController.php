@@ -127,6 +127,47 @@ class EscrowController extends Controller
         return view('admin.escrow.index', compact('escrows', 'stats', 'buyers', 'vendors'));
     }
 
+    public function print()
+{
+    // Calculate statistics using separate queries for better performance
+    $total = Escrow::count();
+    $pending = Escrow::where('status', 'pending')->count();
+    $active = Escrow::where('status', 'active')->count();
+    $released = Escrow::where('status', 'released')->count();
+    $refunded = Escrow::where('status', 'refunded')->count();
+    $disputed = Escrow::where('disputed', true)->count();
+    $totalHeld = Escrow::whereIn('status', ['pending', 'active'])->sum('amount');
+    $totalReleased = Escrow::where('status', 'released')->sum('amount');
+    $awaitingRelease = Escrow::awaitingRelease()->count();
+    $autoReleaseReady = Escrow::autoReleaseReady()->count();
+
+    $stats = [
+        'total' => $total,
+        'pending' => $pending,
+        'active' => $active,
+        'released' => $released,
+        'refunded' => $refunded,
+        'disputed' => $disputed,
+        'total_held' => $totalHeld,
+        'total_released' => $totalReleased,
+        'awaiting_release' => $awaitingRelease,
+        'auto_release_ready' => $autoReleaseReady,
+    ];
+
+    // Get all escrows for print (no pagination)
+    $escrows = Escrow::with(['buyer', 'vendor'])
+        ->latest()
+        ->get();
+
+    // Add calculated fields
+    $escrows->transform(function ($escrow) {
+        $escrow->days_held = $escrow->held_at ? now()->diffInDays($escrow->held_at) : 0;
+        return $escrow;
+    });
+
+    return view('admin.escrow.print', compact('escrows', 'stats'));
+}
+
     public function show(Escrow $escrow)
     {
         $escrow->load(['transaction', 'order', 'buyer', 'vendor', 'adminApprover']);

@@ -9,7 +9,7 @@
     @include('frontend.home.sections.recommended-suppliers-hot-deals')
     @include('frontend.home.sections.featured-suppliers')
     @include('frontend.home.sections.trending-products')
-    @include('frontend.home.sections.weekly-special-offers')
+    {{-- @include('frontend.home.sections.weekly-special-offers') --}}
     @include('frontend.home.sections.regional-showcases')
     @include('frontend.home.sections.join-afrisellers')
     @include('frontend.home.sections.why-choose')

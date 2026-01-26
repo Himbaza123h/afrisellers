@@ -68,10 +68,17 @@ Route::prefix('vendor')
                 // Route::middleware('product-plan-middleware')->group(function () {
                     // Route::get('/create', [ProductController::class, 'create'])->name('create');
                     // Route::post('/', [ProductController::class, 'store'])->name('store');
+
                 // });
+
+
 
                 Route::get('/', [ProductController::class, 'index'])->name('index');
                 Route::get('/create', [ProductController::class, 'create'])->name('create');
+
+                        // ADD THESE TWO NEW ROUTES FOR PRINT AND EXPORT
+                Route::get('/print', [ProductController::class, 'print'])->name('print');
+                Route::post('/export', [ProductController::class, 'export'])->name('export');
                 Route::post('/', [ProductController::class, 'store'])->name('store');
                 Route::get('/{product}', [ProductController::class, 'show'])->name('show');
                 Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
@@ -94,6 +101,7 @@ Route::prefix('vendor')
             // Promo Code Management Routes
             Route::prefix('promo-codes')->name('promo-code.')->group(function () {
                 Route::get('/', [PromoCodeController::class, 'index'])->name('index');
+                Route::get('/print', [PromoCodeController::class, 'print'])->name('print');
                 Route::get('/create', [PromoCodeController::class, 'create'])->name('create');
                 Route::post('/', [PromoCodeController::class, 'store'])->name('store');
                 Route::get('/{promoCode}/edit', [PromoCodeController::class, 'edit'])->name('edit');
@@ -101,6 +109,18 @@ Route::prefix('vendor')
                 Route::delete('/{promoCode}', [PromoCodeController::class, 'destroy'])->name('destroy');
                 Route::post('/{promoCode}/toggle-status', [PromoCodeController::class, 'toggleStatus'])->name('toggle-status');
             });
+
+
+        Route::get('transactions-print', [TransactionController::class, 'print'])->name('transactions.print');
+
+        Route::get('earnings-print', [EarningsController::class, 'print'])->name('earnings.print');
+
+        Route::get('reports-print', [ReportController::class, 'print'])->name('reports.print');
+
+        Route::get('performance-print', [PerformanceController::class, 'print'])->name('performance.print');
+
+        Route::get('showrooms-print', [VendorShowroomController::class, 'print'])->name('showrooms.print');
+
 
         // RFQ Routes
         Route::prefix('rfqs')
@@ -174,6 +194,7 @@ Route::prefix('vendor')
 
     Route::prefix('addons')->name('addons.')->group(function () {
         Route::get('/', [AddonController::class, 'index'])->name('index');
+        Route::get('/print', [AddonController::class, 'print'])->name('print'); // ✅ ADD THIS LINE
         Route::get('/available', [AddonController::class, 'available'])->name('available');
         Route::get('/create', [AddonController::class, 'create'])->name('create');
         Route::post('/purchase/{addon}', [AddonController::class, 'purchase'])->name('purchase');

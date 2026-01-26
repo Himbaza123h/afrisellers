@@ -8,7 +8,7 @@
 
         <!-- Logo -->
         <div class="mb-8 text-center">
-            <img src="https://afrisellers.com/public/uploads/all/rcIW6v7SfbxlCbrTIBU6CXQNggsQbKVO1a8vXheE.png" alt="AfriSellers" class="h-10 mx-auto mb-8">
+            <img src="{{ asset('mainlogo.png') }}" alt="AfriSellers" class="h-10 mx-auto mb-8">
         </div>
 
         <!-- Icon -->

@@ -6,7 +6,7 @@
     <title>{{ config('app.name', 'AfriSellers') }} - @yield('title', '| Selling With Us is Leading Market')</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="https://afrisellers.com/public/uploads/all/aAFWziNCGSdUDnBytozBZvp1XwYptPReQm39pDi1.png" type="image/png">
+       <link rel="icon" href="{{ asset('logofavicon.png') }}" type="image/png">
 
     <!-- Google Fonts - Inter (Modern & Professional) -->
     <!-- Google Fonts - Professional E-commerce Pairing -->

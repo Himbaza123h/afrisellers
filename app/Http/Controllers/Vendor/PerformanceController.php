@@ -57,6 +57,75 @@ class PerformanceController extends Controller
         ));
     }
 
+
+    /**
+ * Print performance report.
+ */
+public function print(Request $request)
+{
+    try {
+        $vendorId = Auth::id();
+
+        // Date range
+        $startDate = $request->get('start_date', now()->startOfMonth());
+        $endDate = $request->get('end_date', now());
+
+        if ($request->filled('date_range')) {
+            $dates = explode(' to ', $request->date_range);
+            if (count($dates) == 2) {
+                $startDate = Carbon::parse($dates[0]);
+                $endDate = Carbon::parse($dates[1]);
+            }
+        } else {
+            $startDate = Carbon::parse($startDate);
+            $endDate = Carbon::parse($endDate);
+        }
+
+        // Calculate metrics
+        $metrics = $this->calculateMetrics($vendorId, $startDate, $endDate);
+
+        // Get comparison data
+        $comparison = $this->getComparisonData($vendorId, $startDate, $endDate);
+
+        // Product performance
+        $productPerformance = $this->getProductPerformance($vendorId, $startDate, $endDate);
+
+        // Performance trends (simplified for print)
+        $trends = $this->getPerformanceTrends($vendorId, $startDate, $endDate);
+
+        // Customer distribution
+        $customerDistribution = Order::where('vendor_id', $vendorId)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select('buyer_id', DB::raw('COUNT(*) as order_count'), DB::raw('SUM(total) as total_spent'))
+            ->groupBy('buyer_id')
+            ->with('buyer')
+            ->orderBy('order_count', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Order status distribution
+        $orderStatusDistribution = Order::where('vendor_id', $vendorId)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('status')
+            ->get();
+
+        return view('vendor.performance.print', compact(
+            'metrics',
+            'comparison',
+            'productPerformance',
+            'trends',
+            'customerDistribution',
+            'orderStatusDistribution',
+            'startDate',
+            'endDate'
+        ));
+    } catch (\Exception $e) {
+        Log::error('Performance Print Error: ' . $e->getMessage());
+        abort(500, 'An error occurred while generating the print report.');
+    }
+}
+
     /**
      * Calculate performance metrics
      */

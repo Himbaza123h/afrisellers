@@ -197,6 +197,109 @@ private function calculateStats($vendorId, $startDate, $endDate)
     ];
 }
 
+
+/**
+ * Print sales report.
+ */
+public function print(Request $request)
+{
+    try {
+        $vendorId = Auth::id();
+
+        // Report type
+        $reportType = $request->get('type', 'daily');
+
+        // Date range
+        $startDate = $request->get('start_date', now()->startOfMonth());
+        $endDate = $request->get('end_date', now());
+
+        if ($request->filled('date_range')) {
+            $dates = explode(' to ', $request->date_range);
+            if (count($dates) == 2) {
+                $startDate = Carbon::parse($dates[0]);
+                $endDate = Carbon::parse($dates[1]);
+            }
+        } else {
+            $startDate = Carbon::parse($startDate);
+            $endDate = Carbon::parse($endDate);
+        }
+
+        // Generate report based on type
+        $reportData = $this->generateReport($vendorId, $reportType, $startDate, $endDate);
+
+        // Summary statistics
+        $summary = [
+            'total_sales' => Transaction::where('vendor_id', $vendorId)
+                ->where('status', 'completed')
+                ->whereBetween('completed_at', [$startDate, $endDate])
+                ->sum('amount'),
+            'total_orders' => Order::where('vendor_id', $vendorId)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count(),
+            'average_order_value' => 0,
+            'total_items_sold' => DB::table('order_items')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.vendor_id', $vendorId)
+                ->whereBetween('orders.created_at', [$startDate, $endDate])
+                ->sum('order_items.quantity'),
+        ];
+
+        if ($summary['total_orders'] > 0) {
+            $summary['average_order_value'] = $summary['total_sales'] / $summary['total_orders'];
+        }
+
+        // Sales by payment method
+        $salesByPaymentMethod = Transaction::where('vendor_id', $vendorId)
+            ->where('status', 'completed')
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->select('payment_method', DB::raw('SUM(amount) as total'), DB::raw('COUNT(*) as count'))
+            ->groupBy('payment_method')
+            ->get();
+
+        // Sales by order status
+        $salesByStatus = Order::where('vendor_id', $vendorId)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('status')
+            ->get();
+
+        // Calculate stats
+        $stats = $this->calculateStats($vendorId, $startDate, $endDate);
+
+        // Top Products
+        $topProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('orders.vendor_id', $vendorId)
+            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->select(
+                'products.id',
+                'products.name',
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue')
+            )
+            ->groupBy('products.id', 'products.name')
+            ->orderBy('total_revenue', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('vendor.reports.print', compact(
+            'reportData',
+            'summary',
+            'salesByPaymentMethod',
+            'salesByStatus',
+            'reportType',
+            'startDate',
+            'stats',
+            'endDate',
+            'topProducts'
+        ));
+    } catch (\Exception $e) {
+        Log::error('Report Print Error: ' . $e->getMessage());
+        abort(500, 'An error occurred while generating the print report.');
+    }
+}
+
     /**
      * Generate report based on type
      */

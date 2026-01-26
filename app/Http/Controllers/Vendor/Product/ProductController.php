@@ -213,6 +213,165 @@ class ProductController extends Controller
         return view('vendor.product.edit', compact('product', 'categories', 'countries', 'vendor', 'vendorCountryId'));
     }
 
+
+/**
+ * Print products report
+ */
+public function print(Request $request)
+{
+    $query = Product::with(['productCategory', 'images', 'prices'])
+        ->where('user_id', auth()->id());
+
+    // Apply same filters as index
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('category')) {
+        $query->where('product_category_id', $request->category);
+    }
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('created_at', '>=', $request->date_from);
+    }
+    if ($request->filled('date_to')) {
+        $query->whereDate('created_at', '<=', $request->date_to);
+    }
+
+    // Get products without pagination for print
+    $products = $query->orderBy('created_at', 'desc')->get();
+
+    // Get stats
+    $stats = $this->getStats($request);
+
+    // Get status distribution
+    $statusDistribution = Product::where('user_id', auth()->id())
+        ->select('status', DB::raw('count(*) as count'))
+        ->groupBy('status')
+        ->orderBy('count', 'desc')
+        ->get();
+
+    // Get category distribution
+    $categoryDistribution = Product::where('user_id', auth()->id())
+        ->select('product_category_id', DB::raw('count(*) as count'))
+        ->with('productCategory')
+        ->groupBy('product_category_id')
+        ->orderBy('count', 'desc')
+        ->get();
+
+    return view('vendor.product.print', compact('products', 'stats', 'statusDistribution', 'categoryDistribution'));
+}
+
+/**
+ * Export products to CSV
+ */
+public function export(Request $request)
+{
+    $query = Product::with(['productCategory', 'prices'])
+        ->where('user_id', auth()->id());
+
+    // Apply same filters as index
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('category')) {
+        $query->where('product_category_id', $request->category);
+    }
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('created_at', '>=', $request->date_from);
+    }
+    if ($request->filled('date_to')) {
+        $query->whereDate('created_at', '<=', $request->date_to);
+    }
+
+    $products = $query->orderBy('created_at', 'desc')->get();
+
+    // Generate CSV
+    $filename = 'products-' . now()->format('Y-m-d-His') . '.csv';
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+    ];
+
+    $callback = function() use ($products) {
+        $file = fopen('php://output', 'w');
+
+        // Add headers
+        fputcsv($file, ['SKU', 'Product Name', 'Category', 'Stock', 'Price', 'Currency', 'Status', 'Created Date']);
+
+        // Add data
+        foreach ($products as $product) {
+            $price = $product->prices->first();
+            fputcsv($file, [
+                $product->sku ?? 'N/A',
+                $product->name,
+                $product->productCategory ? $product->productCategory->name : 'Uncategorized',
+                $product->min_order_quantity ?? 0,
+                $price ? $price->price : 'N/A',
+                $price ? $price->currency : 'N/A',
+                ucfirst($product->status),
+                $product->created_at->format('Y-m-d H:i:s'),
+            ]);
+        }
+
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
+
+/**
+ * Get statistics (helper function for index and print)
+ */
+private function getStats($request = null)
+{
+    $query = Product::where('user_id', auth()->id());
+
+    // Apply date filters if present
+    if ($request && $request->filled('date_from')) {
+        $query->whereDate('created_at', '>=', $request->date_from);
+    }
+    if ($request && $request->filled('date_to')) {
+        $query->whereDate('created_at', '<=', $request->date_to);
+    }
+
+    $total = $query->count();
+    $active = (clone $query)->where('status', 'active')->count();
+
+    return [
+        'total' => $total,
+        'active' => $active,
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'categories' => Product::where('user_id', auth()->id())
+            ->whereNotNull('product_category_id')
+            ->distinct('product_category_id')
+            ->count('product_category_id'),
+        'low_stock' => Product::where('user_id', auth()->id())
+            ->where('min_order_quantity', '<', 50)
+            ->where('min_order_quantity', '>', 0)
+            ->count(),
+    ];
+}
+
     /**
      * Update the specified product in storage.
      */

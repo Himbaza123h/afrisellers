@@ -3,18 +3,19 @@
 
         <!-- Recommended Suppliers Section -->
         <div>
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
                 <div class="flex items-center gap-3">
                     <div class="w-1 h-8 bg-[#ff0808]"></div>
                     <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.recommended_suppliers') }}</h2>
                 </div>
-                <div class="flex gap-2">
-                    <!-- Region Dropdown -->
+                <div class="flex flex-wrap gap-2">
+                    <!-- Show All Dropdown -->
                     <div class="relative">
-                        <select id="supplier-region-filter"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
-                                onchange="filterSuppliersByRegion(this.value)">
-                            <option value="all">{{ __('messages.all_regions') }}</option>
+                        <select id="supplier-show-all-filter"
+                                class="px-4 py-2 text-sm font-medium text-[#ff0808] bg-white border border-[#ff0808] rounded hover:bg-[#fff5f5] transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                onchange="if(this.value) window.location.href=this.value">
+                            <option value="">{{ __('messages.show_all') }}</option>
+                            <option value="{{ route('featured-suppliers') }}">{{ __('messages.show_all_in_all_regions') }}</option>
                             @php
                                 $supplierRegions = App\Models\Region::where('status', 'active')
                                     ->orderByRaw("
@@ -31,6 +32,25 @@
                                     ")
                                     ->get();
                             @endphp
+                            @foreach($supplierRegions as $region)
+                                <option value="{{ route('featured-suppliers', ['region' => $region->id]) }}">
+                                    {{ __('messages.show_all_in') }} {{ $region->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-[#ff0808]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Region Dropdown -->
+                    <div class="relative">
+                        <select id="supplier-region-filter"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                onchange="filterSuppliersByRegion(this.value)">
+                            <option value="all">{{ __('messages.all_regions') }}</option>
                             @foreach($supplierRegions as $region)
                                 <option value="{{ $region->id }}">{{ $region->name }}</option>
                             @endforeach
@@ -52,22 +72,22 @@
             </div>
 
             @php
-        // Get verified business profiles with active featured supplier addons
-        $verifiedBusinessProfiles = App\Models\BusinessProfile::where('verification_status', 'verified')
-            ->where('is_admin_verified', true)
-            ->whereHas('addonUsers', function($query) {
-                $query->whereNotNull('paid_at')
-                    ->where(function($q) {
-                        $q->whereNull('ended_at')
-                        ->orWhere('ended_at', '>', now());
+                // Get verified business profiles with active featured supplier addons
+                $verifiedBusinessProfiles = App\Models\BusinessProfile::where('verification_status', 'verified')
+                    ->where('is_admin_verified', true)
+                    ->whereHas('addonUsers', function($query) {
+                        $query->whereNotNull('paid_at')
+                            ->where(function($q) {
+                                $q->whereNull('ended_at')
+                                ->orWhere('ended_at', '>', now());
+                            })
+                            ->whereHas('addon', function($addonQuery) {
+                                $addonQuery->where('locationX', 'Homepage')
+                                        ->where('locationY', 'featuredsuppliers');
+                            });
                     })
-                    ->whereHas('addon', function($addonQuery) {
-                        $addonQuery->where('locationX', 'Homepage')
-                                ->where('locationY', 'featuredsuppliers');
-                    });
-            })
-            ->with(['user', 'country.region', 'vendor'])
-            ->get();
+                    ->with(['user', 'country.region', 'vendor'])
+                    ->get();
 
                 // Get user IDs
                 $userIds = $verifiedBusinessProfiles->pluck('user_id');
@@ -145,8 +165,8 @@
                     ->keyBy('id');
             @endphp
 
-            <!-- Countries Grid - 6 per row -->
-            <div id="suppliers-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            <!-- Countries Grid - 5 per row -->
+            <div id="suppliers-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 @forelse($countriesWithSuppliers as $country)
                     @php
                         $suppliers = $suppliersByCountry->get($country->id);
@@ -155,7 +175,7 @@
                     <div class="country-card bg-white rounded-md border-2 border-transparent shadow-sm overflow-hidden hover:shadow-lg hover:border-[#faafaf] transition-all"
                          data-region="{{ $regionId }}">
                         <!-- Country Header -->
-                        <div class="p-3 bg-blue-50 border-b border-gray-200">
+                        <div class="p-3 border-b border-gray-200">
                             <div class="flex items-center gap-2">
                                 @if($country->flag_url)
                                     <img src="{{ $country->flag_url }}"
@@ -191,7 +211,7 @@
                                                              class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                                                              loading="lazy">
                                                     @else
-                                                        <div class="flex justify-center items-center w-full h-full bg-blue-50">
+                                                        <div class="flex justify-center items-center w-full h-full bg-gray-100">
                                                             <span class="text-2xl">🏢</span>
                                                         </div>
                                                     @endif
@@ -306,28 +326,6 @@
                         </div>
                     </div>
                 @endforelse
-            </div>
-
-            <!-- Show All Link with Dropdown -->
-            <div class="mt-6 flex justify-end">
-                <div class="relative">
-                    <select id="supplier-show-all-filter"
-                            class="px-4 py-2 text-sm font-medium text-[#ff0808] bg-white border border-[#ff0808] rounded hover:bg-[#fff5f5] transition-colors appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
-                            onchange="if(this.value) window.location.href=this.value">
-                        <option value="">{{ __('messages.show_all') }}</option>
-                        <option value="{{ route('featured-suppliers') }}">{{ __('messages.show_all_in_all_regions') }}</option>
-                        @foreach($supplierRegions as $region)
-                            <option value="{{ route('featured-suppliers', ['region' => $region->id]) }}">
-                                {{ __('messages.show_all_in') }} {{ $region->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-[#ff0808]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -450,4 +448,3 @@
         });
     </script>
 </section>
-

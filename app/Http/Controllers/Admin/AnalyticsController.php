@@ -99,6 +99,84 @@ class AnalyticsController extends Controller
         ));
     }
 
+
+    /**
+ * Print analytics report
+ */
+public function print(Request $request)
+{
+    // Date range handling
+    $startDate = $request->get('start_date', now()->startOfMonth());
+    $endDate = $request->get('end_date', now());
+
+    if ($request->filled('date_range')) {
+        $dates = explode(' to ', $request->date_range);
+        if (count($dates) == 2) {
+            $startDate = Carbon::parse($dates[0])->startOfDay();
+            $endDate = Carbon::parse($dates[1])->endOfDay();
+        }
+    }
+
+    // Overview Statistics
+    $stats = $this->getOverviewStats($startDate, $endDate);
+
+    // Performance Metrics
+    $performanceMetrics = $this->getPerformanceMetrics($startDate, $endDate);
+
+    // Revenue & Order Trends
+    $revenueTrend = $this->getRevenueTrend($startDate, $endDate);
+    $ordersTrend = $this->getOrdersTrend($startDate, $endDate);
+
+    // User Growth Trend
+    $userGrowthTrend = $this->getUserGrowthTrend($startDate, $endDate);
+
+    // Top Performing Products
+    $topProducts = $this->getTopProducts($startDate, $endDate, 5);
+
+    // Top Vendors
+    $topVendors = $this->getTopVendors($startDate, $endDate, 5);
+
+    // Top Buyers
+    $topBuyers = $this->getTopBuyers($startDate, $endDate, 5);
+
+    // Regional Analytics
+    $regionalStats = $this->getRegionalStats($startDate, $endDate);
+
+    // Order Status Distribution
+    $orderStatusDistribution = $this->getOrderStatusDistribution($startDate, $endDate);
+
+    // Product Category Distribution
+    $categoryDistribution = $this->getCategoryDistribution();
+
+    // Transaction Stats
+    $transactionStats = $this->getTransactionStats($startDate, $endDate);
+
+    // Escrow Stats
+    $escrowStats = $this->getEscrowStats($startDate, $endDate);
+
+    // Platform Activity
+    $platformActivity = $this->getPlatformActivity($startDate, $endDate);
+
+    return view('admin.analytics.print', compact(
+        'stats',
+        'performanceMetrics',
+        'revenueTrend',
+        'ordersTrend',
+        'userGrowthTrend',
+        'topProducts',
+        'topVendors',
+        'topBuyers',
+        'regionalStats',
+        'orderStatusDistribution',
+        'categoryDistribution',
+        'transactionStats',
+        'escrowStats',
+        'platformActivity',
+        'startDate',
+        'endDate'
+    ));
+}
+
     /**
      * Get overview statistics
      */

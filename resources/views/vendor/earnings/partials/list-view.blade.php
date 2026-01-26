@@ -37,12 +37,12 @@
                 <option value="asc" {{ request('sort_order') == 'asc' ? 'selected' : '' }}>Ascending</option>
             </select>
 
-            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                <i class="fas fa-filter"></i> Apply
-            </button>
+                    <button type="submit" class="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                        <i class="fas fa-filter text-sm"></i> Apply
+                    </button>
 
             @if(request()->hasAny(['search', 'date_range', 'payment_method', 'sort_by']))
-                <a href="{{ route('vendor.earnings.index', ['tab' => 'list']) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">
+                <a href="{{ route('vendor.earnings.index', ['tab' => 'list']) }}" class="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">
                     <i class="fas fa-times"></i> Clear
                 </a>
             @endif

@@ -14,6 +14,7 @@ class ProductCategory extends Model
         'name',
         'description',
         'status',
+        'parent_id'
     ];
 
     protected $casts = [
@@ -70,5 +71,16 @@ class ProductCategory extends Model
     public function deactivate()
     {
         $this->update(['status' => 'inactive']);
+    }
+
+        // Relationships
+    public function parent()
+    {
+        return $this->belongsTo(ProductCategory::class, 'parent_id');
+    }
+
+        public function children()
+    {
+        return $this->hasMany(ProductCategory::class, 'parent_id');
     }
 }

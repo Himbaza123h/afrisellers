@@ -179,6 +179,93 @@ class AgentController extends Controller
         }
     }
 
+
+    public function print()
+{
+    $agents = Agent::with(['user', 'country'])->get();
+
+    $total = Agent::count();
+    $active = Agent::where('account_status', 'active')->count();
+    $pending = Agent::where('account_status', 'pending')->count();
+    $suspended = Agent::where('account_status', 'suspended')->count();
+    $emailVerified = Agent::where('email_verified', true)->count();
+    $emailPending = Agent::where('email_verified', false)->count();
+    $totalCommission = Agent::sum('commission_earned');
+    $totalSales = Agent::sum('total_sales');
+    $avgCommissionRate = Agent::avg('commission_rate');
+
+    $today = Agent::whereDate('created_at', today())->count();
+    $thisWeek = Agent::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+    $thisMonth = Agent::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+
+    $stats = [
+        'total' => $total,
+        'active' => $active,
+        'pending' => $pending,
+        'suspended' => $suspended,
+        'email_verified' => $emailVerified,
+        'email_pending' => $emailPending,
+        'total_commission' => $totalCommission,
+        'total_sales' => $totalSales,
+        'avg_commission_rate' => round($avgCommissionRate, 2),
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'pending_percentage' => $total > 0 ? round(($pending / $total) * 100, 1) : 0,
+        'suspended_percentage' => $total > 0 ? round(($suspended / $total) * 100, 1) : 0,
+        'verified_percentage' => $total > 0 ? round(($emailVerified / $total) * 100, 1) : 0,
+        'today' => $today,
+        'this_week' => $thisWeek,
+        'this_month' => $thisMonth,
+    ];
+
+    return view('admin.agent.print', compact('agents', 'stats'));
+}
+
+public function switchToAgent(Agent $agent)
+{
+    try {
+        $user = $agent->user;
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No user account found for this agent.'
+            ], 404);
+        }
+
+        $agentRole = \App\Models\Role::where('slug', 'agent')->first();
+
+        if (!$agentRole) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Agent role not found in system.'
+            ], 404);
+        }
+
+        if (!$user->roles()->where('role_id', $agentRole->id)->exists()) {
+            $user->roles()->attach($agentRole->id);
+        }
+
+        $token = \Illuminate\Support\Str::random(60);
+        \Illuminate\Support\Facades\Cache::put(
+            'agent_login_token_' . $token,
+            $user->id,
+            now()->addMinutes(5)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ready to switch to Agent Dashboard',
+            'login_url' => route('auth.agent.token-login', ['token' => $token])
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to switch: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
     public function suspend(Agent $agent)
     {
         try {

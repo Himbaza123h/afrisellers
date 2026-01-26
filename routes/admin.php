@@ -35,10 +35,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard.home');
 
+
     // Regional Admins Management
-    Route::resource('regional-admins', RegionalAdminController::class);
-    Route::post('regional-admins/{regionalAdmin}/activate', [RegionalAdminController::class, 'activate'])->name('regional-admins.activate');
-    Route::post('regional-admins/{regionalAdmin}/deactivate', [RegionalAdminController::class, 'deactivate'])->name('regional-admins.deactivate');
+Route::resource('regional-admins', RegionalAdminController::class);
+Route::get('regional-admins-print', [RegionalAdminController::class, 'print'])->name('regional-admins.print');
+Route::post('regional-admins/{regionalAdmin}/activate', [RegionalAdminController::class, 'activate'])->name('regional-admins.activate');
+Route::post('regional-admins/{regionalAdmin}/deactivate', [RegionalAdminController::class, 'deactivate'])->name('regional-admins.deactivate');
+Route::post('regional-admins/{regionalAdmin}/switch-to-regional', [RegionalAdminController::class, 'switchToRegional'])->name('regional-admins.switch-to-regional');
+
+// Regional Admin User Assignment
+Route::get('regional-admins/{regionalAdmin}/assign-regional-user', [RegionalAdminController::class, 'showAssignRegionalUser'])->name('regional-admins.assign-regional-user');
+Route::post('regional-admins/{regionalAdmin}/assign-regional-user', [RegionalAdminController::class, 'assignRegionalUser'])->name('regional-admins.assign-regional-user.store');
+
 
 
             // NEW ROUTES FOR REGIONAL ADMIN USER ASSIGNMENT
@@ -51,6 +59,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('countries/{country}/activate', [CountryController::class, 'activate'])->name('countries.activate');
     Route::post('countries/{country}/deactivate', [CountryController::class, 'deactivate'])->name('countries.deactivate');
 
+    // Countries Management
+    Route::get('countries-print', [CountryController::class, 'print'])->name('countries.print');
+    Route::post('countries/{country}/switch-to-country', [CountryController::class, 'switchToCountry'])->name('countries.switch-to-country');
     // Vendor/Business Profile Management
     Route::get('business-profiles', [BusinessProfileController::class, 'index'])->name('business-profile.index');
     Route::get('business-profiles/{businessProfile}', [BusinessProfileController::class, 'show'])->name('business-profile.show');
@@ -59,20 +70,31 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('business-profiles/{businessProfile}/suspend', [BusinessProfileController::class, 'suspend'])->name('business-profile.suspend');
     Route::post('business-profiles/{businessProfile}/activate', [BusinessProfileController::class, 'activate'])->name('business-profile.activate');
 
+    // Business Profile Management Routes
+    Route::get('business-profiles-print', [BusinessProfileController::class, 'print'])->name('business-profiles.print');
+    Route::post('business-profiles/{businessProfile}/switch-to-vendor', [BusinessProfileController::class, 'switchToVendor'])->name('business-profiles.switch-to-vendor');
+
     // Buyer Management
     Route::resource('buyers', BuyerController::class);
     Route::post('buyers/{buyer}/suspend', [BuyerController::class, 'suspend'])->name('buyer.suspend');
     Route::post('buyers/{buyer}/activate', [BuyerController::class, 'activate'])->name('buyer.activate');
+
+    Route::get('buyers-print', [BuyerController::class, 'print'])->name('buyers.print');
+    Route::post('buyers/{buyer}/switch-to-buyer', [BuyerController::class, 'switchToBuyer'])->name('buyer.switch-to-buyer');
 
     // Agent Management
     Route::resource('agents', AgentController::class);
     Route::post('agents/{agent}/verify', [AgentController::class, 'verify'])->name('agents.verify');
     Route::post('agents/{agent}/suspend', [AgentController::class, 'suspend'])->name('agents.suspend');
 
+    Route::get('agents-print', [AgentController::class, 'print'])->name('agents.print');
+    Route::post('agents/{agent}/switch-to-agent', [AgentController::class, 'switchToAgent'])->name('agents.switch-to-agent');
+
     // Transporter Management
     Route::resource('transporters', TransporterController::class);
     Route::post('transporters/{transporter}/verify', [TransporterController::class, 'verify'])->name('transporters.verify');
     Route::post('transporters/{transporter}/suspend', [TransporterController::class, 'suspend'])->name('transporters.suspend');
+    Route::get('transporters-print', [TransporterController::class, 'print'])->name('transporters.print'); // ADD THIS LINE
 
     // Product Category Management
     Route::resource('product-categories', ProductCategoryController::class);
@@ -84,15 +106,29 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('products/{product}/reject', [ProductController::class, 'reject'])->name('product.reject');
     Route::post('products/{product}/feature', [ProductController::class, 'feature'])->name('product.feature');
 
+    Route::get('products-print', [ProductController::class, 'print'])->name('products.print');
+
+
     // Order Management
-    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::resource('orders', OrderController::class);
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+
+    // Order Management
+
+    Route::get('orders-print', [OrderController::class, 'print'])->name('orders.print');
+    Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
 
     // RFQ Management
     Route::resource('rfqs', RFQController::class);
     Route::post('rfqs/{rfq}/approve', [RFQController::class, 'approve'])->name('rfq.approve');
     Route::post('rfqs/{rfq}/reject', [RFQController::class, 'reject'])->name('rfq.reject');
+
+
+    Route::get('rfqs-print', [RFQController::class, 'print'])->name('rfqs.print'); // Add this line
+    Route::get('rfqs/{rfq}/vendors', [RFQController::class, 'showVendors'])->name('rfq.vendors');
+    Route::get('rfqs/{rfq}/vendors/{vendor}/messages', [RFQController::class, 'showMessages'])->name('rfq.messages');
+    Route::post('rfqs/{rfq}/messages', [RFQController::class, 'storeMessage'])->name('rfq.message.store');
 
     // Showroom Management
     Route::get('showrooms', [ShowroomController::class, 'index'])->name('showrooms.index');
@@ -105,6 +141,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('showrooms/{showroom}/activate', [ShowroomController::class, 'activate'])->name('showrooms.activate');
     Route::post('showrooms/{showroom}/suspend', [ShowroomController::class, 'suspend'])->name('showrooms.suspend');
     Route::delete('showrooms/{showroom}', [ShowroomController::class, 'destroy'])->name('showrooms.destroy');
+
+    Route::get('showrooms-print', [ShowroomController::class, 'print'])->name('showrooms.print');
     // Load Management - Add missing route
     Route::delete('loads/{load}', [LoadController::class, 'destroy'])->name('loads.destroy');
 
@@ -113,6 +151,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('tradeshows/{tradeshow}/unverify', [TradeshowController::class, 'unverify'])->name('tradeshows.unverify');
     Route::post('tradeshows/{tradeshow}/suspend', [TradeshowController::class, 'suspend'])->name('tradeshows.suspend');
     Route::delete('tradeshows/{tradeshow}', [TradeshowController::class, 'destroy'])->name('tradeshows.destroy');
+
+    Route::get('tradeshows-print', [TradeshowController::class, 'print'])->name('tradeshows.print');
 
     // Tradeshow Management
     Route::get('tradeshows', [TradeshowController::class, 'index'])->name('tradeshows.index');
@@ -130,11 +170,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('loads/{load}', [LoadController::class, 'show'])->name('loads.show');
     Route::post('loads/{load}/cancel', [LoadController::class, 'cancel'])->name('loads.cancel');
 
+    Route::get('loads-print', [LoadController::class, 'print'])->name('loads.print');
+
     // Transaction Management
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::post('transactions/{transaction}/refund', [TransactionController::class, 'refund'])->name('transactions.refund');
 
+    Route::get('transactions-print', [TransactionController::class, 'print'])->name('transactions.print');
     // Escrow Management
 // Escrow Management - Update these routes
     Route::prefix('escrow')->name('escrow.')->group(function () {
@@ -150,6 +193,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/export', [EscrowController::class, 'export'])->name('export');
     });
 
+    Route::get('escrow-print', [EscrowController::class, 'print'])->name('escrow.print');
+
     // Commission Management - Update these routes
     Route::prefix('commissions')->name('commissions.')->group(function () {
         Route::get('/', [CommissionController::class, 'index'])->name('index');
@@ -164,6 +209,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings/update', [CommissionController::class, 'updateSettings'])->name('update-settings');
     });
 
+    Route::get('commissions-print', [CommissionController::class, 'print'])->name('commissions.print');
+
     // Membership Plans
 
 
@@ -175,11 +222,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('reports/vendors', [ReportController::class, 'vendors'])->name('reports.vendors');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
+    Route::get('reports-print', [ReportController::class, 'print'])->name('reports.print');
+
     // Analytics
     Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('analytics/regional', [AnalyticsController::class, 'regional'])->name('analytics.regional');
     Route::get('analytics/products', [AnalyticsController::class, 'products'])->name('analytics.products');
     Route::get('analytics/performance', [AnalyticsController::class, 'performance'])->name('analytics.performance');
+
+    Route::get('analytics-print', [AnalyticsController::class, 'print'])->name('analytics.print');
 
     // Settings
     Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
@@ -202,6 +253,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('audit-logs/{log}', [AuditLogController::class, 'show'])->name('audit-logs.show');
     Route::post('audit-logs/export', [AuditLogController::class, 'export'])->name('audit-logs.export');
 
+    Route::get('audit-logs-print', [AuditLogController::class, 'print'])->name('audit-logs.print');
+
+
+
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard.home');
 
@@ -220,6 +275,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('countries/{country}/assign-country-admin', [CountryController::class, 'showAssignCountryAdmin'])->name('countries.assign-country-admin');
     Route::post('countries/{country}/assign-country-admin', [CountryController::class, 'assignCountryAdmin'])->name('countries.assign-country-admin.store');
 
+    Route::get('product-categories-print', [ProductCategoryController::class, 'print'])->name('product-categories.print');
     // Product Management Routes
     Route::resource('products', ProductController::class);
     Route::post('products/{product}/approve', [ProductController::class, 'approve'])->name('products.approve');
@@ -314,6 +370,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/{addon}', [AddonController::class, 'update'])->name('update');
         Route::delete('/{addon}', [AddonController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get('addons-print', [AddonController::class, 'print'])->name('addons.print');
 
     // Product Category Management Routes
     Route::prefix('product-categories')->name('product-category.')->group(function () {
