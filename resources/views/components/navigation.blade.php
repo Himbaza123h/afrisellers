@@ -3,7 +3,7 @@
         $settings = App\Models\Setting::all();
     @endphp
     <!-- Top Bar -->
-    <div class="bg-[#ff0808] text-white py-2">
+<div class="bg-[#ff0808] text-white py-2">
     <div class="container flex justify-between items-center px-4 mx-auto text-xs md:text-sm">
         <!-- Left: Phone Number -->
         <div class="flex gap-2 items-center">
@@ -224,7 +224,7 @@
 
 
     <!-- Category Navigation -->
-    @if (Route::currentRouteName() === 'home')
+    @if (Route::currentRouteName() !== 'home')
         <div class="relative bg-gray-100 border-t border-gray-200">
             <div class="container px-4 mx-auto">
                 <div class="flex overflow-x-auto gap-3 md:gap-4 lg:gap-6 items-center py-2.5 md:py-3 scrollbar-hide">

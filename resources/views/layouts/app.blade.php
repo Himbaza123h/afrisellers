@@ -151,11 +151,15 @@
     @stack('styles')
 </head>
 <body class="antialiased bg-gray-50">
-    <!-- Navigation -->
-    @include('components.navigation')
+    <!-- Navigation - Hide on welcome page -->
+    @unless(request()->routeIs('home'))
+        @include('components.navigation')
+    @endunless
 
     <!-- Main Content -->
     <main>
+
+
         @yield('content')
     </main>
 

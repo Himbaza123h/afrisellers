@@ -135,17 +135,35 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Get all data for print
+        // Get all referral data
         $totalReferrals = Referral::where('agent_id', $user->id)->count();
-        $activeReferrals = Referral::where('agent_id', $user->id)->where('status', 'active')->count();
-        $pendingReferrals = Referral::where('agent_id', $user->id)->where('status', 'pending')->count();
+        $activeReferrals = Referral::where('agent_id', $user->id)
+            ->where('status', 'active')
+            ->count();
+        $pendingReferrals = Referral::where('agent_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
 
+        // Get all commission data
         $totalCommissions = Commission::where('agent_id', $user->id)->sum('amount');
-        $paidCommissions = Commission::where('agent_id', $user->id)->where('status', 'paid')->sum('amount');
-        $pendingCommissions = Commission::where('agent_id', $user->id)->where('status', 'pending')->sum('amount');
+        $paidCommissions = Commission::where('agent_id', $user->id)
+            ->where('status', 'paid')
+            ->sum('amount');
+        $pendingCommissions = Commission::where('agent_id', $user->id)
+            ->where('status', 'pending')
+            ->sum('amount');
 
-        $referrals = Referral::where('agent_id', $user->id)->with('user')->latest()->get();
-        $commissions = Commission::where('agent_id', $user->id)->with('referral.user')->latest()->get();
+        // Get all referrals with relationships
+        $referrals = Referral::where('agent_id', $user->id)
+            ->with('user')
+            ->latest()
+            ->get();
+
+        // Get all commissions with relationships
+        $commissions = Commission::where('agent_id', $user->id)
+            ->with(['referral.user'])
+            ->latest()
+            ->get();
 
         return view('agent.dashboard.print', compact(
             'totalReferrals',

@@ -170,10 +170,15 @@ return [
 
     // Show by Region Section
     'show_by_region' => 'Show by region',
+    'browse_by_region' => 'Browse by region',
+    'all_countries' => 'All countries',
     'view_more' => 'View more',
     'uganda' => 'Uganda',
+    'products_sell_requests' => 'Products / Sell Requests',
     'senegal' => 'Senegal',
     'ivory_coast' => 'Ivory Coast',
+    'view_all_regions' => 'View All Regions',
+    'loading_countries' => 'Loading countries',
     'cameroon' => 'Cameroon',
     'tunisia' => 'Tunisia',
 
