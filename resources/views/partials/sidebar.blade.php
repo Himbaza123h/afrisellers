@@ -805,6 +805,12 @@ if ($vendor) {
                         <span class="text-sm">Fallback Ads</span>
                     </a>
 
+                    <a href="{{ route('admin.square-ads.index') }}"
+                        class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('admin.square-ads.*') ? 'text-yellow-600 bg-yellow-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                        <i class="w-5 text-center {{ request()->routeIs('admin.square-ads.*') ? 'text-yellow-600' : 'text-gray-400' }} transition-transform fas fa-th-large group-hover:scale-110"></i>
+                        <span class="text-sm">Square Ads</span>
+                    </a>
+
                                         <a href="{{ route('admin.ad-library.index') }}"
                         class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('admin.ad-library.*') ? 'text-violet-600 bg-violet-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
                         <i class="w-5 text-center {{ request()->routeIs('admin.ad-library.*') ? 'text-violet-600' : 'text-gray-400' }} transition-transform fas fa-photo-video group-hover:scale-110"></i>

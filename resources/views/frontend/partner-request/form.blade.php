@@ -109,6 +109,63 @@
                     </div>
                 </div>
 
+                {{-- Extended Company Info --}}
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100">
+                        About Your Company
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Year Established
+                            </label>
+                            <input type="number" name="established" value="{{ old('established') }}"
+                                   min="1800" max="{{ date('Y') }}"
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="e.g. 2010">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                No. of Countries Present In
+                            </label>
+                            <input type="number" name="presence_countries" value="{{ old('presence_countries') }}"
+                                   min="1" max="54"
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="e.g. 5">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">About Us</label>
+                            <textarea name="about_us" rows="4"
+                                      class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent resize-none"
+                                      placeholder="Brief description of your company, mission, and values...">{{ old('about_us') }}</textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Services Offered</label>
+                            {{-- Tag input --}}
+                            <div id="services-wrapper"
+                                 class="w-full min-h-[42px] flex flex-wrap gap-1.5 px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#ff0808] cursor-text"
+                                 onclick="document.getElementById('services-input').focus()">
+                                {{-- Tags injected here by JS --}}
+                                <input id="services-input" type="text"
+                                       class="flex-1 min-w-[120px] text-sm outline-none bg-transparent"
+                                       placeholder="Type a service and press Enter…">
+                            </div>
+                            <input type="hidden" name="services_raw" id="services-raw" value="{{ old('services_raw') }}">
+                            <p class="text-xs text-gray-400 mt-1">Press <kbd class="bg-gray-100 px-1 rounded">Enter</kbd> or <kbd class="bg-gray-100 px-1 rounded">,</kbd> to add each service.</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Company Intro (Image or Video)
+                            </label>
+                            <input type="file" name="intro" accept="image/*,video/mp4,video/webm,video/quicktime"
+                                   class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2
+                                          file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
+                                          file:text-xs file:font-semibold file:bg-red-50 file:text-[#ff0808]">
+                            <p class="text-xs text-gray-400 mt-1">Accepted: JPG, PNG, GIF, MP4, MOV, WEBM — max 50 MB.</p>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Contact Info --}}
                 <div>
                     <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100">
@@ -173,5 +230,43 @@
             </form>
         </div>
     </main>
+
+    @push('scripts')
+<script>
+(function () {
+    const wrapper  = document.getElementById('services-wrapper');
+    const textInput = document.getElementById('services-input');
+    const hidden   = document.getElementById('services-raw');
+    let tags = hidden.value ? hidden.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+    function render() {
+        wrapper.querySelectorAll('.tag-pill').forEach(el => el.remove());
+        tags.forEach((tag, i) => {
+            const pill = document.createElement('span');
+            pill.className = 'tag-pill inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-[#ff0808] text-xs font-semibold rounded-full';
+            pill.innerHTML = `${tag} <button type="button" class="hover:text-red-700" data-i="${i}">&times;</button>`;
+            pill.querySelector('button').addEventListener('click', () => { tags.splice(i, 1); render(); });
+            wrapper.insertBefore(pill, textInput);
+        });
+        hidden.value = tags.join(',');
+    }
+
+    textInput.addEventListener('keydown', function (e) {
+        if ((e.key === 'Enter' || e.key === ',') && this.value.trim()) {
+            e.preventDefault();
+            tags.push(this.value.trim());
+            this.value = '';
+            render();
+        }
+        if (e.key === 'Backspace' && !this.value && tags.length) {
+            tags.pop();
+            render();
+        }
+    });
+
+    render();
+})();
+</script>
+@endpush
 
 @endsection

@@ -76,6 +76,7 @@
 
             @case('most_popular_suppliers')
                 @include('frontend.home.sections.featured-suppliers', ['uiSection' => $uiSection])
+                @include('frontend.home.sections.selectbycategopry')
                 @include('frontend.home.sections.homepage-ad-slot', ['adPosition' => 'Popularads'])
                 @break
 
@@ -86,6 +87,8 @@
 
         @endswitch
     @endforeach
+
+
 
     {{-- Static sections — always render, always at the bottom --}}
     @include('frontend.home.sections.categories')

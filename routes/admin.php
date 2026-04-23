@@ -10,7 +10,6 @@ use App\Http\Controllers\Admin\Country\CountryController;
 use App\Http\Controllers\Admin\ProductCategory\ProductCategoryController;
 use App\Http\Controllers\Admin\Product\ProductController;
 use App\Http\Controllers\Admin\BusinessProfile\BusinessProfileController;
-use App\Http\Controllers\Admin\Plan\PlanController;
 use App\Http\Controllers\Admin\RFQController;
 use App\Http\Controllers\Admin\BuyerController;
 use App\Http\Controllers\Admin\RegionalAdminController;
@@ -42,6 +41,7 @@ use App\Http\Controllers\Admin\Product\AdminProductController;
 use App\Http\Controllers\Admin\UISectionController;
 use App\Http\Controllers\Admin\SectionAssignmentController;
 use App\Http\Controllers\Admin\ServiceDeliveryController;
+use App\Http\Controllers\Admin\SquareAdController;
 use App\Http\Controllers\SystemLogController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin.access'])->group(function () {
@@ -652,6 +652,16 @@ Route::prefix('buyers')->name('buyer.')->group(function () {
     Route::post('/{fallbackAd}/toggle-status', [FallbackAdController::class, 'toggleStatus'])->name('toggle-status');
 });
 
+Route::prefix('square-ads')->name('square-ads.')->group(function () {
+    Route::get('/',                      [SquareAdController::class, 'index'])->name('index');
+    Route::get('/create',                [SquareAdController::class, 'create'])->name('create');
+    Route::post('/',                     [SquareAdController::class, 'store'])->name('store');
+    Route::get('/{squareAd}/edit',       [SquareAdController::class, 'edit'])->name('edit');
+    Route::put('/{squareAd}',            [SquareAdController::class, 'update'])->name('update');
+    Route::delete('/{squareAd}',         [SquareAdController::class, 'destroy'])->name('destroy');
+    Route::post('/{squareAd}/toggle-status', [SquareAdController::class, 'toggleStatus'])->name('toggle-status');
+});
+
 
 // ── Ad Library ───────────────────────────────────────────────────────────
 Route::prefix('ad-library')->name('ad-library.')->group(function () {
@@ -671,7 +681,7 @@ Route::prefix('ad-placements')->name('ad-placements.')->group(function () {
     Route::post('/{adPlacement}/toggle',      [\App\Http\Controllers\Admin\AdminAdPlacementController::class, 'toggleActive'])->name('toggle');
     Route::delete('/{adPlacement}',           [\App\Http\Controllers\Admin\AdminAdPlacementController::class, 'destroy'])->name('destroy');
 });
- 
+
 
 
 Route::prefix('partners')->name('partners.')->group(function () {

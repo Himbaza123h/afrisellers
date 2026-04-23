@@ -38,6 +38,9 @@ Route::get('/become-a-partner', [\App\Http\Controllers\Frontend\PartnerRequestCo
 Route::post('/become-a-partner', [\App\Http\Controllers\Frontend\PartnerRequestController::class, 'store'])->name('partner.request.store');
 Route::get('/become-a-partner/thank-you', [\App\Http\Controllers\Frontend\PartnerRequestController::class, 'success'])->name('partner.request.success');
 
+// Single Partner Public Page
+Route::get('/partners/{id}/{name}', [\App\Http\Controllers\Frontend\PartnerController::class, 'show'])
+    ->name('partners.show');
 // Define routes function with optional name prefix
 $routes = function ($namePrefix = '') {
     Route::get('/', [HomeController::class, 'index'])->name($namePrefix . 'home');

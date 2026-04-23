@@ -12,33 +12,55 @@ class PartnerRequest extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = [
-        'company_name',
-        'contact_name',
-        'email',
-        'phone',
-        'website_url',
-        'industry',
-        'country',
-        'partner_type',
-        'message',
-        'logo',
-        'status',
-        'admin_notes',
-        'reviewed_at',
-        'reviewed_by',
-    ];
+protected $fillable = [
+    'company_name',
+    'contact_name',
+    'email',
+    'phone',
+    'website_url',
+    'industry',
+    'country',
+    'presence_countries',
+    'established',
+    'about_us',
+    'services',
+    'partner_type',
+    'message',
+    'logo',
+    'intro',
+    'status',
+    'admin_notes',
+    'reviewed_at',
+    'reviewed_by',
+];
 
-    protected $casts = [
-        'reviewed_at' => 'datetime',
-    ];
-
+protected $casts = [
+    'reviewed_at' => 'datetime',
+    'services'    => 'array',
+];
     public function getLogoUrlAttribute(): string
     {
         if (!$this->logo) return '';
         if (str_starts_with($this->logo, 'http')) return $this->logo;
         return Storage::url($this->logo);
     }
+
+    public function getIntroUrlAttribute(): string
+{
+    if (!$this->intro) return '';
+    if (str_starts_with($this->intro, 'http')) return $this->intro;
+    return Storage::url($this->intro);
+}
+
+
+public function getServicesStringAttribute(): string
+{
+    if (is_array($this->services)) {
+        return implode(', ', $this->services);
+    }
+    return (string) ($this->services ?? '');
+}
+
 
     public function reviewer()
     {

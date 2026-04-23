@@ -1,46 +1,47 @@
 @php
-    $realPartners = \App\Models\Partner::active()->ordered()->get()->map(fn($p) => [
-        'name'        => $p->name,
-        'logo'        => $p->logo_url,
-        'industry'    => $p->industry ?? '',
-        'type'        => $p->partner_type ?? '',
-        'website_url' => $p->website_url ?? '#',
-    ])->toArray();
-
-    // Fallback if no partners in DB yet
-    if (empty($realPartners)) {
-        $realPartners = [
-            ['name' => 'Maersk',        'logo' => 'https://logowik.com/content/uploads/images/t_ap-moller-maersk-group5209.logowik.com.webp',                                              'industry' => 'Logistics',              'type' => 'Global Partner',      'website_url' => '#'],
-            ['name' => 'DHL',           'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/DHL_Logo.svg/1280px-DHL_Logo.svg.png',                                        'industry' => 'Express Shipping',       'type' => 'Strategic Partner',   'website_url' => '#'],
-            ['name' => 'Standard Bank', 'logo' => 'https://brandlogos.net/wp-content/uploads/2025/10/standard_bank-logo_brandlogos.net_aqqyw.png',                                         'industry' => 'Financial Services',     'type' => 'Banking Partner',     'website_url' => '#'],
-            ['name' => 'Ecobank',       'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Ecobank_Logo.svg/1280px-Ecobank_Logo.svg.png',                                'industry' => 'Pan-African Banking',    'type' => 'Financial Partner',   'website_url' => '#'],
-            ['name' => 'SGS',           'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/SGS_Logo.svg/1280px-SGS_Logo.svg.png',                                        'industry' => 'Certification',          'type' => 'Quality Partner',     'website_url' => '#'],
-            ['name' => 'Bureau Veritas','logo' => 'https://iconape.com/wp-content/png_logo_vector/iso-9001-bureau-veritas-logo.png',                                                       'industry' => 'Testing & Cert.',        'type' => 'Compliance Partner',  'website_url' => '#'],
-            ['name' => 'Kuehne+Nagel',  'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/K%C3%BChne_%2B_Nagel_logo.svg/1280px-K%C3%BChne_%2B_Nagel_logo.svg.png',    'industry' => 'Logistics',              'type' => 'Shipping Partner',    'website_url' => '#'],
-            ['name' => 'CMA CGM',       'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/CMA_CGM_logo.svg/960px-CMA_CGM_logo.svg.png',                                'industry' => 'Container Shipping',     'type' => 'Global Carrier',      'website_url' => '#'],
-            ['name' => 'DP World',      'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/DP_World_2021_logo.svg/1280px-DP_World_2021_logo.svg.png',                   'industry' => 'Port Operations',        'type' => 'Infrastructure',      'website_url' => '#'],
-            ['name' => 'QIMA',          'logo' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/QIMA_-_Logo.png/330px-QIMA_-_Logo.png',                                      'industry' => 'Quality Control',        'type' => 'Testing Partner',     'website_url' => '#'],
-            ['name' => 'African Union', 'logo' => 'https://au.int/sites/default/files/pages/31823-img-au_logo.jpg',                                                                        'industry' => 'International Org.',     'type' => 'Strategic Partner',   'website_url' => '#'],
-            ['name' => 'Afreximbank',   'logo' => 'https://geometricpower.com/wp-content/uploads/2021/11/Afreximbank-Logo-Wide.png',                                                       'industry' => 'Trade Finance',          'type' => 'Development Partner', 'website_url' => '#'],
-        ];
-    }
+    $realPartners = \App\Models\Partner::active()->ordered()->get();
 @endphp
 
-<!-- Our Trusted Partners - Professional Single Row -->
+@if($realPartners->isEmpty())
+    <section class="py-12 md:py-16 bg-white">
+        <div class="container px-4 mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-base md:text-lg lg:text-xl font-bold text-gray-900">Our Network</h2>
+                <a href="{{ route('partner.request.form') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-[#ff0808] text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all shadow-sm">
+                    <i class="fas fa-handshake"></i>
+                    Request to be a Partner
+                </a>
+            </div>
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-handshake text-gray-300 text-2xl"></i>
+                </div>
+                <p class="text-gray-500 text-sm font-medium">No partners found yet.</p>
+                <p class="text-gray-400 text-xs mt-1">Be the first to partner with us.</p>
+                <a href="{{ route('partner.request.form') }}"
+                   class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#ff0808] text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all">
+                    <i class="fas fa-plus"></i> Become a Partner
+                </a>
+            </div>
+        </div>
+    </section>
+@else
 <section class="py-12 md:py-16 bg-white overflow-hidden">
     <div class="container px-4 mx-auto">
 
-    <div class="flex justify-between items-center mb-3 md:mb-4">
-        <h2 class="text-base md:text-lg lg:text-xl font-bold text-gray-900">{{ __('messages.our_network') }}</h2>
-        <a href="{{ route('partner.request.form') }}"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-[#ff0808] text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all shadow-sm">
-            <i class="fas fa-handshake"></i>
-            Request to be a Partner
-        </a>
-    </div>
+        <div class="flex justify-between items-center mb-3 md:mb-4">
+            <h2 class="text-base md:text-lg lg:text-xl font-bold text-gray-900">Our Network</h2>
+            <a href="{{ route('partner.request.form') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 bg-[#ff0808] text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all shadow-sm">
+                <i class="fas fa-handshake"></i>
+                Request to be a Partner
+            </a>
+        </div>
+
         <div class="text-center max-w-3xl mx-auto mb-10 md:mb-12">
             <p class="text-xs md:text-sm text-gray-500">
-                {{ __('messages.partner_global_subtitle') ?? 'Connecting African suppliers with verified buyers across 50+ countries' }}
+                Connecting African suppliers with verified buyers across 50+ countries
             </p>
         </div>
 
@@ -51,34 +52,58 @@
 
                     {{-- First set --}}
                     @foreach($realPartners as $partner)
-                        <a href="{{ $partner['website_url'] }}" target="_blank" class="partner-item" style="text-decoration:none;">
+                        <a href="{{ route('partners.show', ['id' => $partner->partnerRequest->id, 'name' => str()->slug($partner->name)]) }}"
+                           class="partner-item" style="text-decoration:none;">
                             <div class="partner-logo-wrapper">
-                                <img src="{{ $partner['logo'] }}"
-                                     alt="{{ $partner['name'] }} logo"
-                                     class="partner-logo"
-                                     loading="lazy"
-                                     onerror="this.src='https://via.placeholder.com/120x60/e6f0ff/2563eb?text={{ urlencode($partner['name']) }}'">
+                                @if($partner->logo_url)
+                                    <img src="{{ $partner->logo_url }}"
+                                         alt="{{ $partner->name }} logo"
+                                         class="partner-logo"
+                                         loading="lazy"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                    <div class="partner-logo-fallback" style="display:none;">
+                                        <i class="fas fa-building text-gray-300 text-2xl"></i>
+                                    </div>
+                                @else
+                                    <div class="partner-logo-fallback">
+                                        <i class="fas fa-building text-gray-300 text-2xl"></i>
+                                    </div>
+                                @endif
                             </div>
                             <div class="partner-info">
-                                <span class="partner-name">{{ $partner['name'] }}</span>
-                                <span class="partner-type">{{ $partner['type'] }}</span>
+                                <span class="partner-name">{{ $partner->name }}</span>
+                                @if($partner->partner_type)
+                                    <span class="partner-type">{{ $partner->partner_type }}</span>
+                                @endif
                             </div>
                         </a>
                     @endforeach
 
                     {{-- Duplicate set for seamless loop --}}
                     @foreach($realPartners as $partner)
-                        <a href="{{ $partner['website_url'] }}" target="_blank" class="partner-item" style="text-decoration:none;">
+                        <a href="{{ route('partners.show', ['id' => $partner->partnerRequest->id, 'name' => str()->slug($partner->name)]) }}"
+                           class="partner-item" style="text-decoration:none;">
                             <div class="partner-logo-wrapper">
-                                <img src="{{ $partner['logo'] }}"
-                                     alt="{{ $partner['name'] }} logo"
-                                     class="partner-logo"
-                                     loading="lazy"
-                                     onerror="this.src='https://via.placeholder.com/120x60/e6f0ff/2563eb?text={{ urlencode($partner['name']) }}'">
+                                @if($partner->logo_url)
+                                    <img src="{{ $partner->logo_url }}"
+                                         alt="{{ $partner->name }} logo"
+                                         class="partner-logo"
+                                         loading="lazy"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                    <div class="partner-logo-fallback" style="display:none;">
+                                        <i class="fas fa-building text-gray-300 text-2xl"></i>
+                                    </div>
+                                @else
+                                    <div class="partner-logo-fallback">
+                                        <i class="fas fa-building text-gray-300 text-2xl"></i>
+                                    </div>
+                                @endif
                             </div>
                             <div class="partner-info">
-                                <span class="partner-name">{{ $partner['name'] }}</span>
-                                <span class="partner-type">{{ $partner['type'] }}</span>
+                                <span class="partner-name">{{ $partner->name }}</span>
+                                @if($partner->partner_type)
+                                    <span class="partner-type">{{ $partner->partner_type }}</span>
+                                @endif
                             </div>
                         </a>
                     @endforeach
@@ -100,7 +125,6 @@
         overflow: hidden;
         position: relative;
         padding: 20px 0;
-        background: linear-gradient(to right, white, rgba(255,255,255,0.95), white);
     }
 
     .partners-track {
@@ -146,7 +170,17 @@
         align-items: center;
         justify-content: center;
         margin-bottom: 12px;
-        background: white;
+        width: 100%;
+    }
+
+    .partner-logo-fallback {
+        width: 60px;
+        height: 60px;
+        background: #f3f4f6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .partner-logo {
@@ -243,3 +277,4 @@
         });
     });
 </script>
+@endif

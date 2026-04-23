@@ -71,22 +71,44 @@
         : $allSuppliersData;
 
     // Determine wrapper height (at least 4 rows visible)
-    $tickerRows    = max(min(count($tickerSuppliers), 6), 4);
+    $tickerRows     = max(min(count($tickerSuppliers), 6), 4);
     $tickerHeightPx = $tickerRows * 54;
+
+    // Regions (needed for pills — load once here)
+    $activeRegions = $regions ?? \App\Models\Region::active()->withCount('countries')->orderBy('name', 'asc')->get();
 @endphp
 
 <section class="py-6 md:py-8 bg-gray-50">
     <div class="container px-4 mx-auto">
 
         <!-- Section Title -->
-        <div class="flex items-center mb-4 md:mb-6 gap-3">
+        <div class="flex items-center mb-3 gap-3">
             <h2 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">
                 {{ __('messages.browse_by_region') ?? 'Browse by Region' }}
             </h2>
             <div class="flex-1 h-px bg-gray-300"></div>
         </div>
 
-        <!-- Main Grid: Left 40% | Right 60% -->
+        <!-- ══ Region Filter Pills (below title, above everything) ══ -->
+        <div class="flex flex-wrap gap-1.5 mb-4 md:mb-5">
+            <button class="region-pill active text-[10px] px-3 py-1 rounded-full font-semibold bg-blue-600 text-white shadow border border-blue-600"
+                    data-region-id="" data-region-name="{{ __('messages.all_countries') ?? 'All Countries' }}">
+                {{ __('messages.all') ?? 'All' }}
+            </button>
+            @foreach ($activeRegions as $region)
+                @php $countriesCount = $region->countries()->where('status', 'active')->count(); @endphp
+                @if ($countriesCount > 0)
+                    <button class="region-pill text-[10px] px-3 py-1 rounded-full font-semibold bg-white border border-gray-300 text-gray-700 shadow-sm"
+                            data-region-id="{{ $region->id }}"
+                            data-region-slug="{{ Str::slug($region->name) }}"
+                            data-region-name="{{ $region->name }}">
+                        {{ $region->name }}
+                    </button>
+                @endif
+            @endforeach
+        </div>
+
+        <!-- Main Grid: Left 5col | Right 7col -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
 
             <!-- ══ LEFT: Ticker + Map ══ -->
@@ -141,8 +163,7 @@
                     </div>
 
                     @php
-                        $activeRegions    = $regions ?? \App\Models\Region::active()->withCount('countries')->orderBy('name', 'asc')->get();
-                        $regionPositions  = [
+                        $regionPositions = [
                             'West Africa'     => ['top' => '25%',  'left'  => '12%',  'color' => 'teal'],
                             'East Africa'     => ['top' => '30%',  'right' => '18%',  'color' => 'orange'],
                             'Central Africa'  => ['top' => '45%',  'left'  => '40%',  'color' => 'blue'],
@@ -162,8 +183,8 @@
                                 if (isset($pos['bottom'])) $posStyle .= "bottom:{$pos['bottom']};";
                                 if (isset($pos['left']))   $posStyle .= "left:{$pos['left']};";
                                 if (isset($pos['right']))  $posStyle .= "right:{$pos['right']};";
-                                $regionSlug    = Str::slug($region->name);
-                                $countriesCount= $region->countries()->where('status', 'active')->count();
+                                $regionSlug     = Str::slug($region->name);
+                                $countriesCount = $region->countries()->where('status', 'active')->count();
                             @endphp
                             @if ($countriesCount > 0)
                                 <div class="absolute cursor-pointer region-label" style="{{ $posStyle }} z-index:10;"
@@ -179,25 +200,8 @@
                     </div>
                 </div>
 
-                <!-- Mobile: Region Pills -->
-                <div class="flex lg:hidden flex-wrap gap-2 mt-3">
-                    <button class="region-pill active text-[10px] px-3 py-1 rounded-full font-semibold bg-blue-600 text-white shadow"
-                            data-region-id="" data-region-name="{{ __('messages.all_countries') ?? 'All Countries' }}">
-                        All
-                    </button>
-                    @foreach ($activeRegions as $region)
-                        @php $countriesCount = $region->countries()->where('status', 'active')->count(); @endphp
-                        @if ($countriesCount > 0)
-                            <button class="region-pill text-[10px] px-3 py-1 rounded-full font-semibold bg-white border border-gray-300 text-gray-700 shadow-sm"
-                                    data-region-id="{{ $region->id }}"
-                                    data-region-slug="{{ Str::slug($region->name) }}"
-                                    data-region-name="{{ $region->name }}">
-                                {{ $region->name }}
-                            </button>
-                        @endif
-                    @endforeach
-                </div>
             </div>
+            {{-- end LEFT --}}
 
             <!-- ══ RIGHT: Country Cards ══ -->
             <div class="relative z-10 order-1 lg:order-2 lg:col-span-7">
@@ -302,6 +306,8 @@
                     <p class="text-gray-500 text-sm">No countries found for this region.</p>
                 </div>
             </div>
+            {{-- end RIGHT --}}
+
         </div>
     </div>
 </section>
@@ -323,45 +329,33 @@
     // ══════════════════════════════════════════════════════════════
     // TICKER ANIMATION
     // ══════════════════════════════════════════════════════════════
-    const wrapper    = document.getElementById('supplierTickerWrapper');
-    const ticker     = document.getElementById('suppliersTicker');
-    const animMode   = wrapper ? wrapper.getAttribute('data-animation') || 'slide' : 'slide';
+    const wrapper  = document.getElementById('supplierTickerWrapper');
+    const ticker   = document.getElementById('suppliersTicker');
+    const animMode = wrapper ? wrapper.getAttribute('data-animation') || 'slide' : 'slide';
 
-    // Shared pause flag (hover)
     let tickerPaused = false;
-
-    // Expose a reset function for when region changes
-    let tickerReset = () => {};
+    let tickerReset  = () => {};
 
     if (wrapper && ticker) {
         wrapper.addEventListener('mouseenter', () => tickerPaused = true);
         wrapper.addEventListener('mouseleave', () => tickerPaused = false);
 
-        if (animMode === 'slide') {
-            initSlide();
-        } else if (animMode === 'fade') {
-            initFade();
-        } else if (animMode === 'flip') {
-            initFlip();
-        }
-        // 'none' → static, no animation
+        if (animMode === 'slide')      initSlide();
+        else if (animMode === 'fade')  initFade();
+        else if (animMode === 'flip')  initFlip();
+        // 'none' → static
     }
 
     function initSlide() {
         const PX_PER_SEC = 40;
-
         ticker.style.display       = 'flex';
         ticker.style.flexDirection = 'column';
         ticker.style.willChange    = 'transform';
 
-        let posY   = 0;
-        let setH   = 0;         // measured lazily
-        let lastTs = null;
+        let posY = 0, setH = 0, lastTs = null;
 
         tickerReset = function () {
-            posY   = 0;
-            setH   = 0;
-            lastTs = null;
+            posY = 0; setH = 0; lastTs = null;
             ticker.style.transform = 'translateY(0)';
         };
 
@@ -374,7 +368,6 @@
             if (!lastTs) lastTs = ts;
             const delta = ts - lastTs;
             lastTs = ts;
-
             if (!tickerPaused) {
                 if (!setH) setH = measureSetHeight();
                 posY += (PX_PER_SEC * delta) / 1000;
@@ -387,15 +380,14 @@
     }
 
     function initFade() {
-        // Remove duplicate set
         const sets = ticker.querySelectorAll('.suppliers-set');
         if (sets[1]) sets[1].remove();
 
         const items = Array.from(ticker.querySelectorAll('.supplier-item'));
         if (!items.length) return;
 
-        const vis   = Math.min(5, items.length);
-        let   start = 0;
+        const vis = Math.min(5, items.length);
+        let start = 0;
 
         items.forEach((item, i) => {
             item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
@@ -436,14 +428,14 @@
         const items = Array.from(ticker.querySelectorAll('.supplier-item'));
         if (!items.length) return;
 
-        const vis   = Math.min(5, items.length);
-        let   start = 0;
+        const vis = Math.min(5, items.length);
+        let start = 0;
 
         items.forEach((item, i) => {
-            item.style.transition       = 'transform 0.4s ease, opacity 0.4s ease';
-            item.style.transformOrigin  = 'top center';
-            item.style.opacity          = i < vis ? '1' : '0';
-            item.style.transform        = i < vis ? 'rotateX(0deg)' : 'rotateX(-90deg)';
+            item.style.transition      = 'transform 0.4s ease, opacity 0.4s ease';
+            item.style.transformOrigin = 'top center';
+            item.style.opacity         = i < vis ? '1' : '0';
+            item.style.transform       = i < vis ? 'rotateX(0deg)' : 'rotateX(-90deg)';
         });
 
         function flipNext() {
@@ -494,17 +486,11 @@
 
     function updateTicker(suppliers) {
         if (!ticker || !wrapper) return;
-
         const list = (suppliers && suppliers.length) ? suppliers : tickerSuppliers;
-        const html  = renderSupplierHTML(list);
-
+        const html = renderSupplierHTML(list);
         ticker.querySelectorAll('.suppliers-set').forEach(set => { set.innerHTML = html; });
-
-        // Recalculate wrapper height
         const rows = Math.max(Math.min(list.length, 6), 4);
         wrapper.style.height = (rows * 54) + 'px';
-
-        // Reset animation
         ticker.style.transform = 'translateY(0)';
         tickerReset();
     }
@@ -545,14 +531,12 @@
 
     function showCountries(countries, regionName) {
         if (!countriesGrid) return;
-
         countriesGrid.classList.add('hidden');
         if (emptyState)   emptyState.classList.add('hidden');
         if (loadingState) loadingState.classList.remove('hidden');
 
         setTimeout(() => {
             if (loadingState) loadingState.classList.add('hidden');
-
             if (countries && countries.length > 0) {
                 countriesGrid.innerHTML = countries.slice(0, 8).map(createCountryCard).join('');
                 countriesGrid.classList.remove('hidden');
@@ -568,7 +552,6 @@
     // ══════════════════════════════════════════════════════════════
     function selectRegion(regionId, regionSlug, regionName) {
         if (!regionId) {
-            // Show all
             showCountries(allCountries, '{{ __("messages.all_countries") ?? "All Countries" }}');
             updateTicker(tickerSuppliers);
         } else {
@@ -577,6 +560,29 @@
             updateTicker(suppliersByRegion[regionId] || []);
         }
     }
+
+    // ── Region pills (title area — all screen sizes) ──
+    document.querySelectorAll('.region-pill').forEach(pill => {
+        pill.addEventListener('click', function () {
+            document.querySelectorAll('.region-pill').forEach(p => {
+                p.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                p.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+            });
+            this.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+            this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+
+            // Sync map highlight if desktop
+            resetMapHighlights();
+            const matchingLabel = document.querySelector(`.region-label[data-region-id="${this.dataset.regionId}"]`);
+            if (matchingLabel) matchingLabel.querySelector('div').classList.add('ring-2', 'ring-white', 'scale-110');
+
+            selectRegion(
+                this.dataset.regionId || null,
+                this.dataset.regionSlug || null,
+                this.dataset.regionName
+            );
+        });
+    });
 
     // ── Desktop: Map region labels ──
     function resetMapHighlights() {
@@ -589,11 +595,19 @@
             e.stopPropagation();
             resetMapHighlights();
             this.querySelector('div').classList.add('ring-2', 'ring-white', 'scale-110');
-            selectRegion(
-                this.dataset.regionId,
-                this.dataset.regionSlug,
-                this.dataset.regionName
-            );
+
+            // Sync pill highlight
+            document.querySelectorAll('.region-pill').forEach(p => {
+                p.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                p.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+            });
+            const matchingPill = document.querySelector(`.region-pill[data-region-id="${this.dataset.regionId}"]`);
+            if (matchingPill) {
+                matchingPill.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                matchingPill.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+            }
+
+            selectRegion(this.dataset.regionId, this.dataset.regionSlug, this.dataset.regionName);
         });
         label.addEventListener('mouseenter', function () { this.querySelector('div').classList.add('scale-110'); });
         label.addEventListener('mouseleave', function () {
@@ -607,28 +621,20 @@
         mapCenter.addEventListener('click', function (e) {
             if (e.target === this || e.target.tagName === 'IMG') {
                 resetMapHighlights();
+                // Reset pills to "All"
+                document.querySelectorAll('.region-pill').forEach(p => {
+                    p.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                    p.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+                });
+                const allPill = document.querySelector('.region-pill[data-region-id=""]');
+                if (allPill) {
+                    allPill.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                    allPill.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+                }
                 selectRegion(null, null, null);
             }
         });
     }
-
-    // ── Mobile: Region pills ──
-    document.querySelectorAll('.region-pill').forEach(pill => {
-        pill.addEventListener('click', function () {
-            document.querySelectorAll('.region-pill').forEach(p => {
-                p.classList.remove('bg-blue-600', 'text-white');
-                p.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
-            });
-            this.classList.add('bg-blue-600', 'text-white');
-            this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
-
-            selectRegion(
-                this.dataset.regionId || null,
-                this.dataset.regionSlug || null,
-                this.dataset.regionName
-            );
-        });
-    });
 
 })();
 </script>
@@ -665,12 +671,16 @@
 }
 
 /* ── Country grid responsive cols ───────────────────── */
-@media (max-width: 639px)                      { #countriesGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 639px)                         { #countriesGrid { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 640px) and (max-width: 767px)  { #countriesGrid { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 768px) and (max-width: 1023px) { #countriesGrid { grid-template-columns: repeat(4, 1fr); } }
-@media (min-width: 1024px)                    { #countriesGrid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1024px)                        { #countriesGrid { grid-template-columns: repeat(4, 1fr); } }
 
-/* ── Mobile region pills ─────────────────────────────── */
-.region-pill { transition: background 0.2s ease, color 0.2s ease; cursor: pointer; border: 1px solid; }
+/* ── Region pills ────────────────────────────────────── */
+.region-pill {
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    border: 1px solid;
+}
 </style>
 {{-- End Browse by Region Section --}}

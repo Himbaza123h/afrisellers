@@ -3,6 +3,7 @@
 @section('page-content')
 <div class="max-w-6xl mx-auto space-y-5">
 
+    {{-- Page header --}}
     <div class="flex items-center gap-3">
         <a href="{{ route('admin.partner-requests.index') }}" class="p-2 hover:bg-gray-100 rounded-lg">
             <i class="fas fa-arrow-left text-gray-600 text-sm"></i>
@@ -27,10 +28,10 @@
         </div>
     @endif
 
-    {{-- Details --}}
-    <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+    {{-- Main details card --}}
+    <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
 
-        {{-- Logo + name --}}
+        {{-- Logo + name + type --}}
         <div class="flex items-center gap-4">
             @if($partnerRequest->logo_url)
                 <img src="{{ $partnerRequest->logo_url }}" alt="{{ $partnerRequest->company_name }}"
@@ -50,48 +51,118 @@
             </div>
         </div>
 
-        {{-- Info grid --}}
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Contact Person</p>
-                <p class="text-gray-900 font-medium">{{ $partnerRequest->contact_name }}</p>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Email</p>
-                <a href="mailto:{{ $partnerRequest->email }}" class="text-blue-600 hover:underline">{{ $partnerRequest->email }}</a>
-            </div>
-            @if($partnerRequest->phone)
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Phone</p>
-                <a href="tel:{{ $partnerRequest->phone }}" class="text-gray-900">{{ $partnerRequest->phone }}</a>
-            </div>
+        {{-- Quick stats row --}}
+        @if($partnerRequest->established || $partnerRequest->presence_countries || $partnerRequest->country)
+        <div class="flex flex-wrap gap-3">
+            @if($partnerRequest->established)
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                    <i class="fas fa-calendar-alt text-gray-400 text-xs"></i>
+                    <span class="text-xs text-gray-700 font-medium">Est. {{ $partnerRequest->established }}</span>
+                </div>
             @endif
-            @if($partnerRequest->website_url)
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Website</p>
-                <a href="{{ $partnerRequest->website_url }}" target="_blank" class="text-blue-600 hover:underline break-all">
-                    {{ $partnerRequest->website_url }}
-                </a>
-            </div>
-            @endif
-            @if($partnerRequest->industry)
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Industry</p>
-                <p class="text-gray-900">{{ $partnerRequest->industry }}</p>
-            </div>
+            @if($partnerRequest->presence_countries)
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                    <i class="fas fa-globe-africa text-gray-400 text-xs"></i>
+                    <span class="text-xs text-gray-700 font-medium">
+                        Present in {{ $partnerRequest->presence_countries }} {{ Str::plural('country', $partnerRequest->presence_countries) }}
+                    </span>
+                </div>
             @endif
             @if($partnerRequest->country)
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Country</p>
-                <p class="text-gray-900">{{ $partnerRequest->country }}</p>
-            </div>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                    <i class="fas fa-map-marker-alt text-gray-400 text-xs"></i>
+                    <span class="text-xs text-gray-700 font-medium">{{ $partnerRequest->country }}</span>
+                </div>
+            @endif
+            @if($partnerRequest->industry)
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                    <i class="fas fa-industry text-gray-400 text-xs"></i>
+                    <span class="text-xs text-gray-700 font-medium">{{ $partnerRequest->industry }}</span>
+                </div>
             @endif
         </div>
+        @endif
 
-        {{-- Message --}}
+        {{-- Contact info grid --}}
+        <div>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Contact Information</p>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Contact Person</p>
+                    <p class="text-gray-900 font-medium">{{ $partnerRequest->contact_name }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Email</p>
+                    <a href="mailto:{{ $partnerRequest->email }}" class="text-blue-600 hover:underline">
+                        {{ $partnerRequest->email }}
+                    </a>
+                </div>
+                @if($partnerRequest->phone)
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Phone</p>
+                    <a href="tel:{{ $partnerRequest->phone }}" class="text-gray-900">{{ $partnerRequest->phone }}</a>
+                </div>
+                @endif
+                @if($partnerRequest->website_url)
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Website</p>
+                    <a href="{{ $partnerRequest->website_url }}" target="_blank"
+                       class="text-blue-600 hover:underline break-all">
+                        {{ $partnerRequest->website_url }}
+                    </a>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Services offered --}}
+        @if($partnerRequest->services && count($partnerRequest->services))
+        <div>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Services Offered</p>
+            <div class="flex flex-wrap gap-2">
+                @foreach($partnerRequest->services as $service)
+                    <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">
+                        {{ $service }}
+                    </span>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- About us --}}
+        @if($partnerRequest->about_us)
+        <div>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">About the Company</p>
+            <div class="bg-gray-50 rounded-lg border border-gray-100 p-4 text-sm text-gray-700 leading-relaxed">
+                {{ $partnerRequest->about_us }}
+            </div>
+        </div>
+        @endif
+
+        {{-- Intro media --}}
+        @if($partnerRequest->intro_url)
+        <div>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Intro</p>
+            @php
+                $ext = strtolower(pathinfo($partnerRequest->intro, PATHINFO_EXTENSION));
+                $isVideo = in_array($ext, ['mp4', 'mov', 'webm']);
+            @endphp
+            @if($isVideo)
+                <video controls class="w-full max-h-64 rounded-lg border border-gray-200 bg-black object-contain">
+                    <source src="{{ $partnerRequest->intro_url }}" type="video/{{ $ext === 'mov' ? 'quicktime' : $ext }}">
+                    Your browser does not support video playback.
+                </video>
+            @else
+                <img src="{{ $partnerRequest->intro_url }}" alt="Company intro"
+                     class="w-full max-h-64 rounded-lg border border-gray-200 object-contain bg-gray-50">
+            @endif
+        </div>
+        @endif
+
+        {{-- Their message --}}
         @if($partnerRequest->message)
         <div>
-            <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Their Message</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Their Message</p>
             <div class="bg-gray-50 rounded-lg border border-gray-100 p-4 text-sm text-gray-700 leading-relaxed">
                 {{ $partnerRequest->message }}
             </div>
@@ -101,7 +172,7 @@
         {{-- Admin notes (if already reviewed) --}}
         @if($partnerRequest->admin_notes)
         <div>
-            <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Admin Notes</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Admin Notes</p>
             <div class="bg-yellow-50 rounded-lg border border-yellow-100 p-4 text-sm text-gray-700">
                 {{ $partnerRequest->admin_notes }}
             </div>
@@ -113,9 +184,10 @@
             @endif
         </div>
         @endif
+
     </div>
 
-    {{-- Actions (only if pending) --}}
+    {{-- Actions --}}
     @if($partnerRequest->isPending())
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -126,7 +198,9 @@
             <h3 class="text-sm font-bold text-green-700 flex items-center gap-2">
                 <i class="fas fa-check-circle"></i> Approve & Add to Partners
             </h3>
-            <p class="text-xs text-gray-500">This will approve the request and automatically add them to the Partners list on the homepage.</p>
+            <p class="text-xs text-gray-500">
+                This will approve the request and automatically add them to the Partners list on the homepage.
+            </p>
             <textarea name="admin_notes" rows="3" placeholder="Optional notes about this approval..."
                       class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 resize-none"></textarea>
             <button type="submit"
@@ -143,7 +217,9 @@
             <h3 class="text-sm font-bold text-red-600 flex items-center gap-2">
                 <i class="fas fa-times-circle"></i> Reject Request
             </h3>
-            <p class="text-xs text-gray-500">The requester can be contacted via the email provided above if needed.</p>
+            <p class="text-xs text-gray-500">
+                The requester can be contacted via the email provided above if needed.
+            </p>
             <textarea name="admin_notes" rows="3" placeholder="Reason for rejection (optional)..."
                       class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 resize-none"></textarea>
             <button type="submit"
@@ -155,11 +231,12 @@
 
     </div>
 
-    {{-- Contact button --}}
+    {{-- Direct contact --}}
     <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between">
         <div>
             <p class="text-sm font-semibold text-gray-900">Contact the requester directly</p>
-            <p class="text-xs text-gray-500">{{ $partnerRequest->email }}
+            <p class="text-xs text-gray-500">
+                {{ $partnerRequest->email }}
                 @if($partnerRequest->phone) · {{ $partnerRequest->phone }} @endif
             </p>
         </div>
@@ -168,6 +245,7 @@
             <i class="fas fa-envelope"></i> Send Email
         </a>
     </div>
+
     @else
     {{-- Already reviewed notice --}}
     <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">

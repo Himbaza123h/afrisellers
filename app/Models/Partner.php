@@ -21,6 +21,7 @@ class Partner extends Model
         'description',
         'sort_order',
         'is_active',
+        'partner_request_id',
     ];
 
     protected $casts = [
@@ -34,6 +35,11 @@ class Partner extends Model
         if (str_starts_with($this->logo, 'http')) return $this->logo;
         return Storage::url($this->logo);
     }
+
+        public function partnerRequest()
+        {
+            return $this->belongsTo(PartnerRequest::class, 'partner_request_id');
+        }   
 
     public function scopeActive($query)
     {

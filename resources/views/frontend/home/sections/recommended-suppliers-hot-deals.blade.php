@@ -95,19 +95,43 @@
             $supplierProducts[$supplier->id] = $product;
         }
     }
+
+        // ── Square Ads for sections (all types) ──────────────────────
+        $allSquareAds = \App\Models\SquareAd::with('media')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->groupBy('type');
+
+        $weeklySquareAds           = $allSquareAds->get('Weekly Special Offers',       collect());
+        $hotDealsSquareAds         = $allSquareAds->get('Hot Deals',                   collect());
+        $mostRecommendedSalesAds   = $allSquareAds->get('Most Recommended Sales',      collect());
+        $popularSuppliersAds       = $allSquareAds->get('The Popular Suppliers',       collect());
+        $trendingProductsAds       = $allSquareAds->get('Trending Products',           collect());
+
+        Log::info('Loaded Square Ads for homepage sections', [
+            'weekly' => $weeklySquareAds->pluck('id'),
+            'hot_deals' => $hotDealsSquareAds->pluck('id'),
+            'recommended_suppliers' => $mostRecommendedSalesAds->pluck('id'),
+        ]);
+
 @endphp
 
 {{-- ══════════════════════════════════════════════════════════════ --}}
 {{-- SECTIONS 1 & 2: Weekly Special Offers & Hot Deals             --}}
+{{-- Each section is its own row: 70% content + 30% square ad      --}}
 {{-- ══════════════════════════════════════════════════════════════ --}}
 @if($weeklyActive || $hotActive)
 <div class="py-6 bg-blue-50 md:py-8">
-    <div class="container px-4 mx-auto">
-        <div class="flex flex-col gap-4 lg:flex-row md:gap-6">
+    <div class="container px-4 mx-auto space-y-6 md:space-y-8">
 
-            {{-- ── Section 1: Weekly Special Offers ─────────────── --}}
-            @if($weeklyActive)
-            <div class="flex-1">
+        {{-- ── Section 1: Weekly Special Offers ─────────────────── --}}
+        @if($weeklyActive)
+        @php $hasWeeklyAd = $weeklySquareAds->isNotEmpty(); @endphp
+        <div class="flex gap-4 md:gap-6 items-stretch">
+
+            {{-- Main content: 70% or full --}}
+            <div class="{{ $hasWeeklyAd ? 'w-[70%]' : 'w-full' }} min-w-0">
                 <div class="flex gap-2 items-center mb-3 md:mb-4">
                     <h2 class="text-base font-bold text-gray-900 whitespace-nowrap md:text-lg lg:text-xl">
                         {{ __('messages.weekly_special_offers') }}
@@ -121,9 +145,7 @@
                     </a>
                 </div>
 
-                {{-- Slide wrapper or grid --}}
                 @if(in_array($weeklyAnim, ['slide','fade','flip']))
-                {{-- ── CAROUSEL MODE ─────────────────────────────── --}}
                 <div class="relative section-carousel" id="weekly-carousel"
                      data-anim="{{ $weeklyAnim }}"
                      data-items="{{ $weeklyItems }}"
@@ -166,14 +188,12 @@
                         <i class="fas fa-chevron-right"></i>
                     </button>
                     @endif
-                    {{-- Country empty notice --}}
                     <div class="hidden col-span-full py-8 text-xs text-center text-gray-400 section-empty-notice" id="weekly-empty">
                         No weekly offers available for the selected country.
                     </div>
                 </div>
 
                 @else
-                {{-- ── GRID MODE ─────────────────────────────────── --}}
                 <div class="relative">
                     <div class="grid grid-cols-2 gap-2 md:gap-3 lg:grid-cols-2 xl:grid-cols-3" id="weekly-grid">
                         @forelse($weeklyOffers as $product)
@@ -214,11 +234,24 @@
                 </div>
                 @endif
             </div>
+
+            {{-- Square Ad: 30% --}}
+            @if($hasWeeklyAd)
+            <div class="w-[30%] flex-shrink-0">
+                @include('frontend.home.sections._square-ad', ['ads' => $weeklySquareAds, 'instanceId' => 'weekly'])
+            </div>
             @endif
 
-            {{-- ── Section 2: Hot Deals ─────────────────────────── --}}
-            @if($hotActive)
-            <div class="flex-1">
+        </div>
+        @endif
+
+        {{-- ── Section 2: Hot Deals ───────────────────────────────── --}}
+        @if($hotActive)
+        @php $hasHotAd = $hotDealsSquareAds->isNotEmpty(); @endphp
+        <div class="flex gap-4 md:gap-6 items-stretch">
+
+            {{-- Main content: 70% or full --}}
+            <div class="{{ $hasHotAd ? 'w-[70%]' : 'w-full' }} min-w-0">
                 <div class="flex gap-2 items-center mb-3 md:mb-4">
                     <h2 class="text-base font-bold text-gray-900 whitespace-nowrap md:text-lg lg:text-xl">
                         {{ __('messages.hot_deals') }}
@@ -233,7 +266,6 @@
                 </div>
 
                 @if(in_array($hotAnim, ['slide','fade','flip']))
-                {{-- ── CAROUSEL MODE ─────────────────────────────── --}}
                 <div class="relative section-carousel" id="hot-carousel"
                      data-anim="{{ $hotAnim }}"
                      data-items="{{ $hotItems }}"
@@ -282,7 +314,6 @@
                 </div>
 
                 @else
-                {{-- ── GRID MODE ─────────────────────────────────── --}}
                 <div class="relative">
                     <div class="grid grid-cols-2 gap-2 md:gap-3 lg:grid-cols-2 xl:grid-cols-3" id="hot-grid">
                         @forelse($hotDeals as $product)
@@ -323,102 +354,130 @@
                 </div>
                 @endif
             </div>
+
+            {{-- Square Ad: 30% --}}
+            @if($hasHotAd)
+            <div class="w-[30%] flex-shrink-0">
+                @include('frontend.home.sections._square-ad', ['ads' => $hotDealsSquareAds, 'instanceId' => 'hot'])
+            </div>
             @endif
 
         </div>
+        @endif
+
     </div>
 </div>
 @endif
 
+{{-- ══════════════════════════════════════════════════════════════ --}}
 {{-- ══════════════════════════════════════════════════════════════ --}}
 {{-- SECTION 3: Most Recommended Suppliers                         --}}
 {{-- ══════════════════════════════════════════════════════════════ --}}
 @if($suppliersActive)
 <section class="py-6 bg-white md:py-8">
     <div class="container px-4 mx-auto">
-        <div class="flex gap-2 items-center mb-3 md:mb-4">
-            <h2 class="text-base font-bold text-gray-900 whitespace-nowrap md:text-lg lg:text-xl">
-                {{ __('messages.most_recommended_suppliers') }}
-            </h2>
-            <div class="flex-1 h-px bg-gray-300"></div>
-            <a href="#" class="flex items-center gap-0.5 md:gap-1 text-[10px] md:text-xs font-semibold text-[#ff0808] hover:text-[#dd0606] transition-colors whitespace-nowrap">
-                <span>{{ __('messages.view_all') }}</span>
-                <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </a>
-        </div>
 
-        @if(in_array($suppliersAnim, ['slide','fade','flip']))
-        {{-- ── CAROUSEL MODE ─────────────────────────────────────── --}}
-        <div class="relative section-carousel" id="suppliers-carousel"
-             data-anim="{{ $suppliersAnim }}"
-             data-items="{{ $suppliersItems }}"
-             data-section="suppliers">
-            <div class="overflow-hidden section-carousel-track">
-                <div class="flex transition-transform duration-500 ease-in-out section-carousel-slides" id="suppliers-slides">
-                    @forelse($topSuppliers as $supplier)
-                        @php
-                            $product = $supplierProducts[$supplier->id] ?? null;
-                            $image   = $product && $product->images->count() > 0 ? $product->images->first() : null;
-                        @endphp
-                        <div class="flex-shrink-0 px-1 section-slide"
-                             data-country-id="{{ $supplier->country_id ?? 0 }}"
-                             style="width: calc(100% / {{ min(5, $suppliersItems) }})">
-                            @include('frontend.home.sections._supplier-card', [
-                                'supplier' => $supplier,
-                                'image'    => $image,
-                            ])
-                        </div>
-                    @empty
-                        <div class="py-8 w-full text-center text-gray-400">{{ __('messages.no_suppliers_available') }}</div>
-                    @endforelse
-                </div>
-            </div>
-            @if($topSuppliers->count() > $suppliersItems)
-            <button class="carousel-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-[#ff0808] hover:text-white transition-all text-gray-600 text-xs" data-target="suppliers-carousel">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="carousel-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-[#ff0808] hover:text-white transition-all text-gray-600 text-xs" data-target="suppliers-carousel">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-            @endif
-            <div class="hidden py-8 text-xs text-center text-gray-400 section-empty-notice" id="suppliers-empty">
-                No suppliers available for the selected country.
-            </div>
-        </div>
+        @php $hasSuppliersAd = $popularSuppliersAds->isNotEmpty(); @endphp
+        <div class="flex gap-4 md:gap-6 items-stretch">
 
-        @else
-        {{-- ── GRID MODE ─────────────────────────────────────────── --}}
-        <div class="relative">
-            <div class="grid grid-cols-2 gap-2 md:gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" id="suppliers-grid">
-                @forelse($topSuppliers as $supplier)
-                    @php
-                        $product = $supplierProducts[$supplier->id] ?? null;
-                        $image   = $product && $product->images->count() > 0 ? $product->images->first() : null;
-                    @endphp
-                    <div class="section-card"
-                         data-country-id="{{ $supplier->country_id ?? 0 }}"
-                         data-section="suppliers">
-                        @include('frontend.home.sections._supplier-card', [
-                            'supplier' => $supplier,
-                            'image'    => $image,
-                        ])
-                    </div>
-                @empty
-                    <div class="col-span-full py-8 text-center" id="suppliers-empty-static">
-                        <svg class="mx-auto mb-2 w-10 h-10 text-gray-300 md:w-12 md:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            {{-- Main content: 70% or full --}}
+            <div class="{{ $hasSuppliersAd ? 'w-[70%]' : 'w-full' }} min-w-0">
+
+                <div class="flex gap-2 items-center mb-3 md:mb-4">
+                    <h2 class="text-base font-bold text-gray-900 whitespace-nowrap md:text-lg lg:text-xl">
+                        {{ __('messages.most_recommended_suppliers') }}
+                    </h2>
+                    <div class="flex-1 h-px bg-gray-300"></div>
+                    <a href="#" class="flex items-center gap-0.5 md:gap-1 text-[10px] md:text-xs font-semibold text-[#ff0808] hover:text-[#dd0606] transition-colors whitespace-nowrap">
+                        <span>{{ __('messages.view_all') }}</span>
+                        <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
-                        <p class="text-xs font-semibold text-gray-700 md:text-sm">{{ __('messages.no_suppliers_available') }}</p>
+                    </a>
+                </div>
+
+                @if(in_array($suppliersAnim, ['slide','fade','flip']))
+                {{-- ── CAROUSEL MODE ──────────────────────────────── --}}
+                <div class="relative section-carousel" id="suppliers-carousel"
+                     data-anim="{{ $suppliersAnim }}"
+                     data-items="{{ $suppliersItems }}"
+                     data-section="suppliers">
+                    <div class="overflow-hidden section-carousel-track">
+                        <div class="flex transition-transform duration-500 ease-in-out section-carousel-slides" id="suppliers-slides">
+                            @forelse($topSuppliers as $supplier)
+                                @php
+                                    $product = $supplierProducts[$supplier->id] ?? null;
+                                    $image   = $product && $product->images->count() > 0 ? $product->images->first() : null;
+                                @endphp
+                                <div class="flex-shrink-0 px-1 section-slide"
+                                     data-country-id="{{ $supplier->country_id ?? 0 }}"
+                                     style="width: calc(100% / {{ min(5, $suppliersItems) }})">
+                                    @include('frontend.home.sections._supplier-card', [
+                                        'supplier' => $supplier,
+                                        'image'    => $image,
+                                    ])
+                                </div>
+                            @empty
+                                <div class="py-8 w-full text-center text-gray-400">{{ __('messages.no_suppliers_available') }}</div>
+                            @endforelse
+                        </div>
                     </div>
-                @endforelse
+                    @if($topSuppliers->count() > $suppliersItems)
+                    <button class="carousel-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-[#ff0808] hover:text-white transition-all text-gray-600 text-xs" data-target="suppliers-carousel">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-[#ff0808] hover:text-white transition-all text-gray-600 text-xs" data-target="suppliers-carousel">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    @endif
+                    <div class="hidden py-8 text-xs text-center text-gray-400 section-empty-notice" id="suppliers-empty">
+                        No suppliers available for the selected country.
+                    </div>
+                </div>
+
+                @else
+                {{-- ── GRID MODE ──────────────────────────────────── --}}
+                <div class="relative">
+                    <div class="grid grid-cols-2 gap-2 md:gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" id="suppliers-grid">
+                        @forelse($topSuppliers as $supplier)
+                            @php
+                                $product = $supplierProducts[$supplier->id] ?? null;
+                                $image   = $product && $product->images->count() > 0 ? $product->images->first() : null;
+                            @endphp
+                            <div class="section-card"
+                                 data-country-id="{{ $supplier->country_id ?? 0 }}"
+                                 data-section="suppliers">
+                                @include('frontend.home.sections._supplier-card', [
+                                    'supplier' => $supplier,
+                                    'image'    => $image,
+                                ])
+                            </div>
+                        @empty
+                            <div class="col-span-full py-8 text-center" id="suppliers-empty-static">
+                                <svg class="mx-auto mb-2 w-10 h-10 text-gray-300 md:w-12 md:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                <p class="text-xs font-semibold text-gray-700 md:text-sm">{{ __('messages.no_suppliers_available') }}</p>
+                            </div>
+                        @endforelse
+                    </div>
+                    <div class="hidden py-6 text-xs text-center text-gray-400" id="suppliers-empty">
+                        No suppliers available for the selected country.
+                    </div>
+                </div>
+                @endif
+
             </div>
-            <div class="hidden py-6 text-xs text-center text-gray-400" id="suppliers-empty">
-                No suppliers available for the selected country.
+
+            {{-- Square Ad: 30% --}}
+            @if($hasSuppliersAd)
+            <div class="w-[30%] flex-shrink-0">
+                @include('frontend.home.sections._square-ad', ['ads' => $popularSuppliersAds, 'instanceId' => 'suppliers'])
             </div>
+            @endif
+
         </div>
-        @endif
+
     </div>
 </section>
 @endif
