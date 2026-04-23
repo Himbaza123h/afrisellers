@@ -203,6 +203,7 @@ Route::get('/load-group/{id}', [MessageController::class, 'loadGroupChat'])->nam
     require __DIR__.'/agent.php';
     require __DIR__.'/country.php';
     require __DIR__.'/regional.php';
+    require __DIR__.'/partner.php';
 };
 
 // Routes WITHOUT locale prefix (default English)

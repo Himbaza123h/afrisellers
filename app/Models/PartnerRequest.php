@@ -29,9 +29,13 @@ protected $fillable = [
     'logo',
     'intro',
     'status',
+    'user_id',
     'admin_notes',
     'reviewed_at',
     'reviewed_by',
+    'name',
+    'password',
+    'user_id',
 ];
 
 protected $casts = [
@@ -45,12 +49,20 @@ protected $casts = [
         return Storage::url($this->logo);
     }
 
+        public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+
     public function getIntroUrlAttribute(): string
 {
     if (!$this->intro) return '';
     if (str_starts_with($this->intro, 'http')) return $this->intro;
     return Storage::url($this->intro);
 }
+
+
 
 
 public function getServicesStringAttribute(): string

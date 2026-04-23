@@ -73,7 +73,7 @@
             <div class="flex gap-1.5 overflow-x-auto scrollbar-hide" id="cat-tab-bar">
                 @foreach($homepageCategories as $index => $cat)
                 <button
-                    class="cat-tab relative flex-shrink-0 px-3 py-1.5 md:px-4 md:py-2 rounded-md text-xs md:text-sm font-bold transition-all duration-200 whitespace-nowrap border
+                    class="cat-tab relative flex-shrink-0 px-2 py-1 md:px-3 md:py-1.5 rounded-md text-sm md:text-sm font-bold transition-all duration-200 whitespace-nowrap border
                            {{ $index === 0
                                ? 'bg-[#ff0808] text-white border-[#ff0808] shadow-md cat-tab--active'
                                : 'bg-white text-gray-700 border-gray-200 hover:border-[#ff0808]/40 hover:text-[#ff0808]' }}"

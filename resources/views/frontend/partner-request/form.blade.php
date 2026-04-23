@@ -204,6 +204,43 @@
                     </div>
                 </div>
 
+                {{-- ─── Authentication Credentials ─────────────────────────────── --}}
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100">
+                        Account Credentials
+                    </h2>
+                    <p class="text-xs text-gray-500 mb-4">
+                        These will be used to log in to your partner dashboard once approved.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Display Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="name" value="{{ old('name') }}" required
+                                class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                placeholder="Name shown on your partner profile">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Password <span class="text-red-500">*</span>
+                            </label>
+                            <input type="password" name="password" required
+                                class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                placeholder="Min. 8 characters">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Confirm Password <span class="text-red-500">*</span>
+                            </label>
+                            <input type="password" name="password_confirmation" required
+                                class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                placeholder="Repeat your password">
+                        </div>
+                    </div>
+                </div>
+                {{-- ─────────────────────────────────────────────────────────────── --}}
+
                 {{-- Message --}}
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">

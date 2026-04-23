@@ -23,16 +23,21 @@
                     $dashboardRoute = route('country.dashboard.home');
                 } elseif ($user->roles()->where('roles.slug', 'agent')->exists()) {
                     $dashboardRoute = route('agent.dashboard.home');
+                } elseif ($user->is_partner) {                          // ← ADD THIS
+                    $dashboardRoute = route('partner.dashboard');
                 } elseif ($user->isVendor()) {
                     $dashboardRoute = route('vendor.dashboard.home');
                 }
             @endphp
 
+            @php
+                $isDashboardActive = request()->routeIs('*.dashboard.home') || request()->routeIs('partner.dashboard');
+            @endphp
             <a href="{{ $dashboardRoute }}"
-                class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('*.dashboard.home') ? 'text-white bg-[#ff0808] to-[#cc0606]' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg font-semibold transition-all group">
-                <i class="w-5 text-center transition-transform fas fa-th-large {{ request()->routeIs('*.dashboard.home') ? '' : 'text-gray-400' }} group-hover:scale-110"></i>
+                class="flex items-center gap-3 px-4 py-3 {{ $isDashboardActive ? 'text-white bg-[#ff0808] to-[#cc0606]' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg font-semibold transition-all group">
+                <i class="w-5 text-center transition-transform fas fa-th-large {{ $isDashboardActive ? '' : 'text-gray-400' }} group-hover:scale-110"></i>
                 <span class="text-sm">Dashboard</span>
-                @if(request()->routeIs('*.dashboard.home'))
+                @if($isDashboardActive)
                     <span class="ml-auto w-1.5 h-1.5 bg-white rounded-full"></span>
                 @endif
             </a>
@@ -290,7 +295,104 @@
     </div>
 @endif
 
+{{-- ─── Partner Sections ─────────────────────────────────────── --}}
+@if (auth()->user()->is_partner)
 
+    {{-- Profile Completion --}}
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">My Profile</p>
+        <nav class="space-y-1">
+            <a href="{{ route('partner.profile.show') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.profile.*') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.profile.*') ? 'text-teal-600' : 'text-gray-400' }} transition-transform fas fa-id-card group-hover:scale-110"></i>
+                <span class="text-sm">Profile Overview</span>
+            </a>
+            <a href="{{ route('partner.company.show') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.company.*') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.company.*') ? 'text-teal-600' : 'text-gray-400' }} transition-transform fas fa-building group-hover:scale-110"></i>
+                <span class="text-sm">Company Info</span>
+            </a>
+            <a href="{{ route('partner.branding.show') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.branding.*') ? 'text-pink-600 bg-pink-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.branding.*') ? 'text-pink-600' : 'text-gray-400' }} transition-transform fas fa-palette group-hover:scale-110"></i>
+                <span class="text-sm">Branding & Content</span>
+            </a>
+            <a href="{{ route('partner.contact.show') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.contact.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.contact.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-address-book group-hover:scale-110"></i>
+                <span class="text-sm">Contact Details</span>
+            </a>
+            <a href="{{ route('partner.social.show') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.social.*') ? 'text-sky-600 bg-sky-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.social.*') ? 'text-sky-600' : 'text-gray-400' }} transition-transform fas fa-share-alt group-hover:scale-110"></i>
+                <span class="text-sm">Social Media</span>
+            </a>
+            <a href="{{ route('partner.business.show') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.business.*') ? 'text-amber-600 bg-amber-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.business.*') ? 'text-amber-600' : 'text-gray-400' }} transition-transform fas fa-briefcase group-hover:scale-110"></i>
+                <span class="text-sm">Business Type</span>
+            </a>
+            <a href="{{ route('partner.operations.show') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.operations.*') ? 'text-indigo-600 bg-indigo-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.operations.*') ? 'text-indigo-600' : 'text-gray-400' }} transition-transform fas fa-globe-africa group-hover:scale-110"></i>
+                <span class="text-sm">Operations</span>
+            </a>
+        </nav>
+    </div>
+
+    {{-- Communication --}}
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Communication</p>
+        <nav class="space-y-1">
+            <a href="{{ route('partner.messages.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.messages.*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.messages.*') ? 'text-blue-600' : 'text-gray-400' }} transition-transform fas fa-comments group-hover:scale-110"></i>
+                <span class="text-sm">Messages</span>
+                @if(auth()->user()->unreadMessagesCount() > 0)
+                    <span class="ml-auto px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                        {{ auth()->user()->unreadMessagesCount() }}
+                    </span>
+                @endif
+            </a>
+            <a href="{{ route('partner.support.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.support.*') ? 'text-violet-600 bg-violet-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.support.*') ? 'text-violet-600' : 'text-gray-400' }} transition-transform fas fa-headset group-hover:scale-110"></i>
+                <span class="text-sm">Support</span>
+            </a>
+        </nav>
+    </div>
+
+    {{-- Documents --}}
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Documents</p>
+        <nav class="space-y-1">
+            <a href="{{ route('partner.documents.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.documents.*') ? 'text-slate-600 bg-slate-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.documents.*') ? 'text-slate-600' : 'text-gray-400' }} transition-transform fas fa-folder-open group-hover:scale-110"></i>
+                <span class="text-sm">My Documents</span>
+            </a>
+        </nav>
+    </div>
+
+    {{-- Account --}}
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Account</p>
+        <nav class="space-y-1">
+            <a href="{{ route('partner.settings.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.settings.*') ? 'text-slate-600 bg-slate-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.settings.*') ? 'text-slate-600' : 'text-gray-400' }} transition-transform fas fa-cog group-hover:scale-110"></i>
+                <span class="text-sm">Settings</span>
+            </a>
+            <a href="{{ route('partner.notifications.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('partner.notifications.*') ? 'text-slate-600 bg-slate-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('partner.notifications.*') ? 'text-slate-600' : 'text-gray-400' }} transition-transform fas fa-bell group-hover:scale-110"></i>
+                <span class="text-sm">Notifications</span>
+            </a>
+        </nav>
+    </div>
+
+@endif
+{{-- ─── End Partner Sections ────────────────────────────────────── --}}
 
 <!-- Agent Sections -->
 @if (auth()->user()->hasRole('agent'))

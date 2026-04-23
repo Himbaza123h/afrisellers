@@ -107,6 +107,12 @@ class PartnerRequestController extends Controller
             'sort_order'          => (Partner::max('sort_order') ?? 0) + 1,
         ]);
 
+        // update is_partner on the user
+        if ($partnerRequest->user) {
+            
+            $partnerRequest->user->update(['is_partner' => true]);
+        }
+
         return back()->with('success', "'{$partnerRequest->company_name}' approved and added to Partners.");
     }
 

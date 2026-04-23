@@ -241,6 +241,7 @@ protected function redirectBasedOnRole()
             ->with('success', 'Welcome back, ' . $user->name . '!');
     }
 
+
     // Check if user is an Agent
     $isAgent = $user->roles()
         ->where('roles.slug', 'agent')
@@ -254,6 +255,15 @@ protected function redirectBasedOnRole()
         return redirect()->route('agent.dashboard.home')
             ->with('success', 'Welcome back, ' . $user->name . '!');
     }
+
+    if ($user->is_partner) {
+    Log::info('Redirecting to Partner Dashboard', [
+        'user_id' => $user->id,
+        'role' => 'Partner',
+    ]);
+    return redirect()->route('partner.dashboard')
+        ->with('success', 'Welcome back, ' . $user->name . '!');
+}
 
     // Check if user is a vendor
     $vendor = Vendor::where('user_id', $user->id)->first();

@@ -18,7 +18,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'country_admin','provider', 'provider_id','avatar','country_id','regional_id','regional_admin','agent', 'password', 'status', 'department_id'];
+    protected $fillable = ['name', 'email', 'country_admin', 'is_partner', 'provider', 'provider_id','avatar','country_id','regional_id','regional_admin','agent', 'password', 'status', 'department_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -36,6 +36,11 @@ class User extends Authenticatable
     public function manageablePermission()
 {
     return $this->hasOne(ManageablePermission::class);
+}
+
+public function partnerRequest()
+{
+    return $this->hasOne(PartnerRequest::class);
 }
 
 public function supportTickets()

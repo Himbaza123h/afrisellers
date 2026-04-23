@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.permission'          => \App\Http\Middleware\CheckAdminPermission::class,
             'admin.access'              => \App\Http\Middleware\CheckAdminAccess::class,
             'track.visitor'             => \App\Http\Middleware\TrackVisitor::class,
+            'partner.access'            => \App\Http\Middleware\CheckPartnerAccess::class,
         ]);
     })
 ->withExceptions(function (Exceptions $exceptions): void {

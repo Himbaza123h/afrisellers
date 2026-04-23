@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // Add auth columns to partner_requests
+        Schema::table('partner_requests', function (Blueprint $table) {
+            $table->string('name')->nullable()->after('id');
+            $table->string('password')->nullable()->after('email');
+        });
+
+        // Add is_partner flag to users
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_partner')->default(false)->after('remember_token');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('partner_requests', function (Blueprint $table) {
+            $table->dropColumn(['name', 'password']);
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('is_partner');
+        });
+    }
+};
