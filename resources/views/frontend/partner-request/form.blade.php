@@ -1,0 +1,177 @@
+@extends('layouts.app')
+
+@section('title', 'Home - Africa\'s Leading B2B Marketplace')
+
+@section('content')
+
+    {{-- Minimal Header --}}
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+                <a href="/" class="flex items-center">
+                    <img src="{{ asset('mainlogo.png') }}"
+                        alt="AfriSellers" class="h-6 sm:h-8">
+                </a>
+            <a href="{{ route('home') }}"
+               class="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1.5">
+                <i class="fas fa-arrow-left text-xs"></i> Back to Home
+            </a>
+        </div>
+    </header>
+
+    {{-- Main Content --}}
+    <main class="flex-1 py-10 px-4">
+        <div class="max-w-2xl mx-auto">
+
+            {{-- Title --}}
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 bg-red-50 rounded-2xl mb-4">
+                    <i class="fas fa-handshake text-[#ff0808] text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-black text-gray-900 mb-2">Request to be a Partner</h1>
+                <p class="text-sm text-gray-500 max-w-md mx-auto">
+                    Join Afrisellers' trusted partner network. Fill in your details and our team will review your application.
+                </p>
+            </div>
+
+            @if($errors->any())
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                        <ul class="text-sm text-red-700 space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>• {{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+
+            <form action="{{ route('partner.request.store') }}" method="POST"
+                  enctype="multipart/form-data"
+                  class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 space-y-6">
+                @csrf
+
+                {{-- Company Info --}}
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100">
+                        Company Information
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Company Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="company_name" value="{{ old('company_name') }}" required
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="Your company name">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Industry
+                            </label>
+                            <input type="text" name="industry" value="{{ old('industry') }}"
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="e.g. Logistics, Banking, Tech">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Website URL
+                            </label>
+                            <input type="url" name="website_url" value="{{ old('website_url') }}"
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="https://yourcompany.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Country
+                            </label>
+                            <input type="text" name="country" value="{{ old('country') }}"
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="e.g. Rwanda, Kenya, Nigeria">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Partnership Type
+                            </label>
+                            <select name="partner_type"
+                                    class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent">
+                                <option value="">Select a partnership type...</option>
+                                <option value="Global Partner"       {{ old('partner_type') === 'Global Partner'       ? 'selected' : '' }}>Global Partner</option>
+                                <option value="Strategic Partner"    {{ old('partner_type') === 'Strategic Partner'    ? 'selected' : '' }}>Strategic Partner</option>
+                                <option value="Banking Partner"      {{ old('partner_type') === 'Banking Partner'      ? 'selected' : '' }}>Banking Partner</option>
+                                <option value="Logistics Partner"    {{ old('partner_type') === 'Logistics Partner'    ? 'selected' : '' }}>Logistics Partner</option>
+                                <option value="Technology Partner"   {{ old('partner_type') === 'Technology Partner'   ? 'selected' : '' }}>Technology Partner</option>
+                                <option value="Quality Partner"      {{ old('partner_type') === 'Quality Partner'      ? 'selected' : '' }}>Quality Partner</option>
+                                <option value="Development Partner"  {{ old('partner_type') === 'Development Partner'  ? 'selected' : '' }}>Development Partner</option>
+                                <option value="Other"                {{ old('partner_type') === 'Other'                ? 'selected' : '' }}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Contact Info --}}
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100">
+                        Contact Information
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Contact Person <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="contact_name" value="{{ old('contact_name') }}" required
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="Full name">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Email Address <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" name="email" value="{{ old('email') }}" required
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="contact@company.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Phone</label>
+                            <input type="text" name="phone" value="{{ old('phone') }}"
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent"
+                                   placeholder="+250 XXX XXX XXX">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Company Logo / GIF</label>
+                            <input type="file" name="logo" accept="image/*,.gif"
+                                   class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2
+                                          file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
+                                          file:text-xs file:font-semibold file:bg-red-50 file:text-[#ff0808]">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Message --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                        Why do you want to partner with Afrisellers? <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="message" rows="5" required
+                              class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff0808] focus:border-transparent resize-none"
+                              placeholder="Tell us about your company, what you offer, and how this partnership would be mutually beneficial...">{{ old('message') }}</textarea>
+                    <p class="text-xs text-gray-400 mt-1">Minimum 20 characters.</p>
+                </div>
+
+                {{-- Submit --}}
+                <div class="pt-2">
+                    <button type="submit"
+                            class="w-full py-3 bg-[#ff0808] text-white text-sm font-bold rounded-xl hover:bg-red-700 transition-all shadow-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Partnership Request
+                    </button>
+                    <p class="text-center text-xs text-gray-400 mt-3">
+                        Our team reviews all requests within 2-3 business days.
+                    </p>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+@endsection

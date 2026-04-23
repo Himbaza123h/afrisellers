@@ -1,0 +1,137 @@
+@extends('layouts.home')
+
+@push('styles')
+<style>
+    .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+</style>
+@endpush
+
+@section('page-content')
+<div class="space-y-4">
+    <!-- Page Header -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-xl font-bold text-gray-900">Membership Plans</h1>
+            <p class="mt-1 text-xs text-gray-500">Manage subscription plans and pricing</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('admin.memberships.feature-catalog.index') }}" class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-sm text-sm">
+                <i class="fas fa-book"></i>
+                <span>Feature catalog</span>
+            </a>
+            <a href="{{ route('admin.memberships.settings.index') }}" class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium shadow-sm text-sm">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="{{ route('admin.memberships.plans.create') }}" class="inline-flex items-center gap-2 px-3 py-2 bg-[#ff0808] hover:bg-[#e60707] text-white rounded-lg transition-all font-medium shadow-sm text-sm">
+                <i class="fas fa-plus"></i>
+                <span>Create Plan</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex gap-2 border-b border-gray-200">
+        <button onclick="switchTab('all')" id="tab-all" class="tab-button px-4 py-2 text-sm font-semibold text-[#ff0808] border-b-2 border-[#ff0808] transition-colors">
+            All
+        </button>
+        <button onclick="switchTab('stats')" id="tab-stats" class="tab-button px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+            Stats
+        </button>
+        <button onclick="switchTab('plans')" id="tab-plans" class="tab-button px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+            Plans
+        </button>
+        <button onclick="switchTab('features')" id="tab-features" class="tab-button px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+            Features
+        </button>
+    </div>
+
+    <!-- Messages -->
+    @if(session('success'))
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200 flex items-start gap-3">
+            <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+            <p class="text-sm font-medium text-green-900 flex-1">{{ session('success') }}</p>
+            <button onclick="this.parentElement.remove()" class="text-green-600 hover:text-green-800"><i class="fas fa-times"></i></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-3">
+            <i class="fas fa-exclamation-circle text-red-600 mt-0.5"></i>
+            <p class="text-sm font-medium text-red-900 flex-1">{{ session('error') }}</p>
+            <button onclick="this.parentElement.remove()" class="text-red-600 hover:text-red-800"><i class="fas fa-times"></i></button>
+        </div>
+    @endif
+
+    <!-- Stats Section -->
+    <div id="stats-section" class="stats-container">
+        @include('admin.membership.plans.partials.stats')
+    </div>
+
+    <!-- Plans Section -->
+    <div id="plans-section" class="plans-container">
+        @include('admin.membership.plans.partials.plans')
+    </div>
+
+    <!-- Features overview (per plan) -->
+    <div id="features-section" class="features-container" style="display: none;">
+        @include('admin.membership.plans.partials.features-tab')
+    </div>
+</div>
+
+<script>
+function switchTab(tab) {
+    // Remove active state from all tabs
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('text-[#ff0808]', 'border-b-2', 'border-[#ff0808]');
+        btn.classList.add('text-gray-600');
+    });
+
+    // Add active state to selected tab
+    const activeTab = document.getElementById(`tab-${tab}`);
+    activeTab.classList.remove('text-gray-600');
+    activeTab.classList.add('text-[#ff0808]', 'border-b-2', 'border-[#ff0808]');
+
+    // Show/hide sections based on tab
+    const statsSection = document.getElementById('stats-section');
+    const plansSection = document.getElementById('plans-section');
+    const featuresSection = document.getElementById('features-section');
+
+    switch(tab) {
+        case 'all':
+            statsSection.style.display = 'block';
+            plansSection.style.display = 'block';
+            featuresSection.style.display = 'none';
+            break;
+        case 'stats':
+            statsSection.style.display = 'block';
+            plansSection.style.display = 'none';
+            featuresSection.style.display = 'none';
+            break;
+        case 'plans':
+            statsSection.style.display = 'none';
+            plansSection.style.display = 'block';
+            featuresSection.style.display = 'none';
+            break;
+        case 'features':
+            statsSection.style.display = 'none';
+            plansSection.style.display = 'none';
+            featuresSection.style.display = 'block';
+            break;
+    }
+}
+
+// Auto-hide success/error messages after 5 seconds
+setTimeout(function() {
+    const alerts = document.querySelectorAll('.bg-green-50, .bg-red-50');
+    alerts.forEach(function(alert) {
+        alert.style.transition = 'opacity 0.5s';
+        alert.style.opacity = '0';
+        setTimeout(function() {
+            alert.remove();
+        }, 500);
+    });
+}, 5000);
+</script>
+@endsection

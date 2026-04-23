@@ -1,0 +1,21 @@
+{
+    "name": "Afri Safaris - The Safari of a Lifetime",
+    "short_name": "Afri Safaris",
+    "description": "Leading tour company in East Africa specializing in wildlife safaris in Rwanda, Uganda and Tanzania",
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#77773c",
+    "background_color": "#000000",
+    "display": "standalone",
+    "start_url": "/"
+}

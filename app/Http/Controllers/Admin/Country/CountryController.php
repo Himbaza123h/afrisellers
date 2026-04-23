@@ -1,0 +1,570 @@
+<?php
+
+namespace App\Http\Controllers\Admin\Country;
+
+use App\Http\Controllers\Controller;
+use App\Models\Country;
+use App\Models\Region;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\Vendor\Vendor;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
+
+
+class CountryController extends Controller
+{
+    /**
+     * Display a listing of the countries.
+     */
+public function index(Request $request)
+{
+    $query = Country::with(['region']);
+
+    // Handle search
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('code', 'like', "%{$search}%");
+        });
+    }
+
+    // Handle status filter
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // Handle region filter
+    if ($request->filled('region')) {
+        $query->where('region_id', $request->region);
+    }
+
+    // Handle flag filter
+    if ($request->filled('has_flag')) {
+        if ($request->has_flag === 'yes') {
+            $query->whereNotNull('flag_url')->where('flag_url', '!=', '');
+        } else {
+            $query->where(function($q) {
+                $q->whereNull('flag_url')->orWhere('flag_url', '');
+            });
+        }
+    }
+
+    // Handle sorting
+    $sortBy = $request->get('sort_by', 'created_at');
+    $sortOrder = $request->get('sort_order', 'desc');
+
+    switch ($sortBy) {
+        case 'name':
+            $query->orderBy('name', $sortOrder);
+            break;
+        case 'status':
+            $query->orderBy('status', $sortOrder);
+            break;
+        default:
+            $query->orderBy('created_at', $sortOrder);
+    }
+
+    $countries = $query->paginate(10)->withQueryString();
+
+    // Add vendors count for each country after fetching
+    $countries->each(function($country) {
+        $country->vendors_count = DB::table('vendors')
+            ->join('business_profiles', 'vendors.business_profile_id', '=', 'business_profiles.id')
+            ->where('business_profiles.country_id', $country->id)
+            ->whereNull('vendors.deleted_at')
+            ->whereNull('business_profiles.deleted_at')
+            ->count();
+    });
+
+    $regions = Region::all();
+
+    // Calculate statistics
+    $total = Country::count();
+    $active = Country::where('status', 'active')->count();
+    $inactive = Country::where('status', 'inactive')->count();
+
+    // Count total vendors across all countries
+    $totalVendors = Vendor::whereHas('businessProfile')->count();
+
+    // Regional stats
+    $totalRegions = Region::count();
+    $countriesWithFlags = Country::whereNotNull('flag_url')
+        ->where('flag_url', '!=', '')
+        ->count();
+
+    $avgCountriesPerRegion = $totalRegions > 0
+        ? round($total / $totalRegions, 1)
+        : 0;
+
+    $stats = [
+        'total' => $total,
+        'active' => $active,
+        'inactive' => $inactive,
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'inactive_percentage' => $total > 0 ? round(($inactive / $total) * 100, 1) : 0,
+        'total_vendors' => $totalVendors,
+        'total_regions' => $totalRegions,
+        'avg_countries_per_region' => $avgCountriesPerRegion,
+        'countries_with_flags' => $countriesWithFlags,
+        'flags_percentage' => $total > 0 ? round(($countriesWithFlags / $total) * 100, 1) : 0,
+    ];
+
+    return view('admin.country.index', compact(
+        'countries',
+        'regions',
+        'stats'
+    ));
+}
+
+    /**
+     * Show the form for creating a new country.
+     */
+    public function create()
+    {
+        return view('admin.country.create');
+    }
+
+    /**
+     * Store a newly created country in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:countries,name',
+            'flag_url' => 'nullable|url|max:500',
+            'status' => 'required|in:active,inactive',
+        ], [
+            'name.required' => 'Country name is required.',
+            'name.unique' => 'This country already exists.',
+            'flag_url.url' => 'Please provide a valid URL for the flag.',
+            'status.required' => 'Status is required.',
+            'status.in' => 'Status must be either active or inactive.',
+        ]);
+
+        try {
+            $country = Country::create($validated);
+
+            // Notify all admins about new country
+            \App\Models\Notification::create([
+                'title'     => 'New Country Added',
+                'content'   => $country->name . ' has been added to AfriSellers. Configure it to start accepting vendors.',
+                'link_url'  => '/admin/countries/' . $country->id,
+                'user_id'   => auth()->id(),
+                'vendor_id' => null,
+                'country_id'=> $country->id,
+                'is_read'   => false,
+            ]);
+
+            Log::info('Country created successfully', [
+                'country_id' => $country->id,
+                'name' => $country->name,
+                'created_by' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->route('admin.country.index')
+                ->with('success', 'Country created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to create country', [
+                'error' => $e->getMessage(),
+                'data' => $validated,
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to create country. Please try again.']);
+        }
+    }
+
+    public function print()
+{
+    $countries = Country::with(['region'])
+        ->get();
+
+    $total = Country::count();
+    $active = Country::where('status', 'active')->count();
+    $inactive = Country::where('status', 'inactive')->count();
+
+    $totalVendors = \App\Models\Vendor\Vendor::whereHas('businessProfile')->count();
+    $totalRegions = Region::count();
+    $countriesWithFlags = Country::whereNotNull('flag_url')
+        ->where('flag_url', '!=', '')
+        ->count();
+
+    $avgCountriesPerRegion = $totalRegions > 0
+        ? round($total / $totalRegions, 1)
+        : 0;
+
+    // Add vendors count for each country
+    $countries->each(function($country) {
+        $country->vendors_count = DB::table('vendors')
+            ->join('business_profiles', 'vendors.business_profile_id', '=', 'business_profiles.id')
+            ->where('business_profiles.country_id', $country->id)
+            ->whereNull('vendors.deleted_at')
+            ->whereNull('business_profiles.deleted_at')
+            ->count();
+    });
+
+    $stats = [
+        'total' => $total,
+        'active' => $active,
+        'inactive' => $inactive,
+        'active_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+        'inactive_percentage' => $total > 0 ? round(($inactive / $total) * 100, 1) : 0,
+        'total_vendors' => $totalVendors,
+        'total_regions' => $totalRegions,
+        'avg_countries_per_region' => $avgCountriesPerRegion,
+        'countries_with_flags' => $countriesWithFlags,
+        'flags_percentage' => $total > 0 ? round(($countriesWithFlags / $total) * 100, 1) : 0,
+    ];
+
+    return view('admin.country.print', compact('countries', 'stats'));
+}
+
+public function switchToCountry(Country $country)
+{
+    try {
+        // Get the country admin for this country
+        $countryAdmin = User::where('country_id', $country->id)
+            ->where('country_admin', true)
+            ->first();
+
+        if (!$countryAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No Country Admin assigned to this country yet.'
+            ], 404);
+        }
+
+        $countryAdminRole = Role::where('slug', 'country_admin')->first();
+
+        if (!$countryAdminRole) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Country Admin role not found in system.'
+            ], 404);
+        }
+
+        // Attach role if not exists
+        if (!$countryAdmin->roles()->where('role_id', $countryAdminRole->id)->exists()) {
+            $countryAdmin->roles()->attach($countryAdminRole->id);
+        }
+
+        // Generate login token
+        $token = \Illuminate\Support\Str::random(60);
+        \Illuminate\Support\Facades\Cache::put(
+            'country_login_token_' . $token,
+            $countryAdmin->id,
+            now()->addMinutes(5)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ready to switch to Country Admin Dashboard',
+            'login_url' => route('auth.country.token-login', ['token' => $token])
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to switch: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+    /**
+     * Display the specified country.
+     */
+    public function show(Country $country)
+    {
+        return view('admin.country.show', compact('country'));
+    }
+
+    /**
+     * Show the form for editing the specified country.
+     */
+    public function edit(Country $country)
+    {
+        return view('admin.country.edit', compact('country'));
+    }
+
+    /**
+     * Update the specified country in storage.
+     */
+    public function update(Request $request, Country $country)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:countries,name,' . $country->id,
+            'flag_url' => 'nullable|url|max:500',
+            'status' => 'required|in:active,inactive',
+        ], [
+            'name.required' => 'Country name is required.',
+            'name.unique' => 'This country name is already taken.',
+            'flag_url.url' => 'Please provide a valid URL for the flag.',
+            'status.required' => 'Status is required.',
+            'status.in' => 'Status must be either active or inactive.',
+        ]);
+
+        try {
+            $country->update($validated);
+
+            // Notify country admin if assigned
+            $countryAdmin = \App\Models\User::where('country_id', $country->id)
+                ->where('country_admin', true)->first();
+            if ($countryAdmin) {
+                \App\Models\Notification::create([
+                    'title'     => 'Country Profile Updated',
+                    'content'   => 'The profile for ' . $country->name . ' has been updated by the admin.',
+                    'link_url'  => '/country-admin/dashboard',
+                    'user_id'   => $countryAdmin->id,
+                    'vendor_id' => null,
+                    'country_id'=> $country->id,
+                    'is_read'   => false,
+                ]);
+            }
+
+            Log::info('Country updated successfully', [
+                'country_id' => $country->id,
+                'name' => $country->name,
+                'updated_by' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->route('admin.country.index')
+                ->with('success', 'Country updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to update country', [
+                'country_id' => $country->id,
+                'error' => $e->getMessage(),
+                'data' => $validated,
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to update country. Please try again.']);
+        }
+    }
+
+    /**
+     * Remove the specified country from storage.
+     */
+    public function destroy(Country $country)
+    {
+        try {
+            $countryName = $country->name;
+
+            // Notify country admin before deleting
+            $countryAdmin = \App\Models\User::where('country_id', $country->id)
+                ->where('country_admin', true)->first();
+            if ($countryAdmin) {
+                \App\Models\Notification::create([
+                    'title'     => 'Country Removed',
+                    'content'   => $countryName . ' has been removed from the AfriSellers platform by the admin.',
+                    'link_url'  => null,
+                    'user_id'   => $countryAdmin->id,
+                    'vendor_id' => null,
+                    'country_id'=> null,
+                    'is_read'   => false,
+                ]);
+            }
+
+            $country->delete();
+
+            Log::info('Country deleted successfully', [
+                'country_id' => $country->id,
+                'name' => $countryName,
+                'deleted_by' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->route('admin.country.index')
+                ->with('success', 'Country deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete country', [
+                'country_id' => $country->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Failed to delete country. Please try again.']);
+        }
+    }
+
+    /**
+     * Toggle country status (active/inactive).
+     */
+    public function toggleStatus(Country $country)
+    {
+        try {
+            $country->status = $country->status === 'active' ? 'inactive' : 'active';
+            $country->save();
+
+            // Notify country admin of status change
+            $countryAdmin = \App\Models\User::where('country_id', $country->id)
+                ->where('country_admin', true)->first();
+            if ($countryAdmin) {
+                \App\Models\Notification::create([
+                    'title'     => 'Country Status Changed',
+                    'content'   => $country->name . ' has been ' . $country->status . '. ' .
+                        ($country->status === 'active' ? 'You can now manage this country.' : 'Contact admin for more information.'),
+                    'link_url'  => $country->status === 'active' ? '/country-admin/dashboard' : null,
+                    'user_id'   => $countryAdmin->id,
+                    'vendor_id' => null,
+                    'country_id'=> $country->id,
+                    'is_read'   => false,
+                ]);
+            }
+
+            Log::info('Country status toggled', [
+                'country_id' => $country->id,
+                'new_status' => $country->status,
+                'updated_by' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->route('admin.country.index')
+                ->with('success', 'Country status updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to toggle country status', [
+                'country_id' => $country->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Failed to update country status. Please try again.']);
+        }
+    }
+
+    /**
+     * Show the form for assigning/editing a country admin user
+     */
+    public function showAssignCountryAdmin(Country $country)
+    {
+        // Check if country already has an admin
+        $countryAdmin = User::where('country_id', $country->id)
+            ->where('country_admin', true)
+            ->first();
+
+        return view('admin.country.assign-country-admin', compact('country', 'countryAdmin'));
+    }
+
+    /**
+     * Assign or update a country admin user
+     */
+    public function assignCountryAdmin(Request $request, Country $country)
+    {
+        // Check if updating existing admin
+        $countryAdmin = User::where('country_id', $country->id)
+            ->where('country_admin', true)
+            ->first();
+
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ];
+
+        // Email validation - Allow same email for same country
+        $rules['email'] = [
+            'required',
+            'string',
+            'email',
+            'max:255',
+            Rule::unique('users')->where(function ($query) use ($country) {
+                return $query->where('country_id', '!=', $country->id);
+            })
+        ];
+
+        // Password validation - required only for new admins
+        if (!$countryAdmin) {
+            $rules['password'] = ['required', 'confirmed', Password::min(8)];
+        } else {
+            $rules['password'] = ['nullable', 'confirmed', Password::min(8)];
+        }
+
+        $request->validate($rules);
+
+        DB::beginTransaction();
+        try {
+            if ($countryAdmin) {
+                // Update existing country admin
+                $updateData = [
+                    'name' => $request->name,
+                    'phone' => $request->phone,
+                ];
+
+                // Update email if it changed
+                if ($request->email !== $countryAdmin->email) {
+                    $updateData['email'] = $request->email;
+                }
+
+                $countryAdmin->update($updateData);
+
+                // Update password only if provided
+                if ($request->filled('password')) {
+                    $countryAdmin->update([
+                        'password' => Hash::make($request->password),
+                    ]);
+                }
+
+                $message = 'Country Admin updated successfully!';
+            } else {
+                // Create new country admin user
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'password' => Hash::make($request->password),
+                    'email_verified_at' => now(),
+                    'regional_admin' => false,
+                    'country_admin' => true,
+                    'agent' => false,
+                    'regional_id' => $country->region_id ?? null,
+                    'country_id' => $country->id,
+                ]);
+
+                // Assign country admin role
+                $role = Role::where('slug', 'country_admin')->first();
+
+                if ($role) {
+                    $user->roles()->attach($role->id);
+                }
+
+                $message = 'Country Admin created successfully!';
+            }
+
+            DB::commit();
+
+            // Notify on create or update
+            $notifyUser = $countryAdmin ?? ($user ?? null);
+            if ($notifyUser) {
+                \App\Models\Notification::create([
+                    'title'     => $countryAdmin ? 'Your Account Was Updated' : 'Country Admin Account Created',
+                    'content'   => $countryAdmin
+                        ? 'Your country administrator account for ' . $country->name . ' has been updated by the admin.'
+                        : 'Your country administrator account has been created. You can now manage ' . $country->name . ' on AfriSellers.',
+                    'link_url'  => '/country-admin/dashboard',
+                    'user_id'   => $notifyUser->id,
+                    'vendor_id' => null,
+                    'country_id'=> $country->id,
+                    'is_read'   => false,
+                ]);
+            }
+
+            return redirect()
+                ->route('admin.country.show', $country)
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to save country admin: ' . $e->getMessage()]);
+        }
+    }
+}
+

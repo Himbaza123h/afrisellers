@@ -1,0 +1,320 @@
+[04-Feb-2026 00:56:40 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrino3/afrisellers.afrinnovators.co.rw/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/config/database.php on line 19
+[04-Feb-2026 00:56:40 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrino3/afrisellers.afrinnovators.co.rw/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/config/mail.php on line 17
+[04-Feb-2026 00:56:40 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrino3/afrisellers.afrinnovators.co.rw/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/config/app.php on line 16
+[04-Feb-2026 00:56:40 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrino3/afrisellers.afrinnovators.co.rw/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrino3/afrisellers.afrinnovators.co.rw/config/services.php on line 18
+[01-Mar-2026 08:41:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[01-Mar-2026 08:41:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[01-Mar-2026 08:41:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[01-Mar-2026 08:41:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[01-Mar-2026 13:55:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[01-Mar-2026 13:55:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[01-Mar-2026 13:55:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[01-Mar-2026 13:55:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[01-Mar-2026 13:57:09 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/cache.php on line 18
+[01-Mar-2026 14:00:18 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/auth.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/auth.php on line 17
+[01-Mar-2026 14:00:18 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/filesystems.php on line 16
+[01-Mar-2026 14:00:18 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/queue.php on line 16
+[01-Mar-2026 14:00:18 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/session.php on line 21
+[01-Mar-2026 14:00:19 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/logging.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/logging.php on line 21
+[03-Mar-2026 20:16:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[03-Mar-2026 20:16:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[03-Mar-2026 20:16:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[03-Mar-2026 20:16:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[03-Mar-2026 20:18:07 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/cache.php on line 18
+[03-Mar-2026 20:21:30 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/auth.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/auth.php on line 17
+[03-Mar-2026 20:21:30 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/filesystems.php on line 16
+[03-Mar-2026 20:21:30 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/queue.php on line 16
+[03-Mar-2026 20:21:30 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/session.php on line 21
+[03-Mar-2026 20:21:30 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/logging.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/logging.php on line 21
+[03-Mar-2026 22:49:56 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[03-Mar-2026 22:49:56 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[03-Mar-2026 22:49:56 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[03-Mar-2026 22:49:56 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[03-Mar-2026 22:51:22 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/cache.php on line 18
+[03-Mar-2026 22:54:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/auth.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/auth.php on line 17
+[03-Mar-2026 22:54:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/filesystems.php on line 16
+[03-Mar-2026 22:54:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/queue.php on line 16
+[03-Mar-2026 22:54:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/session.php on line 21
+[03-Mar-2026 22:54:47 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/logging.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/logging.php on line 21
+[06-Mar-2026 18:48:36 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[06-Mar-2026 18:48:36 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[06-Mar-2026 18:48:36 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[06-Mar-2026 18:48:36 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[06-Mar-2026 18:49:59 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/cache.php on line 18
+[06-Mar-2026 18:53:47 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/auth.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/auth.php on line 17
+[06-Mar-2026 18:53:47 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/filesystems.php on line 16
+[06-Mar-2026 18:53:47 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/queue.php on line 16
+[06-Mar-2026 18:53:47 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/session.php on line 21
+[06-Mar-2026 18:53:48 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/logging.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/logging.php on line 21
+[22-Mar-2026 00:47:58 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[22-Mar-2026 00:48:00 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[22-Mar-2026 00:48:02 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[22-Mar-2026 00:48:47 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[22-Mar-2026 00:48:48 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[22-Mar-2026 00:48:51 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[25-Mar-2026 05:10:20 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[25-Mar-2026 05:10:22 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[25-Mar-2026 05:10:24 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[25-Mar-2026 05:11:05 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[25-Mar-2026 05:11:07 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[25-Mar-2026 05:11:09 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[27-Mar-2026 08:29:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[27-Mar-2026 08:29:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[27-Mar-2026 08:29:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[27-Mar-2026 08:29:44 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[27-Mar-2026 08:29:45 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[27-Mar-2026 08:29:45 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[27-Mar-2026 08:29:45 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[27-Mar-2026 08:29:45 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[27-Mar-2026 08:33:06 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/cache.php on line 18
+[27-Mar-2026 08:33:08 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/cache.php on line 18
+[01-Apr-2026 09:55:53 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/database.php on line 19
+[01-Apr-2026 09:55:53 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/mail.php on line 17
+[01-Apr-2026 09:55:53 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/app.php on line 16
+[01-Apr-2026 09:55:53 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/services.php on line 18
+[01-Apr-2026 09:57:29 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/cache.php on line 18
+[01-Apr-2026 10:01:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/auth.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/auth.php on line 17
+[01-Apr-2026 10:01:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/filesystems.php on line 16
+[01-Apr-2026 10:01:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/queue.php on line 16
+[01-Apr-2026 10:01:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/session.php on line 21
+[01-Apr-2026 10:01:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/afrisell/public_html/config/logging.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/afrisell/public_html/config/logging.php on line 21

@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::table('business_profiles', function (Blueprint $table) {
+            $table->string('logo')->nullable()->after('business_name');
+            $table->text('address')->nullable()->after('city');
+            $table->string('postal_code', 20)->nullable()->after('city');
+            $table->string('website')->nullable()->after('postal_code');
+            $table->text('description')->nullable()->after('website');
+            $table->string('business_email')->nullable()->after('phone_code');
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('business_profiles', function (Blueprint $table) {
+            $table->dropColumn(['logo', 'address', 'postal_code', 'website', 'description', 'business_email']);
+        });
+    }
+};
