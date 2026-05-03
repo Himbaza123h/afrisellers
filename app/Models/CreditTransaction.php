@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class CreditTransaction extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = ['agent_id', 'transaction_type', 'credits'];
+
+    protected $casts = ['credits' => 'decimal:2'];
+
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+}

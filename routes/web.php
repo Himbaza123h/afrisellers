@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Frontend\CountryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\HomeController;
@@ -14,6 +13,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SystemLogController;
 use Illuminate\Support\Facades\Artisan;
+    use App\Http\Controllers\Frontend\CompanyShowController;
 
 
 
@@ -61,6 +61,32 @@ $routes = function ($namePrefix = '') {
     Route::get('/business-profile/{businessProfileId}/{name?}', [HomeController::class, 'showBusinessProfile'])->name($namePrefix . 'business-profile.show');
 
 
+
+
+
+    Route::prefix('company/{id}')->name('company.')->group(function () {
+
+        // 1 · Profile Overview  (default landing — /company/42)
+        Route::get('/',           [CompanyShowController::class, 'overview'])    ->name('overview');
+
+        // 2 · Company Info
+        Route::get('/info',       [CompanyShowController::class, 'companyInfo']) ->name('info');
+
+        // 3 · Branding & Content
+        Route::get('/branding',   [CompanyShowController::class, 'branding'])    ->name('branding');
+
+        // 4 · Contact Details
+        Route::get('/contact',    [CompanyShowController::class, 'contact'])     ->name('contact');
+
+        // 5 · Social Media
+        Route::get('/social',     [CompanyShowController::class, 'social'])      ->name('social');
+
+        // 6 · Business Type
+        Route::get('/type',       [CompanyShowController::class, 'businessType'])->name('type');
+
+        // 7 · Operations
+        Route::get('/operations', [CompanyShowController::class, 'operations'])  ->name('operations');
+    });
 
         // Wishlist
     Route::get('/wishlist', [WishlistController::class, 'index'])->name($namePrefix . 'wishlist.index');

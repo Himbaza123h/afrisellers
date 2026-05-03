@@ -74,6 +74,28 @@ Route::prefix('system-logs')->name('system-logs.')->group(function () {
 });
 
 
+// Agent Package Management
+Route::prefix('agent-packages')->name('agent-packages.')->group(function () {
+    Route::get('/',                           [App\Http\Controllers\Admin\AgentPackageController::class, 'index'])->name('index');
+    Route::get('/create',                     [App\Http\Controllers\Admin\AgentPackageController::class, 'create'])->name('create');
+    Route::post('/',                          [App\Http\Controllers\Admin\AgentPackageController::class, 'store'])->name('store');
+    Route::get('/{agentPackage}',             [App\Http\Controllers\Admin\AgentPackageController::class, 'show'])->name('show');
+    Route::get('/{agentPackage}/edit',        [App\Http\Controllers\Admin\AgentPackageController::class, 'edit'])->name('edit');
+    Route::match(['put','patch'], '/{agentPackage}', [App\Http\Controllers\Admin\AgentPackageController::class, 'update'])->name('update');
+    Route::delete('/{agentPackage}',          [App\Http\Controllers\Admin\AgentPackageController::class, 'destroy'])->name('destroy');
+    Route::post('/{agentPackage}/toggle-status', [App\Http\Controllers\Admin\AgentPackageController::class, 'toggleStatus'])->name('toggle-status');
+});
+
+
+Route::post('settings/credit-value',         [SettingsController::class, 'updateCreditValue'])->name('settings.credit-value.update');
+Route::post('settings/credit-types',         [SettingsController::class, 'storeCreditType'])->name('settings.credit-types.store');
+Route::put('settings/credit-types/{id}',     [SettingsController::class, 'updateCreditType'])->name('settings.credit-types.update');
+Route::delete('settings/credit-types/{id}',  [SettingsController::class, 'destroyCreditType'])->name('settings.credit-types.destroy');
+
+Route::post('settings/targets',              [SettingsController::class, 'storeTarget'])->name('settings.targets.store');
+Route::put('settings/targets/{id}',          [SettingsController::class, 'updateTarget'])->name('settings.targets.update');
+Route::delete('settings/targets/{id}',       [SettingsController::class, 'destroyTarget'])->name('settings.targets.destroy');
+
 
     // In your existing admin routes group — ADD ONLY THESE:
 Route::get('vendors/create', [\App\Http\Controllers\Admin\Vendor\VendorController::class, 'create'])->name('vendors.create');

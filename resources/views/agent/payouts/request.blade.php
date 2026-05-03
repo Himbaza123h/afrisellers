@@ -29,7 +29,11 @@
     <div class="bg-teal-600 rounded-xl p-5 text-white shadow-md">
         <p class="text-xs font-semibold text-cyan-100 uppercase tracking-wider mb-1">Available Balance</p>
         <p class="text-3xl font-bold">${{ number_format($available, 2) }}</p>
-        <p class="text-xs text-cyan-100 mt-1">Maximum amount you can request</p>
+        <p class="text-xs text-cyan-100 mt-1">
+            {{ number_format($totalCredits, 2) }} credits
+            × ${{ number_format($multiplier, 2) }} per credit
+        </p>
+        <p class="text-xs text-cyan-200 mt-0.5">Maximum amount you can request</p>
     </div>
 
     @if($available <= 0)
@@ -78,7 +82,7 @@
                     Amount (USD) <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold mt-3">$</span>
                     <input type="number" name="amount" id="amountInput"
                         value="{{ old('amount') }}"
                         min="1" max="{{ $available }}" step="0.01" required

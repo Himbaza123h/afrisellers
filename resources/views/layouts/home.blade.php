@@ -80,4 +80,29 @@
         }
     });
 </script>
+
+<script>
+function switchToPartner() {
+    fetch('{{ route("vendor.switch-to-partner") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.login_url;
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+</script>
+
+
+
+
 @endpush

@@ -109,11 +109,6 @@
         $popularSuppliersAds       = $allSquareAds->get('The Popular Suppliers',       collect());
         $trendingProductsAds       = $allSquareAds->get('Trending Products',           collect());
 
-        Log::info('Loaded Square Ads for homepage sections', [
-            'weekly' => $weeklySquareAds->pluck('id'),
-            'hot_deals' => $hotDealsSquareAds->pluck('id'),
-            'recommended_suppliers' => $mostRecommendedSalesAds->pluck('id'),
-        ]);
 
 @endphp
 

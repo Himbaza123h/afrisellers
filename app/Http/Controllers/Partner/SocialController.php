@@ -7,10 +7,31 @@ use Illuminate\Http\Request;
 
 class SocialController extends Controller
 {
+    /** The 6 social platforms we track. */
+    private const PLATFORMS = [
+        'facebook_url',
+        'instagram_url',
+        'twitter_url',
+        'linkedin_url',
+        'youtube_url',
+        'tiktok_url',
+    ];
+
     public function show()
     {
         $partner = auth()->user()->partnerRequest;
-        return view('partner.social.show', compact('partner'));
+
+        $connected = collect(self::PLATFORMS)
+            ->filter(fn($field) => !empty($partner?->{$field}))
+            ->count();
+
+        $stats = [
+            'total'       => count(self::PLATFORMS),
+            'connected'   => $connected,
+            'missing'     => count(self::PLATFORMS) - $connected,
+        ];
+
+        return view('partner.social.show', compact('partner', 'stats'));
     }
 
     public function edit()
@@ -35,6 +56,6 @@ class SocialController extends Controller
         $partner->update($validated);
 
         return redirect()->route('partner.social.show')
-                         ->with('success', 'Social media profiles updated.');
+                         ->with('success', 'Social media profiles updated successfully.');
     }
 }

@@ -5,7 +5,6 @@ use App\Http\Controllers\Vendor\Product\ProductController;
 use App\Http\Controllers\Vendor\RFQController;
 use App\Http\Controllers\Vendor\OrderController;
 use App\Http\Controllers\Vendor\InventoryController;
-use App\Http\Controllers\Vendor\ShowroomController;
 use App\Http\Controllers\Vendor\TradeshowController;
 use App\Http\Controllers\Vendor\LoadController;
 use App\Http\Controllers\Vendor\MessageController;
@@ -30,6 +29,7 @@ use App\Http\Controllers\Vendor\PromoCodeController;
 use App\Http\Controllers\Vendor\VendorProfileController;
 use App\Http\Controllers\Vendor\VendorShowroomController;
 use App\Http\Controllers\Vendor\ArticleController;
+use App\Http\Controllers\Vendor\VendorPartnerRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('vendor')
@@ -84,6 +84,19 @@ Route::prefix('vendor')
         Route::delete('/{ad}',           [AdController::class, 'destroy'])->name('destroy');
         Route::patch('/{ad}/toggle',     [AdController::class, 'toggleStatus'])->name('toggle-status');
     });
+
+
+    // Partner Request
+Route::prefix('partner-request')
+    ->name('partner-request.')
+    ->group(function () {
+        Route::get('/', [VendorPartnerRequestController::class, 'index'])->name('index');
+        Route::post('/', [VendorPartnerRequestController::class, 'store'])->name('store');
+        Route::put('/', [VendorPartnerRequestController::class, 'update'])->name('update');
+    });
+
+// Switch to Partner Account
+Route::post('switch-to-partner', [VendorPartnerRequestController::class, 'switchToPartner'])->name('switch-to-partner');
 
 
 

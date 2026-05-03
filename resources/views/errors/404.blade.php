@@ -118,7 +118,7 @@
                 @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('super-admin'))
                     <a href="{{ route('admin.dashboard.home') }}" class="ql-link"><i class="fas fa-shield-alt"></i> Admin Panel</a>
                 @elseif(auth()->user()->hasRole('vendor'))
-                    <a href="{{ route('vendor.dashboard') }}" class="ql-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="{{ route('vendor.dashboard.home') }}" class="ql-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 @else
                     <a href="{{ route('buyer.dashboard.home') }}" class="ql-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 @endif

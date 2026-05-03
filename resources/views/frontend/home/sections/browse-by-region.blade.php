@@ -43,7 +43,7 @@
         $entry = [
             'id'              => $supplier->id,
             'business_name'   => $supplier->business_name,
-            'logo'            => $supplier->logo,
+            'logo'            => ($supplier->logo && !str_starts_with($supplier->logo, 'http')) ? 'https://afrisellers.com/public/storage/' . $supplier->logo : $supplier->logo,
             'is_verified_pro' => $supplier->is_verified_pro,
             'url'             => route('business-profile.show', $supplier->id),
             'color'           => $supplierColors[$index % count($supplierColors)],
@@ -62,7 +62,7 @@
         ? $browseBySuppliers->map(fn($s, $i) => [
             'id'              => $s->id,
             'business_name'   => $s->business_name,
-            'logo'            => $s->logo,
+            'logo'            => ($s->logo && !str_starts_with($s->logo, 'http')) ? 'https://afrisellers.com/public/storage/' . $s->logo : $s->logo,
             'is_verified_pro' => $s->is_verified_pro,
             'url'             => route('business-profile.show', $s->id),
             'color'           => $supplierColors[$i % count($supplierColors)],

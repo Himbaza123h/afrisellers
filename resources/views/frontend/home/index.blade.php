@@ -28,8 +28,11 @@
         if (!in_array($k, $orderedKeys)) $orderedKeys[] = $k;
     }
 
-    // Track if weekly+hotdeals combined partial already rendered
-    $combinedRendered = false;
+    // Track rendered sections — whichever of hot_deals/weekly_special_offers
+    // comes first will mark BOTH as rendered so the second one is skipped
+    $renderedSections = [];
+
+
 @endphp
 
     @foreach($orderedKeys as $key)
@@ -55,26 +58,46 @@
                 @break
 
             @case('weekly_special_offers')
-                @php $combinedRendered = true; @endphp
-                @include('frontend.home.sections.recommended-suppliers-hot-deals', [
-                    'weeklyOffersSection' => $uiSection,
-                    'hotDealsSection'     => $section('hot_deals'),
-                ])
-                @include('frontend.home.sections.homepage-ad-slot', ['adPosition' => 'Weeklyads'])
+                @if(!in_array('weekly_special_offers', $renderedSections))
+                    @php
+                        // Mark BOTH so hot_deals is skipped if it comes after
+                        $renderedSections[] = 'weekly_special_offers';
+                        $renderedSections[] = 'hot_deals';
+                        \Illuminate\Support\Facades\Log::info('RENDERING weekly_special_offers (first)', [
+                            'renderedSections' => $renderedSections,
+                        ]);
+                    @endphp
+                    @include('frontend.home.sections.recommended-suppliers-hot-deals', [
+                        'weeklyOffersSection' => $uiSection,
+                        'hotDealsSection'     => $section('hot_deals'),
+                    ])
+                    @include('frontend.home.sections.homepage-ad-slot', ['adPosition' => 'Weeklyads'])
+                @else
+
+                @endif
                 @break
 
             @case('hot_deals')
-                {{-- Only render standalone if weekly_special_offers didn't already render it --}}
-                @if(!$combinedRendered)
+                @if(!in_array('hot_deals', $renderedSections))
+                    @php
+                        // Mark BOTH so weekly_special_offers is skipped if it comes after
+                        $renderedSections[] = 'hot_deals';
+                        $renderedSections[] = 'weekly_special_offers';
+                    @endphp
                     @include('frontend.home.sections.recommended-suppliers-hot-deals', [
                         'weeklyOffersSection' => $section('weekly_special_offers'),
                         'hotDealsSection'     => $uiSection,
                     ])
+                    @include('frontend.home.sections.homepage-ad-slot', ['adPosition' => 'Weeklyads'])
+                @else
+                    @php
+                        \Illuminate\Support\Facades\Log::info('SKIPPING hot_deals (already rendered)');
+                    @endphp
                 @endif
-                @include('frontend.home.sections.homepage-ad-slot', ['adPosition' => 'Weeklyads'])
                 @break
 
             @case('most_popular_suppliers')
+                @include('frontend.home.sections.latest-products-section', ['uiSection' => $uiSection])
                 @include('frontend.home.sections.featured-suppliers', ['uiSection' => $uiSection])
                 @include('frontend.home.sections.selectbycategopry')
                 @include('frontend.home.sections.homepage-ad-slot', ['adPosition' => 'Popularads'])

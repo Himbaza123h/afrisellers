@@ -7,10 +7,33 @@ use Illuminate\Http\Request;
 
 class CompanyController extends Controller
 {
+    /** The 8 company fields we track. */
+    private const FIELDS = [
+        'company_name',
+        'trading_name',
+        'registration_number',
+        'established',
+        'country',
+        'physical_address',
+        'website_url',
+        'partner_type',
+    ];
+
     public function show()
     {
         $partner = auth()->user()->partnerRequest;
-        return view('partner.company.show', compact('partner'));
+
+        $filled = collect(self::FIELDS)
+            ->filter(fn($field) => !empty($partner?->{$field}))
+            ->count();
+
+        $stats = [
+            'total'   => count(self::FIELDS),
+            'filled'  => $filled,
+            'missing' => count(self::FIELDS) - $filled,
+        ];
+
+        return view('partner.company.show', compact('partner', 'stats'));
     }
 
     public function edit()
@@ -31,11 +54,12 @@ class CompanyController extends Controller
             'country'             => 'nullable|string|max:100',
             'physical_address'    => 'nullable|string|max:500',
             'website_url'         => 'nullable|url|max:500',
+            'partner_type'        => 'nullable|string|max:255',
         ]);
 
         $partner->update($validated);
 
         return redirect()->route('partner.company.show')
-                         ->with('success', 'Company information updated.');
+                         ->with('success', 'Company information updated successfully.');
     }
 }

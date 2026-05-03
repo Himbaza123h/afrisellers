@@ -7,6 +7,10 @@ use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Credit;
+use App\Models\CreditValue;
+use App\Models\Target;
+use App\Models\AgentReward;
 
 class SettingsController extends Controller
 {
@@ -118,7 +122,12 @@ class SettingsController extends Controller
             'manual_rates'             => SystemSetting::get('manual_rates', ''),
         ];
 
-        return view('admin.settings.payment', compact('settings'));
+        $credits     = Credit::all();
+        $creditValue = CreditValue::latest()->first();
+
+        $targets = Target::latest()->get();
+
+        return view('admin.settings.payment', compact('settings', 'credits', 'creditValue', 'targets'));
     }
 
     /**
@@ -338,4 +347,94 @@ class SettingsController extends Controller
         return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
     }
 }
+
+// ─── CREDIT VALUE (multiplier) ────────────────────────────────────
+public function updateCreditValue(Request $request)
+{
+    $request->validate(['value' => 'required|numeric|min:0.01']);
+
+    $cv = CreditValue::latest()->first();
+    if ($cv) {
+        $cv->update(['value' => $request->value]);
+    } else {
+        CreditValue::create(['value' => $request->value]);
+    }
+
+    return back()->with('success', 'Credit value updated successfully!');
+}
+
+// ─── CREDIT TYPES ─────────────────────────────────────────────────
+public function storeCreditType(Request $request)
+{
+    $request->validate([
+        'type'  => 'required|string|max:100',
+        'value' => 'required|numeric|min:0',
+    ]);
+
+    Credit::create(['type' => $request->type, 'value' => $request->value]);
+
+    return back()->with('success', 'Credit type added successfully!');
+}
+
+public function updateCreditType(Request $request, $id)
+{
+    $request->validate([
+        'type'  => 'required|string|max:100',
+        'value' => 'required|numeric|min:0',
+    ]);
+
+    Credit::findOrFail($id)->update(['type' => $request->type, 'value' => $request->value]);
+
+    return back()->with('success', 'Credit type updated successfully!');
+}
+
+public function destroyCreditType($id)
+{
+    Credit::findOrFail($id)->delete();
+    return back()->with('success', 'Credit type removed.');
+}
+// ─── TARGETS ──────────────────────────────────────────────────────
+    public function storeTarget(Request $request)
+    {
+        $request->validate([
+            'target_type'   => 'required|in:monthly,weekly,yearly',
+            'target_amount' => 'required|numeric|min:1',
+            'prize'         => 'required|numeric|min:0.01', // prize = credits to award
+            'end_at'        => 'nullable|date|after:today',
+        ]);
+
+        Target::create([
+            'target_type'   => $request->target_type,
+            'target_amount' => $request->target_amount,
+            'prize'         => $request->prize,
+            'end_at'        => $request->end_at ?? null,
+        ]);
+
+        return back()->with('success', 'Target created successfully!');
+    }
+
+    public function updateTarget(Request $request, $id)
+    {
+        $request->validate([
+            'target_type'   => 'required|in:monthly,weekly,yearly',
+            'target_amount' => 'required|numeric|min:1',
+            'prize'         => 'required|numeric|min:0.01',
+            'end_at'        => 'nullable|date',
+        ]);
+
+        Target::findOrFail($id)->update([
+            'target_type'   => $request->target_type,
+            'target_amount' => $request->target_amount,
+            'prize'         => $request->prize,
+            'end_at'        => $request->end_at ?? null,
+        ]);
+
+        return back()->with('success', 'Target updated successfully!');
+    }
+
+    public function destroyTarget($id)
+    {
+        Target::findOrFail($id)->delete();
+        return back()->with('success', 'Target removed.');
+    }
 }

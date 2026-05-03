@@ -20,6 +20,7 @@ use App\Http\Controllers\Agent\MessageController;
 use App\Http\Controllers\Agent\DocumentController;
 use App\Http\Controllers\Agent\NotificationController;
 use App\Http\Controllers\Agent\PayoutController;
+use App\Http\Controllers\Agent\VendorProductController;
 
 Route::prefix('agent')->name('agent.')->middleware(['auth'])->group(function () {
 
@@ -59,6 +60,9 @@ Route::prefix('agent')->name('agent.')->middleware(['auth'])->group(function () 
     });
 
 
+
+
+
     // ─────────────────────────────────────────────────────────
     // VENDORS UNDER AGENT
     // Agents manage vendors they onboarded; their subscription
@@ -69,6 +73,7 @@ Route::prefix('agent')->name('agent.')->middleware(['auth'])->group(function () 
         Route::get('/print',                   [VendorController::class, 'print'])->name('print');
         Route::get('/create',                  [VendorController::class, 'create'])->name('create');
         Route::post('/',                       [VendorController::class, 'store'])->name('store');
+        Route::post('{vendor}/switch', [\App\Http\Controllers\Agent\VendorController::class, 'switchToVendor'])->name('switch');
         Route::get('/{id}',                    [VendorController::class, 'show'])->name('show');
         Route::get('/{id}/edit',               [VendorController::class, 'edit'])->name('edit');
         Route::put('/{id}',                    [VendorController::class, 'update'])->name('update');
@@ -79,8 +84,17 @@ Route::prefix('agent')->name('agent.')->middleware(['auth'])->group(function () 
         Route::post('/{id}/transfer',          [VendorController::class, 'transfer'])->name('transfer');
         Route::get('/{id}/commissions',        [VendorController::class, 'commissions'])->name('commissions');
         Route::get('/{id}/orders',             [VendorController::class, 'orders'])->name('orders');
+        Route::get('/{id}/products',                 [VendorProductController::class, 'index'])->name('products.index');
+        Route::get('/{id}/products/create',          [VendorProductController::class, 'create'])->name('products.create');
+        Route::post('/{id}/products',                [VendorProductController::class, 'store'])->name('products.store');
+        Route::get('/{id}/products/{product}',           [VendorProductController::class, 'show'])->name('products.show');
+        Route::get('/{id}/products/{product}/edit',  [VendorProductController::class, 'edit'])->name('products.edit');
+        Route::put('/{id}/products/{product}/update',       [VendorProductController::class, 'update'])->name('products.updateProduct');
+        Route::delete('/{id}/products/{product}',    [VendorProductController::class, 'destroy'])->name('products.destroy');
         Route::post('/export',                 [VendorController::class, 'export'])->name('export');
     });
+
+
 
 
     // ─────────────────────────────────────────────────────────
@@ -89,6 +103,7 @@ Route::prefix('agent')->name('agent.')->middleware(['auth'])->group(function () 
     Route::prefix('packages')->name('packages.')->group(function () {
         Route::get('/',                          [PackageController::class, 'index'])->name('index');
         Route::get('/print',                     [PackageController::class, 'print'])->name('print');
+        Route::post('/cancel', [PackageController::class, 'cancel'])->name('cancel');
         Route::get('/{id}',                      [PackageController::class, 'show'])->name('show');
         Route::get('/{id}/checkout',             [PackageController::class, 'checkout'])->name('checkout');
         Route::post('/{id}/subscribe',           [PackageController::class, 'subscribe'])->name('subscribe');
@@ -130,6 +145,24 @@ Route::prefix('agent')->name('agent.')->middleware(['auth'])->group(function () 
         Route::post('/export', [TransactionController::class, 'export'])->name('export');
     });
 
+        // ─────────────────────────────────────────────────────────
+    // PARTNERS  (agent registers & manages partner accounts)
+    // ─────────────────────────────────────────────────────────
+    Route::prefix('partners')->name('partners.')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Agent\AgentPartnerController::class, 'index'])->name('index');
+        Route::get('/create',              [\App\Http\Controllers\Agent\AgentPartnerController::class, 'create'])->name('create');
+        Route::post('/',                   [\App\Http\Controllers\Agent\AgentPartnerController::class, 'store'])->name('store');
+        Route::get('/{id}',                [\App\Http\Controllers\Agent\AgentPartnerController::class, 'show'])->name('show');
+        Route::post('/{id}/switch',        [\App\Http\Controllers\Agent\AgentPartnerController::class, 'switchToPartner'])->name('switch');
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // REWARDS
+    // ─────────────────────────────────────────────────────────
+    Route::prefix('rewards')->name('rewards.')->group(function () {
+        Route::get('/',              [\App\Http\Controllers\Agent\RewardController::class, 'index'])->name('index');
+        Route::post('/{id}/claim',   [\App\Http\Controllers\Agent\RewardController::class, 'claim'])->name('claim');
+    });
 
     // ─────────────────────────────────────────────────────────
     // EARNINGS

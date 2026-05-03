@@ -7,10 +7,29 @@ use Illuminate\Http\Request;
 
 class BusinessController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
         $partner = auth()->user()->partnerRequest;
-        return view('partner.business.show', compact('partner'));
+
+        $allServices = is_array($partner?->services) ? $partner->services : [];
+
+        // Service search filter
+        $serviceSearch = $request->input('search', '');
+        $services = $serviceSearch
+            ? array_values(array_filter(
+                $allServices,
+                fn($s) => str_contains(strtolower($s), strtolower($serviceSearch))
+              ))
+            : $allServices;
+
+        // Stats
+        $stats = [
+            'industry'       => $partner?->industry ?? null,
+            'business_type'  => $partner?->business_type ?? null,
+            'services_count' => count($allServices),
+        ];
+
+        return view('partner.business.show', compact('partner', 'services', 'allServices', 'stats', 'serviceSearch'));
     }
 
     public function edit()
@@ -30,9 +49,11 @@ class BusinessController extends Controller
         ]);
 
         if (!empty($validated['services_raw'])) {
-            $validated['services'] = array_filter(
+            $validated['services'] = array_values(array_filter(
                 array_map('trim', explode(',', $validated['services_raw']))
-            );
+            ));
+        } else {
+            $validated['services'] = [];
         }
 
         unset($validated['services_raw']);
@@ -40,6 +61,6 @@ class BusinessController extends Controller
         $partner->update($validated);
 
         return redirect()->route('partner.business.show')
-                         ->with('success', 'Business information updated.');
+                         ->with('success', 'Business information updated successfully.');
     }
 }

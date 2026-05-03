@@ -29,6 +29,25 @@ class PackageController extends Controller
         return view('agent.packages.index', compact('packages', 'currentSubscription'));
     }
 
+    public function cancel(Request $request)
+{
+    $subscription = AgentSubscription::where('agent_id', Auth::id())
+        ->active()
+        ->first();
+
+    if (!$subscription) {
+        return redirect()
+            ->route('agent.packages.index')
+            ->with('error', 'No active subscription found.');
+    }
+
+    $subscription->cancel();
+
+    return redirect()
+        ->route('agent.packages.index')
+        ->with('success', 'Subscription cancelled successfully.');
+}
+
     /**
      * Show package details
      */
@@ -59,7 +78,7 @@ class PackageController extends Controller
 
         if ($activeSubscription) {
             return redirect()
-                ->route('agent.packages.current')
+                ->route('agent.packages.index')
                 ->with('error', 'You already have an active subscription. Please cancel it first or wait until it expires.');
         }
 
@@ -86,7 +105,7 @@ class PackageController extends Controller
 
         if ($activeSubscription) {
             return redirect()
-                ->route('agent.packages.current')
+                ->route('agent.packages.index')
                 ->with('error', 'You already have an active subscription.');
         }
 
@@ -105,7 +124,7 @@ class PackageController extends Controller
         ]);
 
         return redirect()
-            ->route('agent.packages.current')
+            ->route('agent.packages.index')
             ->with('success', 'Successfully subscribed to ' . $package->name . ' package!');
     }
 
@@ -136,27 +155,6 @@ class PackageController extends Controller
         return view('agent.packages.current', compact('subscription', 'stats'));
     }
 
-    /**
-     * Cancel subscription
-     */
-    public function cancel(Request $request)
-    {
-        $subscription = AgentSubscription::where('agent_id', Auth::id())
-            ->active()
-            ->first();
-
-        if (!$subscription) {
-            return redirect()
-                ->route('agent.packages.index')
-                ->with('error', 'No active subscription found.');
-        }
-
-        $subscription->cancel();
-
-        return redirect()
-            ->route('agent.packages.current')
-            ->with('success', 'Subscription cancelled successfully.');
-    }
 
     /**
      * Renew subscription
@@ -189,7 +187,7 @@ class PackageController extends Controller
         ]);
 
         return redirect()
-            ->route('agent.packages.current')
+            ->route('agent.packages.index')
             ->with('success', 'Subscription renewed successfully!');
     }
 

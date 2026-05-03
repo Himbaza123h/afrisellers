@@ -24,20 +24,30 @@
     @endif
 
     {{-- Temp Password Banner --}}
-    @if(session('temp_password'))
+{{-- Credentials Banner --}}
+    @if(session('vendor_email') && session('vendor_password'))
         <div class="p-4 bg-amber-50 rounded-xl border border-amber-300 flex items-start gap-3">
             <i class="fas fa-key text-amber-500 mt-0.5 flex-shrink-0"></i>
             <div class="flex-1">
-                <p class="text-sm font-semibold text-amber-900 mb-1">Save the temporary password — it won't be shown again!</p>
-                <div class="flex items-center gap-3 mt-2">
-                    <code class="px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-sm font-mono font-bold text-amber-800 tracking-widest">
-                        {{ session('temp_password') }}
-                    </code>
-                    <button type="button"
-                        onclick="navigator.clipboard.writeText('{{ session('temp_password') }}'); this.innerHTML='<i class=\'fas fa-check\'></i> Copied!'; setTimeout(()=>this.innerHTML='<i class=\'fas fa-copy\'></i> Copy',2000)"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-xs font-semibold transition-colors">
-                        <i class="fas fa-copy"></i> Copy
-                    </button>
+                <p class="text-sm font-semibold text-amber-900 mb-3">Vendor account created — share these credentials securely:</p>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-semibold text-amber-700 w-20">Email:</span>
+                        <code class="px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-sm font-mono text-amber-800">
+                            {{ session('vendor_email') }}
+                        </code>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-semibold text-amber-700 w-20">Password:</span>
+                        <code class="px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-sm font-mono font-bold text-amber-800 tracking-widest">
+                            {{ session('vendor_password') }}
+                        </code>
+                        <button type="button"
+                            onclick="navigator.clipboard.writeText('{{ session('vendor_password') }}'); this.innerHTML='<i class=\'fas fa-check\'></i> Copied!'; setTimeout(()=>this.innerHTML='<i class=\'fas fa-copy\'></i> Copy',2000)"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-xs font-semibold transition-colors">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,7 +132,7 @@
                         <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</p>
                     @enderror
                 </div>
-                <div>
+<div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">WhatsApp Number</label>
                     <input type="text" name="whatsapp_number" value="{{ old('whatsapp_number') }}"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
@@ -131,6 +141,42 @@
                         <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</p>
                     @enderror
                 </div>
+
+                {{-- Password --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="password" name="password" id="vendor_password" required
+                            class="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 @error('password') border-red-400 bg-red-50 @enderror"
+                            placeholder="Min. 8 characters">
+                        <button type="button" onclick="togglePwd('vendor_password','eye1')"
+                            class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600">
+                            <i id="eye1" class="fas fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                    @error('password')
+                        <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Confirm Password --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Confirm Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="password" name="password_confirmation" id="vendor_password_confirm" required
+                            class="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                            placeholder="Repeat password">
+                        <button type="button" onclick="togglePwd('vendor_password_confirm','eye2')"
+                            class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600">
+                            <i id="eye2" class="fas fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -593,6 +639,17 @@ document.getElementById('vendor-create-form').addEventListener('submit', functio
         btnLoading.classList.add('hidden');
     }, 15000);
 });
+function togglePwd(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
 </script>
 @endpush
 

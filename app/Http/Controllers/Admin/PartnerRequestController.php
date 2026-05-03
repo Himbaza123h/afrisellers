@@ -109,8 +109,9 @@ class PartnerRequestController extends Controller
 
         // update is_partner on the user
         if ($partnerRequest->user) {
-            
+
             $partnerRequest->user->update(['is_partner' => true]);
+            $partnerRequest->update(['partner_user_id' =>$partnerRequest->user->id ]);
         }
 
         return back()->with('success', "'{$partnerRequest->company_name}' approved and added to Partners.");

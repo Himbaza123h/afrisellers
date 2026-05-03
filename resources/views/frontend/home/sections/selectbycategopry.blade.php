@@ -212,12 +212,18 @@
                                         </p>
                                         @endif
 
-                                        {{-- Price --}}
+                                    {{-- Price --}}
                                         @if($finalPrice !== null)
-                                        <p class="text-[11px] font-black text-gray-900 mb-2">
-                                            {{ $symbol }}{{ number_format($finalPrice, 2) }}
+                                        <p class="text-[11px] font-black text-gray-900 mb-2 cat-price-display"
+                                        data-price-usd="{{ $currency === 'USD' ? $finalPrice : '' }}"
+                                        data-price-native="{{ $finalPrice }}"
+                                        data-price-currency="{{ $currency }}"
+                                        data-price-original="{{ $firstPrice->price ?? $finalPrice }}"
+                                        data-has-discount="{{ $hasDiscount ? '1' : '0' }}"
+                                        data-symbol-native="{{ $symbol }}">
+                                            <span class="cat-price-main">{{ $symbol }}{{ number_format($finalPrice, 2) }}</span>
                                             @if($hasDiscount)
-                                                <span class="text-[9px] text-gray-400 line-through font-normal ml-1">
+                                                <span class="cat-price-original text-[9px] text-gray-400 line-through font-normal ml-1">
                                                     {{ $symbol }}{{ number_format($firstPrice->price, 2) }}
                                                 </span>
                                             @endif
@@ -391,6 +397,91 @@
         const target = document.querySelector('[data-cat-panel="' + catId + '"]');
         if (target) target.classList.remove('hidden');
     };
+
+})();
+
+// ── Currency conversion for category product prices ──────────────────────
+(function () {
+
+    // All rates are "1 USD = X currency"
+    // We read them from localStorage (set by the currency switcher)
+    function getStoredRate() {
+        return parseFloat(localStorage.getItem('ui_currency_usd_rate') || '1');
+    }
+    function getStoredCode() {
+        return localStorage.getItem('ui_currency_code') || 'USD';
+    }
+    function getStoredSymbol() {
+        return localStorage.getItem('ui_currency_symbol') || '$';
+    }
+
+    // Convert a native-currency price to USD first, then to target currency
+    // We need the native→USD rate. We get that from the live rates cache.
+    function getLiveRates() {
+        try {
+            const cached = localStorage.getItem('ui_currency_rates_cache');
+            return cached ? JSON.parse(cached) : {};
+        } catch(e) { return {}; }
+    }
+
+    function convertPrice(nativeAmount, nativeCurrency, targetRateToUSD) {
+        const rates = getLiveRates();
+        // Rate of native currency: 1 USD = X native
+        const nativeRate = rates[nativeCurrency] || 1;
+        // Convert native → USD first
+        const inUSD = nativeAmount / nativeRate;
+        // Then USD → target
+        return inUSD * targetRateToUSD;
+    }
+
+    function updateAllPrices() {
+        const targetRate   = getStoredRate();
+        const targetCode   = getStoredCode();
+        const targetSymbol = getStoredSymbol();
+
+        document.querySelectorAll('.cat-price-display').forEach(function (el) {
+            const nativePrice    = parseFloat(el.dataset.priceNative);
+            const nativeCurrency = el.dataset.priceCurrency;
+            const originalPrice  = parseFloat(el.dataset.priceOriginal);
+            const hasDiscount    = el.dataset.hasDiscount === '1';
+
+            if (isNaN(nativePrice)) return;
+
+            const converted = convertPrice(nativePrice, nativeCurrency, targetRate);
+            const mainEl    = el.querySelector('.cat-price-main');
+            const origEl    = el.querySelector('.cat-price-original');
+
+            if (mainEl) {
+                mainEl.textContent = targetSymbol + numberFormat(converted);
+            }
+
+            if (origEl && hasDiscount) {
+                const convertedOrig = convertPrice(originalPrice, nativeCurrency, targetRate);
+                origEl.textContent = targetSymbol + numberFormat(convertedOrig);
+            }
+        });
+    }
+
+    function numberFormat(n) {
+        // Show 2 decimals for small numbers, 0 for large
+        if (n >= 1000) return Math.round(n).toLocaleString();
+        return n.toFixed(2);
+    }
+
+    // Listen for currency change event fired by the switcher
+    window.addEventListener('currencyChanged', function () {
+        updateAllPrices();
+    });
+
+    // Also run on page load in case a currency was already saved
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Small delay to let the switcher restore from localStorage first
+            setTimeout(updateAllPrices, 300);
+        });
+    } else {
+        setTimeout(updateAllPrices, 300);
+    }
 
 })();
 </script>

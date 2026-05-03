@@ -374,7 +374,9 @@
         </div>
 
     </div>
-</div>
+
+    </div>
+
 
             <!-- Important Notice -->
             <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
@@ -408,8 +410,278 @@
                 </button>
             </div>
 
-        </div>
+</div>
     </form>
+
+
+        {{-- ── Target Settings ─────────────────────────────────────────────── --}}
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">Performance Targets</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Set credit targets for agents. When an agent reaches the target in the period, they are automatically awarded the prize credits.</p>
+        </div>
+
+        {{-- Add New Target --}}
+        <form action="{{ route('admin.settings.targets.store') }}" method="POST"
+              class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            @csrf
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Period Type <span class="text-red-500">*</span></label>
+                <select name="target_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                    <option value="monthly">Monthly</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Target Credits <span class="text-red-500">*</span></label>
+                <input type="number" name="target_amount" step="0.01" min="1" placeholder="e.g. 500"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <p class="mt-0.5 text-[10px] text-gray-400">Agent must earn this many credits in the period</p>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Prize Credits <span class="text-red-500">*</span></label>
+                <input type="number" name="prize" step="0.01" min="0.01" placeholder="e.g. 50"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <p class="mt-0.5 text-[10px] text-gray-400">Bonus credits awarded when target is reached</p>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+                <input type="date" name="end_at"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <p class="mt-0.5 text-[10px] text-gray-400">Leave blank = no expiry</p>
+            </div>
+            <div class="md:col-span-4 flex justify-end">
+                <button type="submit"
+                        class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                    <i class="fas fa-plus mr-1"></i> Add Target
+                </button>
+            </div>
+        </form>
+
+        {{-- Existing Targets --}}
+        @if(isset($targets) && $targets->isNotEmpty())
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Period</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Target Credits</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Prize Credits</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">End Date</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach($targets as $target)
+                    <tr class="hover:bg-gray-50" id="target-row-{{ $target->id }}">
+                        {{-- View mode --}}
+                        <td class="px-4 py-3 view-target-{{ $target->id }}">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full capitalize">
+                                <i class="fas fa-bullseye text-[9px]"></i>
+                                {{ ucfirst($target->target_type) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm font-bold text-gray-900 view-target-{{ $target->id }}">
+                            {{ number_format($target->target_amount, 2) }} credits
+                        </td>
+                        <td class="px-4 py-3 text-sm font-bold text-emerald-700 view-target-{{ $target->id }}">
+                            +{{ number_format($target->prize, 2) }} credits
+                        </td>
+                        <td class="px-4 py-3 text-xs text-gray-500 view-target-{{ $target->id }}">
+                            {{ $target->end_at ? $target->end_at->format('M d, Y') : 'No expiry' }}
+                        </td>
+                        <td class="px-4 py-3 text-right view-target-{{ $target->id }}">
+                            <button type="button" onclick="toggleEditTarget({{ $target->id }})"
+                                    class="px-3 py-1 text-xs bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 font-medium">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </button>
+                            <form action="{{ route('admin.settings.targets.destroy', $target->id) }}"
+                                  method="POST" class="inline"
+                                  onsubmit="return confirm('Delete this target? Existing rewards will not be affected.')">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                        class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium ml-1">
+                                    <i class="fas fa-trash mr-1"></i> Delete
+                                </button>
+                            </form>
+                        </td>
+
+                        {{-- Edit mode --}}
+                        <td colspan="5" class="px-4 py-3 edit-target-{{ $target->id }} hidden">
+                            <form action="{{ route('admin.settings.targets.update', $target->id) }}"
+                                  method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                                @csrf @method('PUT')
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Period</label>
+                                    <select name="target_type" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                                        <option value="monthly" {{ $target->target_type === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                        <option value="weekly"  {{ $target->target_type === 'weekly'  ? 'selected' : '' }}>Weekly</option>
+                                        <option value="yearly"  {{ $target->target_type === 'yearly'  ? 'selected' : '' }}>Yearly</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Target Credits</label>
+                                    <input type="number" name="target_amount" step="0.01" value="{{ $target->target_amount }}"
+                                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Prize Credits</label>
+                                    <input type="number" name="prize" step="0.01" value="{{ $target->prize }}"
+                                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+                                    <input type="date" name="end_at" value="{{ $target->end_at?->format('Y-m-d') }}"
+                                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="md:col-span-4 flex gap-2">
+                                    <button type="submit"
+                                            class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">
+                                        <i class="fas fa-save mr-1"></i> Save
+                                    </button>
+                                    <button type="button" onclick="toggleEditTarget({{ $target->id }})"
+                                            class="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+            <p class="text-sm text-gray-400 text-center py-4">No targets yet. Add your first one above.</p>
+        @endif
+    </div>
+
+
+    {{-- ── Credit Settings ──────────────────────────────────────────────── --}}
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">Credit Settings</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Manage credit types and the monetary value per credit</p>
+        </div>
+
+        {{-- Credit Value (multiplier) --}}
+        <form action="{{ route('admin.settings.credit-value.update') }}" method="POST"
+              class="flex items-end gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            @csrf
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Monetary Value per Credit <span class="text-red-500">*</span>
+                </label>
+                <input type="number" name="value" step="0.01" min="0.01"
+                       value="{{ $creditValue?->value ?? 100 }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                <p class="mt-1 text-xs text-gray-400">Example: if value = 15, then 1 credit = $15</p>
+            </div>
+            <button type="submit"
+                    class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium whitespace-nowrap">
+                <i class="fas fa-save mr-1"></i> Update Value
+            </button>
+        </form>
+
+        {{-- Add New Credit Type --}}
+        <form action="{{ route('admin.settings.credit-types.store') }}" method="POST"
+              class="flex items-end gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            @csrf
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Type Name <span class="text-red-500">*</span></label>
+                <input type="text" name="type" placeholder="e.g. registration_credit"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            <div class="w-36">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Credits Value <span class="text-red-500">*</span></label>
+                <input type="number" name="value" step="0.01" min="0" placeholder="15"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            <button type="submit"
+                    class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium whitespace-nowrap">
+                <i class="fas fa-plus mr-1"></i> Add Type
+            </button>
+        </form>
+
+        {{-- Existing Credit Types --}}
+        @if($credits->isNotEmpty())
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">#</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Type</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Credits Value</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Monetary Eq.</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach($credits as $credit)
+                    <tr class="hover:bg-gray-50" id="credit-row-{{ $credit->id }}">
+                        <td class="px-4 py-3 text-xs text-gray-400 view-mode-{{ $credit->id }}">{{ str_pad($credit->id, 3, '0', STR_PAD_LEFT) }}</td>
+                        <td class="px-4 py-3 view-mode-{{ $credit->id }}">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full capitalize">
+                                <i class="fas fa-tag text-[9px]"></i>
+                                {{ str_replace('_', ' ', $credit->type) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm font-bold text-gray-900 view-mode-{{ $credit->id }}">
+                            {{ number_format($credit->value, 2) }}
+                        </td>
+                        <td class="px-4 py-3 text-sm font-bold text-emerald-700 view-mode-{{ $credit->id }}">
+                            ${{ number_format($credit->value * ($creditValue?->value ?? 100), 2) }}
+                        </td>
+                        <td class="px-4 py-3 text-right view-mode-{{ $credit->id }}">
+                            <button type="button" onclick="toggleEditCredit({{ $credit->id }})"
+                                    class="px-3 py-1 text-xs bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 font-medium">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </button>
+                            <form action="{{ route('admin.settings.credit-types.destroy', $credit->id) }}"
+                                  method="POST" class="inline"
+                                  onsubmit="return confirm('Delete this credit type?')">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                        class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium ml-1">
+                                    <i class="fas fa-trash mr-1"></i> Delete
+                                </button>
+                            </form>
+                        </td>
+                        <td colspan="5" class="px-4 py-3 edit-mode-{{ $credit->id }} hidden">
+                            <form action="{{ route('admin.settings.credit-types.update', $credit->id) }}"
+                                  method="POST" class="flex items-end gap-3">
+                                @csrf @method('PUT')
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
+                                    <input type="text" name="type" value="{{ $credit->type }}"
+                                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="w-32">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Value</label>
+                                    <input type="number" name="value" step="0.01" value="{{ $credit->value }}"
+                                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <button type="submit"
+                                        class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">
+                                    <i class="fas fa-save mr-1"></i> Save
+                                </button>
+                                <button type="button" onclick="toggleEditCredit({{ $credit->id }})"
+                                        class="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200">
+                                    Cancel
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+            <p class="text-sm text-gray-400 text-center py-4">No credit types yet. Add your first one above.</p>
+        @endif
+    </div>
+
 </div>
 
 <script>
@@ -446,6 +718,14 @@ function toggleApiKey() {
     const isManual = provider === 'manual';
     document.getElementById('api-key-section').classList.toggle('hidden', isManual);
     document.getElementById('manual-rates-section').classList.toggle('hidden', !isManual);
+}
+function toggleEditCredit(id) {
+    document.querySelectorAll('.view-mode-' + id).forEach(el => el.classList.toggle('hidden'));
+    document.querySelectorAll('.edit-mode-' + id).forEach(el => el.classList.toggle('hidden'));
+}
+function toggleEditTarget(id) {
+    document.querySelectorAll('.view-target-' + id).forEach(el => el.classList.toggle('hidden'));
+    document.querySelectorAll('.edit-target-' + id).forEach(el => el.classList.toggle('hidden'));
 }
 </script>
 

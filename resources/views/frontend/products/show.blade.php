@@ -293,19 +293,145 @@
                         </div>
                     </div>
                 </div>
-                            {{-- @if($product->video_url)
-            <div class="mt-4 sm:mt-6 md:mt-8 p-3 sm:p-4 md:p-6 bg-white rounded-md shadow-sm">
-                <h3 class="text-sm sm:text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <i class="fas fa-video text-blue-500"></i> Product Video
-                </h3>
-                <div class="rounded-lg overflow-hidden bg-black border border-gray-200">
-                    <video controls class="w-full max-h-72 object-contain bg-black" preload="metadata">
-                        <source src="{{ Storage::url($product->video_url) }}" type="video/mp4">
-                        <source src="{{ Storage::url($product->video_url) }}" type="video/webm">
-                    </video>
+
+{{-- ── Social Share ──────────────────────────────────────── --}}
+<div class="mt-4 p-4 bg-white rounded-md shadow-sm">
+    @php
+        $shareUrl   = urlencode(route('products.show', $product->slug));
+        $shareTitle = urlencode($product->name);
+    @endphp
+
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Share this product</p>
+
+    <div class="flex flex-wrap gap-2">
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ $shareUrl }}"
+           target="_blank"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition hover:opacity-80"
+           style="background:#1877F2">
+            <i class="fab fa-facebook-f text-[11px]"></i> Facebook
+        </a>
+
+        <a href="https://twitter.com/intent/tweet?url={{ $shareUrl }}&text={{ $shareTitle }}"
+           target="_blank"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition hover:opacity-80"
+           style="background:#000">
+            <i class="fab fa-x-twitter text-[11px]"></i> X
+        </a>
+
+        <a href="https://wa.me/?text={{ $shareTitle }}%20{{ $shareUrl }}"
+           target="_blank"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition hover:opacity-80"
+           style="background:#25D366">
+            <i class="fab fa-whatsapp text-[11px]"></i> WhatsApp
+        </a>
+
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ $shareUrl }}"
+           target="_blank"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition hover:opacity-80"
+           style="background:#0A66C2">
+            <i class="fab fa-linkedin-in text-[11px]"></i> LinkedIn
+        </a>
+
+        <button onclick="copyProductLink()"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition">
+            <i class="fas fa-link text-[11px]"></i> Copy Link
+        </button>
+    </div>
+</div>
+
+{{-- ── Toast Notification ───────────────────────────────────── --}}
+<div id="copyToast"
+     class="fixed top-5 right-5 z-[9999] flex items-center gap-2 px-4 py-3 bg-gray-900 text-white text-xs font-semibold rounded-lg shadow-xl opacity-0 pointer-events-none transition-all duration-300 -translate-y-2">
+    <i class="fas fa-check-circle text-green-400"></i>
+    Link copied to clipboard!
+</div>
+
+<script>
+function copyProductLink() {
+    navigator.clipboard.writeText('{{ route('products.show', $product->slug) }}').then(function () {
+        const toast = document.getElementById('copyToast');
+        toast.classList.remove('opacity-0', '-translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        setTimeout(function () {
+            toast.classList.remove('opacity-100', 'translate-y-0');
+            toast.classList.add('opacity-0', '-translate-y-2');
+        }, 2500);
+    });
+}
+</script>
+
+{{-- ── Related Articles ────────────────────────────────────── --}}
+@php
+    $articleCategoryName = is_string($product->productCategory)
+        ? $product->productCategory
+        : ($product->productCategory->name ?? null);
+
+    $relatedArticles = \App\Models\Article::where('status', 'published')
+        ->latest()
+        ->take(20)
+        ->get()
+        ->filter(function($article) use ($articleCategoryName) {
+            if (!$articleCategoryName) return true;
+            $cat = $article->category ?? $article->articleCategory ?? null;
+            if (!$cat) return true;
+            $catName = is_string($cat) ? $cat : ($cat->name ?? '');
+            return stripos($catName, $articleCategoryName) !== false
+                || stripos($articleCategoryName, $catName) !== false;
+        })
+        ->take(4);
+@endphp
+
+<div class="mt-4 p-4 bg-white rounded-md shadow-sm">
+    <h3 class="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <i class="fas fa-newspaper text-blue-500 text-xs"></i>
+        Related Articles
+    </h3>
+
+    @if($relatedArticles->isNotEmpty())
+        <div class="space-y-3">
+            @foreach($relatedArticles as $article)
+            @php
+                $articleImage = $article->thumbnail ?? $article->image ?? null;
+            @endphp
+            <a href="{{ route('articles.show', $article->slug) }}"
+               class="flex gap-3 items-start group hover:bg-gray-50 rounded-md p-2 -mx-2 transition">
+
+                <div class="flex-shrink-0 w-20 h-16 rounded-md overflow-hidden bg-gray-100">
+                    @if($articleImage)
+                        <img src="{{ $articleImage }}" alt="{{ $article->title }}"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    @else
+                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                            <i class="fas fa-newspaper text-xl"></i>
+                        </div>
+                    @endif
                 </div>
+
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors leading-snug mb-1">
+                        {{ $article->title }}
+                    </p>
+                    <p class="text-[10px] text-gray-400">
+                        {{ $article->created_at->format('M d, Y') }}
+                        @if($article->category)
+                            &bull; {{ is_string($article->category) ? $article->category : ($article->category->name ?? '') }}
+                        @endif
+                    </p>
+                </div>
+            </a>
+            @endforeach
+        </div>
+    @else
+        <div class="flex flex-col items-center justify-center py-6 text-center">
+            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                <i class="fas fa-newspaper text-gray-400 text-sm"></i>
             </div>
-            @endif --}}
+            <p class="text-xs font-semibold text-gray-500">No related articles available</p>
+            <p class="text-[10px] text-gray-400 mt-1">Check back later for articles on this topic.</p>
+        </div>
+    @endif
+</div>
+
             </div>
 
 
@@ -374,11 +500,15 @@
                                             </div>
                                         </div>
                                         <div class="flex items-baseline gap-1.5 sm:gap-2">
-                                            <span class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                                            <span class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 pd-price-main"
+                                                  data-price-native="{{ $finalPrice }}"
+                                                  data-price-currency="{{ $currency }}">
                                                 {{ $symbol }}{{ number_format($finalPrice, 2) }}
                                             </span>
                                             @if($discount > 0)
-                                                <span class="text-sm sm:text-base md:text-lg text-gray-400 line-through">
+                                                <span class="text-sm sm:text-base md:text-lg text-gray-400 line-through pd-price-original"
+                                                      data-price-native="{{ $originalPrice }}"
+                                                      data-price-currency="{{ $currency }}">
                                                     {{ $symbol }}{{ number_format($originalPrice, 2) }}
                                                 </span>
                                             @endif
@@ -1135,11 +1265,15 @@
                                                 $relatedSymbol = $currencySymbols[$relatedCurrency] ?? $relatedCurrency;
                                                 $relatedPrice = $relatedFirstTier->price - ($relatedFirstTier->discount ?? 0);
                                             @endphp
-                                            <span class="text-lg font-bold text-gray-900">
+                                            <span class="text-lg font-bold text-gray-900 pd-price-main"
+                                                  data-price-native="{{ $relatedPrice }}"
+                                                  data-price-currency="{{ $relatedCurrency }}">
                                                 {{ $relatedSymbol }}{{ number_format($relatedPrice, 2) }}
                                             </span>
                                             @if(($relatedFirstTier->discount ?? 0) > 0)
-                                                <span class="text-xs text-gray-400 line-through">
+                                                <span class="text-xs text-gray-400 line-through pd-price-original"
+                                                      data-price-native="{{ $relatedFirstTier->price }}"
+                                                      data-price-currency="{{ $relatedCurrency }}">
                                                     {{ $relatedSymbol }}{{ number_format($relatedFirstTier->price, 2) }}
                                                 </span>
                                             @endif
@@ -1764,4 +1898,48 @@ document.addEventListener('DOMContentLoaded', function () {
 .rich-content blockquote { border-left: 3px solid #d1d5db; padding-left: 1rem; color: #6b7280; margin: 0.5rem 0; font-style: italic; }
 .rich-content a  { color: #ff0808; text-decoration: underline; }
 </style>
+<script>
+// ── Currency conversion for product detail page ───────────────────────────
+(function () {
+
+    function getLiveRates() {
+        try { return JSON.parse(localStorage.getItem('ui_currency_rates_cache') || '{}'); } catch(e) { return {}; }
+    }
+
+    function fmt(n) {
+        return n >= 1000 ? Math.round(n).toLocaleString() : n.toFixed(2);
+    }
+
+    function convertAmount(native, nativeCurrency, targetRate, rates) {
+        const nativeRate = rates[nativeCurrency] || 1;
+        return (native / nativeRate) * targetRate;
+    }
+
+    function applyPdCurrency() {
+        const targetRate   = parseFloat(localStorage.getItem('ui_currency_usd_rate') || '1');
+        const targetSymbol = localStorage.getItem('ui_currency_symbol') || '$';
+        const rates        = getLiveRates();
+
+        // Main prices + original (strikethrough) prices
+        document.querySelectorAll('.pd-price-main, .pd-price-original').forEach(function(el) {
+            const native   = parseFloat(el.dataset.priceNative);
+            const currency = el.dataset.priceCurrency;
+            if (isNaN(native) || !currency) return;
+            const converted = convertAmount(native, currency, targetRate, rates);
+            el.textContent  = targetSymbol + fmt(converted);
+        });
+    }
+
+    // React to switcher selection
+    window.addEventListener('currencyChanged', applyPdCurrency);
+
+    // Apply on page load (rates may already be cached)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(applyPdCurrency, 350); });
+    } else {
+        setTimeout(applyPdCurrency, 350);
+    }
+
+})();
+</script>
 @endsection

@@ -21,6 +21,7 @@ use HasFactory, SoftDeletes,LogsActivity;
         'billing_cycle',
         'duration_days',
         'max_referrals',
+        'max_vendors',
         'allow_rfqs',
         'priority_support',
         'advanced_analytics',

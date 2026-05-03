@@ -7,10 +7,30 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
+    /** The 5 contact fields we track. */
+    private const FIELDS = [
+        'contact_name',
+        'contact_position',
+        'email',
+        'phone',
+        'whatsapp',
+    ];
+
     public function show()
     {
         $partner = auth()->user()->partnerRequest;
-        return view('partner.contact.show', compact('partner'));
+
+        $filled = collect(self::FIELDS)
+            ->filter(fn($field) => !empty($partner?->{$field}))
+            ->count();
+
+        $stats = [
+            'total'   => count(self::FIELDS),
+            'filled'  => $filled,
+            'missing' => count(self::FIELDS) - $filled,
+        ];
+
+        return view('partner.contact.show', compact('partner', 'stats'));
     }
 
     public function edit()
@@ -34,6 +54,6 @@ class ContactController extends Controller
         $partner->update($validated);
 
         return redirect()->route('partner.contact.show')
-                         ->with('success', 'Contact details updated.');
+                         ->with('success', 'Contact details updated successfully.');
     }
 }

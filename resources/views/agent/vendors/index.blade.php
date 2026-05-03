@@ -7,7 +7,7 @@
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-xl font-bold text-gray-900">My Vendors</h1>
-            <p class="mt-1 text-xs text-gray-500">Vendors you have onboarded — {{ $stats['total'] }} / {{ $stats['limit'] }} slots used</p>
+            <p class="mt-1 text-xs text-gray-500">Vendors you have onboarded — {{ $stats['total'] }} total</p>
         </div>
         <div class="flex flex-wrap gap-2 no-print">
             <a href="{{ route('agent.vendors.print') }}" target="_blank"
@@ -21,39 +21,11 @@
                     <i class="fas fa-download"></i> Export CSV
                 </button>
             </form>
-            @if($stats['total'] < $stats['limit'])
-                <a href="{{ route('agent.vendors.create') }}"
-                   class="inline-flex items-center gap-2 px-3 py-2 bg-[#ff0808] text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-sm">
-                    <i class="fas fa-plus"></i> Add Vendor
-                </a>
-            @else
-                <a href="{{ route('agent.subscriptions.plans') }}"
-                   class="inline-flex items-center gap-2 px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-medium shadow-sm">
-                    <i class="fas fa-crown"></i> Upgrade to Add More
-                </a>
-            @endif
+            <a href="{{ route('agent.vendors.create') }}"
+               class="inline-flex items-center gap-2 px-3 py-2 bg-[#ff0808] text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-sm">
+                <i class="fas fa-plus"></i> Add Vendor
+            </a>
         </div>
-    </div>
-
-    {{-- Subscription slot bar --}}
-    @php $pct = $stats['limit'] > 0 ? min(100, round($stats['total'] / $stats['limit'] * 100)) : 0; @endphp
-    <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-gray-600">Vendor Slots Used</span>
-            <span class="text-xs font-bold {{ $pct >= 100 ? 'text-red-600' : 'text-gray-700' }}">
-                {{ $stats['total'] }} / {{ $stats['limit'] }}
-            </span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="h-2 rounded-full transition-all {{ $pct >= 100 ? 'bg-red-500' : ($pct >= 75 ? 'bg-amber-500' : 'bg-green-500') }}"
-                 style="width: {{ $pct }}%"></div>
-        </div>
-        @if($pct >= 100)
-            <p class="mt-1 text-xs text-red-600 font-medium">
-                <i class="fas fa-exclamation-triangle mr-1"></i>
-                Limit reached. <a href="{{ route('agent.subscriptions.plans') }}" class="underline">Upgrade your plan</a> to add more vendors.
-            </p>
-        @endif
     </div>
 
     {{-- Stats Cards --}}
@@ -192,6 +164,11 @@
                                        class="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="Edit">
                                         <i class="fas fa-edit text-sm"></i>
                                     </a>
+                                    <button type="button"
+                                        onclick="switchToVendor({{ $vendor->id }})"
+                                        class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg" title="Switch to Vendor Dashboard">
+                                        <i class="fas fa-exchange-alt text-sm"></i>
+                                    </button>
                                     @if($vendor->account_status === 'active')
                                         <form action="{{ route('agent.vendors.suspend', $vendor->id) }}" method="POST" class="inline">
                                             @csrf
@@ -249,4 +226,29 @@
         @endif
     </div>
 </div>
+@push('scripts')
+<script>
+function switchToVendor(vendorId) {
+    if (!confirm('Switch to this vendor\'s dashboard?')) return;
+
+    fetch(`/agent/vendors/${vendorId}/switch`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.open(data.login_url, '_blank');
+        } else {
+            alert(data.message || 'Failed to switch.');
+        }
+    })
+    .catch(() => alert('Something went wrong.'));
+}
+</script>
+@endpush
 @endsection

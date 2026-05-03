@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Models\VendorTrial;
+use App\Models\AgentCredit;
+use App\Models\Credit;
+use App\Models\CreditTransaction;
 
 class BusinessProfileController extends Controller
 {
@@ -285,6 +288,27 @@ public function index(Request $request)
                     'ends_at'   => now()->addDays($defaultPlan->trial_days ?? 30),
                 ]);
             }
+            // ── Award credits to agent when vendor is verified ─────────────
+            try {
+                $agentId = $vendor->agent_id ?? null;
+                if ($agentId) {
+                    $creditEntry  = Credit::where('type', 'agent_registration')->first();
+                    $creditAmount = $creditEntry ? (float) $creditEntry->value : 5.0;
+
+                    $agentCredit = AgentCredit::firstOrNew(['agent_id' => $agentId]);
+                    $agentCredit->total_credits = (float) ($agentCredit->total_credits ?? 0) + $creditAmount;
+                    $agentCredit->save();
+
+                    CreditTransaction::create([
+                        'agent_id'         => $agentId,
+                        'transaction_type' => 'vendor_verified_reward',
+                        'credits'          => $creditAmount,
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Credit reward failed on vendor verification: ' . $e->getMessage());
+            }
+
             DB::commit();
 
             Log::info('Business profile verified', [

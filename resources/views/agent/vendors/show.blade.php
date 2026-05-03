@@ -14,11 +14,17 @@
                 <p class="text-xs text-gray-500 mt-0.5">Vendor ID: #{{ $vendor->id }}</p>
             </div>
         </div>
-        <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2">
             <a href="{{ route('agent.vendors.edit', $vendor->id) }}"
                class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium shadow-sm">
                 <i class="fas fa-edit"></i> Edit
             </a>
+            @if($vendor->account_status === 'active')
+                <button type="button" onclick="switchToVendor({{ $vendor->id }})"
+                    class="inline-flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium shadow-sm">
+                    <i class="fas fa-exchange-alt"></i> Switch to Vendor Dashboard
+                </button>
+            @endif
             @if($vendor->account_status === 'active')
                 <form action="{{ route('agent.vendors.suspend', $vendor->id) }}" method="POST" class="inline"
                       onsubmit="return confirm('Suspend this vendor?')">
@@ -151,6 +157,10 @@
                        class="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                         <i class="fas fa-shopping-bag text-purple-500 w-4"></i> View Orders
                     </a>
+                    <a href="{{ route('agent.vendors.products.index', $vendor->id) }}"
+                    class="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-box text-orange-500 w-4"></i> Manage Products
+                    </a>
                     <hr class="border-gray-100 my-1">
                     <form action="{{ route('agent.vendors.destroy', $vendor->id) }}" method="POST"
                           onsubmit="return confirm('Remove this vendor from your account? The vendor account itself will not be deleted.')">
@@ -214,7 +224,99 @@
                 </dl>
             </div>
 
+            {{-- Recent Products --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Products</h3>
+                    <a href="{{ route('agent.vendors.products.index', $vendor->id) }}"
+                    class="text-xs text-blue-600 hover:underline font-medium">
+                        View All →
+                    </a>
+                </div>
+
+                @if($recentProducts->isEmpty())
+                    <div class="text-center py-6">
+                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-box text-gray-300 text-xl"></i>
+                        </div>
+                        <p class="text-sm text-gray-500">No products yet</p>
+                        <a href="{{ route('agent.vendors.products.create', $vendor->id) }}"
+                        class="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                            <i class="fas fa-plus"></i> Add first product
+                        </a>
+                    </div>
+                @else
+                    <div class="space-y-3">
+                        @foreach($recentProducts as $product)
+                            @php
+                                $thumb = $product->images->firstWhere('is_primary', true) ?? $product->images->first();
+                                $statusColors = [
+                                    'active'   => 'bg-green-100 text-green-700',
+                                    'inactive' => 'bg-red-100 text-red-700',
+                                    'draft'    => 'bg-gray-100 text-gray-600',
+                                ];
+                                $sc = $statusColors[$product->status] ?? 'bg-gray-100 text-gray-600';
+                            @endphp
+                            <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                                <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    @if($thumb)
+                                        <img src="{{ $thumb->image_url }}" alt="{{ $product->name }}"
+                                            class="w-full h-full object-cover rounded-lg">
+                                    @else
+                                        <i class="fas fa-image text-gray-300 text-lg"></i>
+                                    @endif
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 truncate">{{ $product->name }}</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ $product->productCategory?->name ?? '—' }}</p>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold {{ $sc }}">
+                                        {{ ucfirst($product->status) }}
+                                    </span>
+                                    <a href="{{ route('agent.vendors.products.edit', [$vendor->id, $product->id]) }}"
+                                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg" title="Edit">
+                                        <i class="fas fa-edit text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <a href="{{ route('agent.vendors.products.create', $vendor->id) }}"
+                        class="flex items-center justify-center gap-2 w-full px-3 py-2 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100 transition-colors">
+                            <i class="fas fa-plus"></i> Add New Product
+                        </a>
+                    </div>
+                @endif
+            </div>
+
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+function switchToVendor(vendorId) {
+    if (!confirm('Switch to this vendor\'s dashboard?')) return;
+
+    fetch(`/agent/vendors/${vendorId}/switch`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.open(data.login_url, '_blank');
+        } else {
+            alert(data.message || 'Failed to switch.');
+        }
+    })
+    .catch(() => alert('Something went wrong.'));
+}
+</script>
+@endpush
 @endsection

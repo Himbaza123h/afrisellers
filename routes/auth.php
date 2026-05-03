@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\LoginController;
+use App\Http\Controllers\Frontend\PartnerTokenLoginController;
 use App\Http\Controllers\Frontend\SocialAuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\PasswordResetController;
@@ -42,6 +43,9 @@ Route::get('/auth/agent/token-login/{token}', [LoginController::class, 'agentTok
 
 Route::get('/auth/vendor/token-login/{token}', [LoginController::class, 'vendorTokenLogin'])
     ->name('auth.vendor.token-login');
+
+Route::get('/auth/partner/token-login/{token}', [PartnerTokenLoginController::class, 'login'])
+    ->name('auth.partner.token-login');
 
 Route::get('/auth/buyer/token-login/{token}', [LoginController::class, 'buyerTokenLogin'])
     ->name('auth.buyer.token-login');

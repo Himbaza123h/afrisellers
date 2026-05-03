@@ -7,6 +7,8 @@
         </button>
     </div> --}}
 
+
+
     <div class="p-4">
         <!-- Dashboard -->
         <div class="mb-6">
@@ -119,6 +121,16 @@
                         class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('admin.agents.*') ? 'text-orange-600 bg-orange-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
                         <i class="w-5 text-center {{ request()->routeIs('admin.agents.*') ? 'text-orange-600' : 'text-gray-400' }} transition-transform fas fa-handshake group-hover:scale-110"></i>
                         <span class="text-sm">Agents</span>
+                    </a>
+
+                    <a href="{{ route('admin.agent-packages.index') }}"
+                        class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('admin.agent-packages.*') ? 'text-amber-600 bg-amber-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                        <i class="w-5 text-center {{ request()->routeIs('admin.agent-packages.*') ? 'text-amber-600' : 'text-gray-400' }} transition-transform fas fa-box-open group-hover:scale-110"></i>
+                        <span class="text-sm">Agent Packages</span>
+                        @php $pkgCount = \App\Models\AgentPackage::where('is_active', true)->count(); @endphp
+                        @if($pkgCount > 0)
+                            <span class="ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full">{{ $pkgCount }}</span>
+                        @endif
                     </a>
 
                     <a href="{{ route('admin.transporters.index') }}"
@@ -340,6 +352,7 @@
         </nav>
     </div>
 
+
     {{-- Communication --}}
     <div class="mb-6">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Communication</p>
@@ -510,6 +523,31 @@
                 class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('agent.documents.*') ? 'text-slate-600 bg-slate-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
                 <i class="w-5 text-center {{ request()->routeIs('agent.documents.*') ? 'text-slate-600' : 'text-gray-400' }} transition-transform fas fa-folder-open group-hover:scale-110"></i>
                 <span class="text-sm">My Documents</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Partners -->
+    <div class="mb-6">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Partners</p>
+        <nav class="space-y-1">
+            <a href="{{ route('agent.partners.index') }}"
+                class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('agent.partners.*') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
+                <i class="w-5 text-center {{ request()->routeIs('agent.partners.*') ? 'text-teal-600' : 'text-gray-400' }} transition-transform fas fa-handshake group-hover:scale-110"></i>
+                <span class="text-sm">Partners</span>
+                @php
+                    $agentPartnersCount = \App\Models\PartnerRequest::where('registered_by_agent_id', auth()->id())->count();
+                @endphp
+                @if($agentPartnersCount > 0)
+                    <span class="ml-auto px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full">
+                        {{ $agentPartnersCount }}
+                    </span>
+                @endif
+            </a>
+            <a href="{{ route('agent.partners.create') }}"
+                class="flex gap-3 items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-all group">
+                <i class="w-5 text-center text-gray-400 transition-transform fas fa-plus-circle group-hover:scale-110"></i>
+                <span class="text-sm">Register Partner</span>
             </a>
         </nav>
     </div>
@@ -847,7 +885,7 @@ if ($vendor) {
         </div>
         @endif
 
-
+@if(!auth()->user()->is_partner)
         <!-- Add this in the appropriate section -->
         <div class="mb-6">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Communication</p>
@@ -865,10 +903,12 @@ if ($vendor) {
                 </a>
                 @endif
 
+
                 <!-- Add this below messages link -->
                 <a href="{{ route('message.join-page') }}" class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('message.join-page*') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
                     <i class="fas fa-plus-circle"></i> Join Group
                 </a>
+
 
                 @if (auth()->user()->hasRole('admin'))
                     <a href="{{ route('admin.messages.broadcast') }}"
@@ -888,6 +928,7 @@ if ($vendor) {
                 @endif
             </nav>
         </div>
+@endif
 
         <!-- System (Admin Only) -->
         @if (auth()->user()->hasRole('admin'))
@@ -979,11 +1020,13 @@ if ($vendor) {
                         ? route('agent.profile.show')
                         : route('vendor.profile.show');
                 @endphp
+            @if(!auth()->user()->is_partner)
                 <a href="{{ $profileRoute }}"
                     class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('*.profile.*') ? 'text-slate-600 bg-slate-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
                     <i class="w-5 text-center {{ request()->routeIs('*.profile.*') ? 'text-slate-600' : 'text-gray-400' }} transition-transform fas fa-user-circle group-hover:scale-110"></i>
                     <span class="text-sm">Profile Settings</span>
                 </a>
+            @endif
                 @if (auth()->user()->hasRole('agent'))
                     <a href="{{ route('agent.settings.index') }}"
                         class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('agent.settings.*') ? 'text-slate-600 bg-slate-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
@@ -1006,7 +1049,7 @@ if ($vendor) {
                         <i class="w-5 text-center {{ request()->routeIs('vendor.store.*') ? 'text-slate-600' : 'text-gray-400' }} transition-transform fas fa-store group-hover:scale-110"></i>
                         <span class="text-sm">Store Settings</span>
                     </a>
-                @if($canViewShowrooms ?? false)
+@if($canViewShowrooms ?? false)
                     <a href="{{ route('vendor.showrooms.index') }}"
                         class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('vendor.showrooms.*') ? 'text-slate-600 bg-slate-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group">
                         <i class="w-5 text-center {{ request()->routeIs('vendor.showrooms.*') ? 'text-slate-600' : 'text-gray-400' }} transition-transform fas fa-building group-hover:scale-110"></i>
@@ -1014,7 +1057,55 @@ if ($vendor) {
                     </a>
                     @endif
                 </nav>
-            @endif
+
+
+        @endif
+    @php
+            $user = auth()->user();
+            $umuVendor = $user->isVendor()
+    @endphp
+
+    @if($umuVendor)
+
+            {{-- Partner Account --}}
+            @php
+                $vendorPartnerRequest = auth()->user()->vendor
+                    ? \App\Models\PartnerRequest::where('vendor_user_id', auth()->user())->first()
+                    : null;
+                $vendorPartner = $vendorPartnerRequest
+                    ? \App\Models\Partner::where('partner_request_id', $vendorPartnerRequest->id)->first()
+                    : null;
+
+            @endphp
+            <div class="mt-3">
+                @if($vendorPartner)
+                    {{-- Approved: show switch button --}}
+                    <button onclick="switchToPartner()"
+                        class="flex gap-3 items-center w-full px-4 py-2.5 text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg transition-all group font-semibold text-sm">
+                        <i class="w-5 text-center text-teal-600 fas fa-exchange-alt group-hover:scale-110 transition-transform"></i>
+                        <span>Switch to Partner</span>
+                        <span class="ml-auto w-2 h-2 bg-teal-500 rounded-full"></span>
+                    </button>
+                @elseif($vendorPartnerRequest)
+                    {{-- Pending --}}
+                    <a href="{{ route('vendor.partner-request.index') }}"
+                        class="flex gap-3 items-center px-4 py-2.5 {{ request()->routeIs('vendor.partner-request.*') ? 'text-amber-600 bg-amber-50 font-semibold' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-all group text-sm">
+                        <i class="w-5 text-center text-amber-500 fas fa-hourglass-half transition-transform group-hover:scale-110"></i>
+                        <span>Partner Request</span>
+                        <span class="ml-auto px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full capitalize">{{ $vendorPartnerRequest->status }}</span>
+                    </a>
+                @else
+                    {{-- Not requested yet --}}
+                    <a href="{{ route('vendor.partner-request.index') }}"
+                        class="flex gap-3 items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-all group text-sm">
+                        <i class="w-5 text-center text-gray-400 fas fa-handshake transition-transform group-hover:scale-110"></i>
+                        <span>Become a Partner</span>
+                    </a>
+                @endif
+            </div>
+    @endif
+
+
 
             <form action="{{ route('auth.logout') }}" method="POST">
                 @csrf
@@ -1027,3 +1118,5 @@ if ($vendor) {
         </div>
     </div>
 </aside>
+
+

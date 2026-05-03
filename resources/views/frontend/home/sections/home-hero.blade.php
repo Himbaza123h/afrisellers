@@ -238,56 +238,62 @@ foreach ($subtitleConfigs as $cfg) {
             <button id="mobile-menu-toggle" onclick="openMobileMenu()" class="md:hidden text-gray-700 hover:text-[#ff0808]">
                 <i class="text-base fas fa-bars"></i>
             </button>
-                <div class="flex gap-2 items-center md:gap-3">
-                    @auth
-                        <div class="w-7 h-7 md:w-9 md:h-9 rounded-full bg-[#ff0808] flex items-center justify-center">
-                            <span class="text-xs md:text-sm font-semibold text-white">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</span>
-                        </div>
-                        <div class="hidden gap-2 items-center text-gray-700 lg:flex">
-                            @php
-                                $user = auth()->user();
-                                $dashboardRoute = null;
-                                if ($user) {
-                                    $isAdmin = $user->roles()->where('roles.id', 1)->where('roles.name', 'Admin')->where('roles.slug', 'admin')->exists();
-                                    if ($isAdmin) { $dashboardRoute = route('admin.dashboard.home'); }
-                                    else {
-                                        $isRegionalAdmin = $user->roles()->where('roles.slug', 'regional_admin')->exists();
-                                        if ($isRegionalAdmin) { $dashboardRoute = route('regional.dashboard.home'); }
-                                        else {
-                                            $isCountryAdmin = $user->roles()->where('roles.slug', 'country_admin')->exists();
-                                            if ($isCountryAdmin) { $dashboardRoute = route('country.dashboard.home'); }
-                                            else {
-                                                $isAgent = $user->roles()->where('roles.slug', 'agent')->exists();
-                                                if ($isAgent) { $dashboardRoute = route('agent.dashboard.home'); }
-                                                else {
-                                                    $vendor = App\Models\Vendor\Vendor::where('user_id', $user->id)->first();
-                                                    $dashboardRoute = $vendor ? route('vendor.dashboard.home') : route('buyer.dashboard.home');
-                                                }
+            <div class="flex gap-2 items-center md:gap-3">
+                @auth
+                    <div class="w-7 h-7 md:w-9 md:h-9 rounded-full bg-[#ff0808] flex items-center justify-center">
+                        <span class="text-xs md:text-sm font-semibold text-white">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</span>
+                    </div>
+                    <div class="hidden gap-2 items-center text-gray-700 lg:flex">
+                        @php
+                            $user = auth()->user();
+                            $dashboardRoute = null;
+                            if ($user) {
+                                $isAdmin = $user->roles()->where('roles.id', 1)->where('roles.name', 'Admin')->where('roles.slug', 'admin')->exists();
+                                if ($isAdmin) {
+                                    $dashboardRoute = route('admin.dashboard.home');
+                                } else {
+                                    $isRegionalAdmin = $user->roles()->where('roles.slug', 'regional_admin')->exists();
+                                    if ($isRegionalAdmin) {
+                                        $dashboardRoute = route('regional.dashboard.home');
+                                    } else {
+                                        $isCountryAdmin = $user->roles()->where('roles.slug', 'country_admin')->exists();
+                                        if ($isCountryAdmin) {
+                                            $dashboardRoute = route('country.dashboard.home');
+                                        } else {
+                                            $isAgent = $user->roles()->where('roles.slug', 'agent')->exists();
+                                            if ($isAgent) {
+                                                $dashboardRoute = route('agent.dashboard.home');
+                                            } elseif ($user->is_partner) {
+                                                $dashboardRoute = route('partner.dashboard');
+                                            } else {
+                                                $vendor = App\Models\Vendor\Vendor::where('user_id', $user->id)->first();
+                                                $dashboardRoute = $vendor ? route('vendor.dashboard.home') : route('buyer.dashboard.home');
                                             }
                                         }
                                     }
                                 }
-                            @endphp
-                            @if ($dashboardRoute)
-                                <a href="{{ $dashboardRoute }}" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.dashboard') }}</a>
-                            @endif
-                            <span class="text-gray-400">|</span>
-                            <form action="{{ route('auth.logout') }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.logout') }}</button>
-                            </form>
-                        </div>
-                    @else
-                        <div class="flex justify-center items-center w-7 h-7 md:w-9 md:h-9 rounded-full border-2 border-gray-300">
-                            <i class="text-xs text-gray-400 fas fa-user"></i>
-                        </div>
-                        <div class="hidden gap-2 items-center text-gray-700 lg:flex">
-                            <a href="{{ route('auth.signin') }}" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.login') }}</a>
-                            <span class="text-gray-400">|</span>
-                            <a href="{{ route('auth.register') }}" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.registration') }}</a>
-                        </div>
-                    @endauth
-                </div>
+                            }
+                        @endphp
+                        @if ($dashboardRoute)
+                            <a href="{{ $dashboardRoute }}" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.dashboard') }}</a>
+                        @endif
+                        <span class="text-gray-400">|</span>
+                        <form action="{{ route('auth.logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.logout') }}</button>
+                        </form>
+                    </div>
+                @else
+                    <div class="flex justify-center items-center w-7 h-7 md:w-9 md:h-9 rounded-full border-2 border-gray-300">
+                        <i class="text-xs text-gray-400 fas fa-user"></i>
+                    </div>
+                    <div class="hidden gap-2 items-center text-gray-700 lg:flex">
+                        <a href="{{ route('auth.signin') }}" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.login') }}</a>
+                        <span class="text-gray-400">|</span>
+                        <a href="{{ route('auth.register') }}" class="hover:text-[#ff0808] font-semibold transition-colors text-xs">{{ __('messages.registration') }}</a>
+                    </div>
+                @endauth
+            </div>
 
                 <a href="{{ route('livestream') }}" class="text-gray-700 hover:text-[#ff0808] flex items-center gap-1.5 relative transition-colors">
                     <div class="relative">
@@ -299,8 +305,35 @@ foreach ($subtitleConfigs as $cfg) {
                         {{ __('messages.live') }}
                     </span>
                 </a>
+<!-- Currency Switcher -->
+<div id="currencySwitcherWrapper">
+    <button id="currencyBtn"
+        onclick="toggleCurrencyDropdown()"
+        class="flex items-center gap-1 text-gray-700 hover:text-[#ff0808] transition-colors text-xs font-semibold px-1 py-1">
+        <i class="fas fa-coins text-base md:text-lg"></i>
+        <span id="currencyLabel" class="hidden lg:inline">USD</span>
+        <i id="currencyChevron" class="fas fa-chevron-down text-[9px] hidden lg:inline transition-transform duration-200"></i>
+    </button>
+</div>
 
-                <a href="{{ route('cart.index') }}" class="relative flex gap-2 items-center text-gray-700 transition-colors hover:text-[#ff0808]">
+<!-- Currency Dropdown — FIXED outside all stacking contexts -->
+<div id="currencyDropdown"
+    class="hidden bg-white rounded-xl border border-gray-200 w-56 max-h-80 overflow-y-auto"
+    style="position:fixed; z-index:9999999; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+    <div class="px-3 py-2 border-b border-gray-100 sticky top-0 bg-white rounded-t-xl flex items-center justify-between">
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Currency</p>
+        <span id="currencyLoadingIndicator" class="text-[9px] text-gray-400 hidden">
+            <i class="fas fa-spinner fa-spin mr-1"></i>Updating…
+        </span>
+    </div>
+    <div id="currencyList">
+        <div class="flex items-center justify-center py-6 text-gray-400 text-xs">
+            <i class="fas fa-spinner fa-spin mr-2"></i> Loading rates…
+        </div>
+    </div>
+</div>
+
+<a href="{{ route('cart.index') }}" class="relative flex gap-2 items-center text-gray-700 transition-colors hover:text-[#ff0808]">
                     <div class="relative">
                         <i class="text-base md:text-lg fas fa-shopping-cart"></i>
                         <span id="cartCount" class="absolute -top-1.5 -right-1.5 bg-[#ff0808] text-white text-[9px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold shadow-md">0</span>
@@ -989,8 +1022,240 @@ function applyCountry(id) {
 })();
 
 // ── Persist country selection ─────────────────────────────────────
+// ── Persist country selection ─────────────────────────────────────
 function saveSelectedCountry(id) {
     localStorage.setItem('uiselected_country', id);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CURRENCY SWITCHER — live rates via open.er-api.com (free, no key)
+// ══════════════════════════════════════════════════════════════════
+(function () {
+
+    // Currency metadata: code → { name, symbol }
+    // Rates come from the API, not hardcoded here
+    const CURRENCY_META = {
+        USD: { name: 'US Dollar',           symbol: '$'    },
+        EUR: { name: 'Euro',                symbol: '€'    },
+        GBP: { name: 'British Pound',       symbol: '£'    },
+        RWF: { name: 'Rwandan Franc',       symbol: 'Fr'   },
+        KES: { name: 'Kenyan Shilling',     symbol: 'KSh'  },
+        UGX: { name: 'Ugandan Shilling',    symbol: 'USh'  },
+        TZS: { name: 'Tanzanian Shilling',  symbol: 'TSh'  },
+        ETB: { name: 'Ethiopian Birr',      symbol: 'Br'   },
+        NGN: { name: 'Nigerian Naira',      symbol: '₦'    },
+        GHS: { name: 'Ghanaian Cedi',       symbol: 'GH₵'  },
+        ZAR: { name: 'South African Rand',  symbol: 'R'    },
+        EGP: { name: 'Egyptian Pound',      symbol: 'E£'   },
+        MAD: { name: 'Moroccan Dirham',     symbol: 'د.م'  },
+        XOF: { name: 'CFA Franc (West)',    symbol: 'CFA'  },
+        XAF: { name: 'CFA Franc (Central)', symbol: 'CFA'  },
+        ZMW: { name: 'Zambian Kwacha',      symbol: 'ZK'   },
+        MWK: { name: 'Malawian Kwacha',     symbol: 'MK'   },
+        BIF: { name: 'Burundian Franc',     symbol: 'Fr'   },
+        DZD: { name: 'Algerian Dinar',      symbol: 'دج'   },
+        AED: { name: 'UAE Dirham',          symbol: 'د.إ'  },
+        CNY: { name: 'Chinese Yuan',        symbol: '¥'    },
+        INR: { name: 'Indian Rupee',        symbol: '₹'    },
+        JPY: { name: 'Japanese Yen',        symbol: '¥'    },
+        CAD: { name: 'Canadian Dollar',     symbol: 'CA$'  },
+        AUD: { name: 'Australian Dollar',   symbol: 'A$'   },
+        CHF: { name: 'Swiss Franc',         symbol: 'CHF'  },
+        BRL: { name: 'Brazilian Real',      symbol: 'R$'   },
+        MXN: { name: 'Mexican Peso',        symbol: '$'    },
+        MUR: { name: 'Mauritian Rupee',     symbol: '₨'    },
+        TND: { name: 'Tunisian Dinar',      symbol: 'د.ت'  },
+        SOS: { name: 'Somali Shilling',     symbol: 'Sh'   },
+        SDG: { name: 'Sudanese Pound',      symbol: '£'    },
+        ZWL: { name: 'Zimbabwean Dollar',   symbol: 'Z$'   },
+        CDF: { name: 'Congolese Franc',     symbol: 'FC'   },
+        GMD: { name: 'Gambian Dalasi',      symbol: 'D'    },
+        GNF: { name: 'Guinean Franc',       symbol: 'Fr'   },
+    };
+
+    // Storage keys
+    const KEY_CODE       = 'ui_currency_code';
+    const KEY_RATE       = 'ui_currency_usd_rate';
+    const KEY_SYMBOL     = 'ui_currency_symbol';
+    const KEY_RATES_CACHE = 'ui_currency_rates_cache';
+    const KEY_RATES_TIME  = 'ui_currency_rates_time';
+    const CACHE_TTL_MS   = 6 * 60 * 60 * 1000; // 6 hours
+
+    // Live rates loaded from API
+    let liveRates = {};  // code → rate (1 USD = X)
+
+    function getSavedCode() {
+        return localStorage.getItem(KEY_CODE) || 'USD';
+    }
+
+    function saveCurrency(code, rate, symbol) {
+        localStorage.setItem(KEY_CODE,   code);
+        localStorage.setItem(KEY_RATE,   rate);
+        localStorage.setItem(KEY_SYMBOL, symbol);
+    }
+
+    function updateLabel(code) {
+        const lbl = document.getElementById('currencyLabel');
+        if (lbl) lbl.textContent = code;
+    }
+
+    function buildList() {
+        const list = document.getElementById('currencyList');
+        if (!list) return;
+        const active = getSavedCode();
+
+        // Show currencies we have meta for, in order of CURRENCY_META keys
+        const codes = Object.keys(CURRENCY_META).filter(c => liveRates[c] !== undefined);
+
+        if (!codes.length) {
+            list.innerHTML = '<div class="px-3 py-4 text-xs text-gray-400 text-center">Rates unavailable</div>';
+            return;
+        }
+
+        list.innerHTML = codes.map(code => {
+            const meta = CURRENCY_META[code];
+            const rate = liveRates[code] ?? '—';
+            const isActive = code === active;
+            return `
+            <button onclick="window.CurrencySwitcher.select('${code}')"
+                class="w-full text-left flex items-center justify-between px-3 py-2 transition-colors text-xs border-b border-gray-50
+                       ${isActive ? 'bg-[#fff5f5] text-[#ff0808] font-bold' : 'text-gray-700 hover:bg-[#fff5f5] hover:text-[#ff0808]'}">
+                <span class="flex items-center gap-2">
+                    <span class="w-6 text-center font-mono font-bold text-[10px] ${isActive ? 'text-[#ff0808]' : 'text-gray-400'}">${meta.symbol}</span>
+                    <span class="flex-1">${meta.name}</span>
+                </span>
+                <span class="font-mono text-[10px] ${isActive ? 'text-[#ff0808]' : 'text-gray-400'}">${code}</span>
+            </button>`;
+        }).join('');
+    }
+
+    function select(code) {
+        const meta = CURRENCY_META[code];
+        const rate = liveRates[code];
+        if (!meta || rate === undefined) return;
+
+        saveCurrency(code, rate, meta.symbol);
+        updateLabel(code);
+        buildList();
+        closeDropdown();
+
+        window.dispatchEvent(new CustomEvent('currencyChanged', {
+            detail: { code, rateToUSD: rate, symbol: meta.symbol }
+        }));
+    }
+
+    function closeDropdown() {
+        const dd  = document.getElementById('currencyDropdown');
+        const chv = document.getElementById('currencyChevron');
+        if (dd)  dd.classList.add('hidden');
+        if (chv) chv.style.transform = 'rotate(0deg)';
+    }
+
+    // Fetch from open.er-api.com — completely free, no API key
+    async function fetchRates() {
+        // Check cache first
+        const cachedRates = localStorage.getItem(KEY_RATES_CACHE);
+        const cachedTime  = parseInt(localStorage.getItem(KEY_RATES_TIME) || '0');
+
+        if (cachedRates && (Date.now() - cachedTime < CACHE_TTL_MS)) {
+            liveRates = JSON.parse(cachedRates);
+            buildList();
+            restoreSelection();
+            return;
+        }
+
+        const loader = document.getElementById('currencyLoadingIndicator');
+        if (loader) loader.classList.remove('hidden');
+
+        try {
+            const res  = await fetch('https://open.er-api.com/v6/latest/USD');
+            const data = await res.json();
+
+            if (data.result === 'success' && data.rates) {
+                liveRates = data.rates;
+                // Cache the rates
+                localStorage.setItem(KEY_RATES_CACHE, JSON.stringify(liveRates));
+                localStorage.setItem(KEY_RATES_TIME, Date.now());
+            } else {
+                throw new Error('Bad response');
+            }
+        } catch (err) {
+            console.warn('[CurrencySwitcher] Live fetch failed, using fallback rates.', err);
+            // Fallback hardcoded rates — only used if API is down
+            liveRates = {
+                USD:1, EUR:0.92, GBP:0.79, RWF:1320, KES:129, UGX:3750,
+                TZS:2650, ETB:57, NGN:1600, GHS:15.5, ZAR:18.5, EGP:48,
+                MAD:9.9, XOF:602, XAF:602, ZMW:27, MWK:1730, BIF:2870,
+                DZD:134, AED:3.67, CNY:7.25, INR:83, JPY:149, CAD:1.36,
+                AUD:1.53, CHF:0.89, BRL:4.97, MXN:17.2, MUR:45.5,
+                TND:3.11, CDF:2760, GMD:67, GNF:8600,
+            };
+        } finally {
+            if (loader) loader.classList.add('hidden');
+            buildList();
+            restoreSelection();
+        }
+    }
+
+    function restoreSelection() {
+        const saved = getSavedCode();
+        if (liveRates[saved]) {
+            const meta = CURRENCY_META[saved] || { symbol: saved };
+            saveCurrency(saved, liveRates[saved], meta.symbol);
+            updateLabel(saved);
+        }
+    }
+
+function init() {
+        updateLabel(getSavedCode());
+
+        // Close when clicking outside both the button wrapper and the dropdown
+        document.addEventListener('mousedown', function (e) {
+            const wrapper = document.getElementById('currencySwitcherWrapper');
+            const dd      = document.getElementById('currencyDropdown');
+            if (!dd || dd.classList.contains('hidden')) return;
+            if (wrapper && wrapper.contains(e.target)) return;
+            if (dd.contains(e.target)) return;
+            closeDropdown();
+        });
+
+        // Fetch live rates
+        fetchRates();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Public API
+    window.CurrencySwitcher = { select, getSavedCode, fetchRates };
+
+})();
+
+function toggleCurrencyDropdown() {
+    const btn = document.getElementById('currencyBtn');
+    const dd  = document.getElementById('currencyDropdown');
+    const chv = document.getElementById('currencyChevron');
+    if (!dd || !btn) return;
+
+    const isHidden = dd.classList.contains('hidden');
+
+    if (isHidden) {
+        // Position the fixed dropdown below the button
+        const rect = btn.getBoundingClientRect();
+        dd.style.top  = (rect.bottom + 6) + 'px';
+        // Align right edge with button right edge, but keep on screen
+        let left = rect.right - 224; // 224 = w-56
+        if (left < 8) left = 8;
+        dd.style.left = left + 'px';
+        dd.classList.remove('hidden');
+        if (chv) chv.style.transform = 'rotate(180deg)';
+    } else {
+        dd.classList.add('hidden');
+        if (chv) chv.style.transform = 'rotate(0deg)';
+    }
 }
 
 function saveSelectedCountry(id) {

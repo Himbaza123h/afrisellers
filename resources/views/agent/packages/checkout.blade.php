@@ -1,10 +1,12 @@
 @extends('layouts.home')
 
 @section('page-content')
-<div class="max-w-4xl mx-auto space-y-6">
-    <!-- Page Header -->
+<div class="max-w-6xl mx-auto space-y-6">
+
+    {{-- Page Header --}}
     <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('agent.packages.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+        <a href="{{ route('agent.packages.show', $package->id) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
             <i class="fas fa-arrow-left"></i>
             <span>Back</span>
         </a>
@@ -14,13 +16,30 @@
         </div>
     </div>
 
+    {{-- Flash messages --}}
+    @if(session('success'))
+        <div class="p-4 bg-green-50 rounded-lg border border-green-200 flex items-start gap-3">
+            <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+            <p class="text-sm font-medium text-green-900 flex-1">{{ session('success') }}</p>
+            <button onclick="this.parentElement.remove()" class="text-green-600"><i class="fas fa-times"></i></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="p-4 bg-red-50 rounded-lg border border-red-200 flex items-start gap-3">
+            <i class="fas fa-exclamation-circle text-red-600 mt-0.5"></i>
+            <p class="text-sm font-medium text-red-900 flex-1">{{ session('error') }}</p>
+            <button onclick="this.parentElement.remove()" class="text-red-600"><i class="fas fa-times"></i></button>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Checkout Form -->
+
+        {{-- LEFT: Checkout Form --}}
         <div class="lg:col-span-2">
-            <form action="{{ route('agent.packages.subscribe', $package->id) }}" method="POST" class="space-y-6">
+            <form id="checkoutForm" action="{{ route('agent.packages.subscribe', $package->id) }}" method="POST" class="space-y-6">
                 @csrf
 
-                <!-- Payment Method -->
+                {{-- Payment Method --}}
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment Method</h2>
 
@@ -64,7 +83,7 @@
                     @enderror
                 </div>
 
-                <!-- Auto-Renewal -->
+                {{-- Auto-Renewal --}}
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" name="auto_renew" class="mt-1 w-5 h-5 text-blue-600 rounded">
@@ -75,52 +94,68 @@
                     </label>
                 </div>
 
-                <!-- Terms -->
+                {{-- Terms --}}
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" required class="mt-1 w-5 h-5 text-blue-600 rounded">
                         <div class="flex-1">
-                            <span class="text-sm text-gray-700">I agree to the <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a></span>
+                            <span class="text-sm text-gray-700">
+                                I agree to the
+                                <a href="#" class="text-blue-600 hover:underline">Terms of Service</a>
+                                and
+                                <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>
+                            </span>
                         </div>
                     </label>
                 </div>
 
-                <!-- Submit Button -->
-                <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
-                    <i class="fas fa-lock mr-2"></i>
-                    Complete Purchase - ${{ number_format($package->price, 2) }}
-                </button>
+{{-- Submit --}}
+<button type="submit" id="submitBtn"
+        class="w-full px-4 py-2.5 bg-[#ff0808] hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2">
+    <i class="fas fa-lock" id="btnIcon"></i>
+    <span id="btnText">Complete Purchase — ${{ number_format($package->price, 2) }}</span>
+    <svg id="btnLoader" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+    </svg>
+</button>
+
+
+
             </form>
         </div>
 
-        <!-- Order Summary -->
+        {{-- RIGHT: Order Summary --}}
         <div class="lg:col-span-1">
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden sticky top-6">
-                <div class="p-6 bg-{{ $package->badge_color }}-50 to-{{ $package->badge_color }}-100 border-b border-{{ $package->badge_color }}-200">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Order Summary</h3>
-                    <p class="text-sm text-gray-600">{{ $package->name }} Package</p>
+
+                {{-- Summary header — inline style avoids dynamic Tailwind issue --}}
+                <div class="p-6 border-b border-gray-200" style="background: #f8fafc;">
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">Order Summary</h3>
+                    <p class="text-sm text-gray-500">{{ $package->name }} Package</p>
                 </div>
 
                 <div class="p-6 space-y-4">
-                    <!-- Package Details -->
+
+                    {{-- Package Details --}}
                     <div class="space-y-3 pb-4 border-b border-gray-200">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Package</span>
+                            <span class="text-sm text-gray-500">Package</span>
                             <span class="text-sm font-semibold text-gray-900">{{ $package->name }}</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Billing Cycle</span>
+                            <span class="text-sm text-gray-500">Billing Cycle</span>
                             <span class="text-sm font-semibold text-gray-900">{{ ucfirst($package->billing_cycle) }}</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Duration</span>
+                            <span class="text-sm text-gray-500">Duration</span>
                             <span class="text-sm font-semibold text-gray-900">{{ $package->duration_days }} days</span>
                         </div>
                     </div>
 
-                    <!-- Features Summary -->
+                    {{-- Features --}}
                     <div class="space-y-2 pb-4 border-b border-gray-200">
-                        <p class="text-xs font-semibold text-gray-700 uppercase">Includes:</p>
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Includes:</p>
                         <div class="space-y-2">
                             <div class="flex items-center gap-2">
                                 <i class="fas fa-check text-green-500 text-xs"></i>
@@ -138,33 +173,86 @@
                                     <span class="text-sm text-gray-700">Priority Support</span>
                                 </div>
                             @endif
+                            @if($package->advanced_analytics)
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-check text-green-500 text-xs"></i>
+                                    <span class="text-sm text-gray-700">Advanced Analytics</span>
+                                </div>
+                            @endif
+                            @if($package->featured_profile)
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-check text-green-500 text-xs"></i>
+                                    <span class="text-sm text-gray-700">Featured Profile</span>
+                                </div>
+                            @endif
                             <div class="flex items-center gap-2">
                                 <i class="fas fa-check text-green-500 text-xs"></i>
                                 <span class="text-sm text-gray-700">{{ $package->commission_rate }}% Commission</span>
                             </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                <span class="text-sm text-gray-700">{{ $package->max_payouts_per_month }} Payout{{ $package->max_payouts_per_month > 1 ? 's' : '' }}/Month</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Total -->
+                    {{-- Total --}}
                     <div class="pt-2">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-lg font-semibold text-gray-900">Total</span>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-semibold text-gray-700">Total</span>
                             <span class="text-2xl font-bold text-gray-900">${{ number_format($package->price, 2) }}</span>
                         </div>
-                        <p class="text-xs text-gray-500">Billed {{ $package->billing_cycle }}</p>
+                        <p class="text-xs text-gray-400">Billed {{ $package->billing_cycle }}</p>
                     </div>
 
-                    <!-- Security Badge -->
-                    <div class="p-3 bg-gray-50 rounded-lg">
+                    {{-- Security --}}
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
                         <div class="flex items-center gap-2 mb-1">
-                            <i class="fas fa-lock text-gray-400"></i>
+                            <i class="fas fa-lock text-gray-400 text-xs"></i>
                             <span class="text-xs font-semibold text-gray-700">Secure Payment</span>
                         </div>
-                        <p class="text-xs text-gray-500">Your payment information is encrypted and secure</p>
+                        <p class="text-xs text-gray-400">Your payment information is encrypted and secure</p>
                     </div>
+
+                    {{-- Trust badges --}}
+                    <div class="space-y-1.5 pt-1">
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <i class="fas fa-undo"></i> Cancel anytime
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <i class="fas fa-headset"></i> Support included
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <i class="fas fa-shield-alt"></i> Buyer protection
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
+
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('checkoutForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function () {
+        const btn    = document.getElementById('submitBtn');
+        const icon   = document.getElementById('btnIcon');
+        const text   = document.getElementById('btnText');
+        const loader = document.getElementById('btnLoader');
+
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        icon.classList.add('hidden');
+        text.textContent = 'Processing...';
+        loader.classList.remove('hidden');
+    });
+});
+</script>
+
+
 @endsection
+

@@ -38,13 +38,13 @@
                     <!-- Business Logo -->
                     <div class="-mt-16 flex-shrink-0 relative z-10">
                         <div class="w-24 h-24 rounded border-4 border-white shadow-lg flex items-center justify-center overflow-hidden bg-white">
-                            @if($businessProfile->logo)
-                                <img src="{{ $businessProfile->logo }}" alt="{{ $businessProfile->business_name }}" class="w-full h-full object-cover">
-                            @else
-                                <svg class="w-12 h-12 text-[#ff0808]" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                                </svg>
-                            @endif
+                        @if($businessProfile->logo)
+                            <img src="{{ str_starts_with($businessProfile->logo, 'http') ? $businessProfile->logo : 'https://afrisellers.com/public/storage/' . $businessProfile->logo }}" alt="{{ $businessProfile->business_name }}" class="w-full h-full object-cover">
+                        @else
+                            <svg class="w-12 h-12 text-[#ff0808]" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                            </svg>
+                        @endif
                         </div>
                     </div>
 
@@ -556,8 +556,15 @@
                                     </h3>
 
                                     @if($price)
-                                    <p class="text-sm font-bold text-[#ff0808] mb-1">
-                                        {{ number_format($price->price, 0) }} {{ $price->currency }}
+                                    @php
+                                        $bpSymbols = ['USD'=>'$','EUR'=>'€','GBP'=>'£','RWF'=>'RF','KES'=>'KSh','UGX'=>'USh','TZS'=>'TSh','ETB'=>'Br','NGN'=>'₦','GHS'=>'GH₵','ZAR'=>'R','EGP'=>'E£','MAD'=>'د.م','XOF'=>'CFA','XAF'=>'CFA','AED'=>'د.إ','CNY'=>'¥','INR'=>'₹'];
+                                        $bpSym = $bpSymbols[$price->currency] ?? $price->currency;
+                                    @endphp
+                                    <p class="text-sm font-bold text-[#ff0808] mb-1 bp-price-display"
+                                       data-price-native="{{ $price->price }}"
+                                       data-price-currency="{{ $price->currency }}"
+                                       data-symbol-native="{{ $bpSym }}">
+                                        <span class="bp-price-main">{{ $bpSym }}{{ number_format($price->price, 2) }}</span>
                                     </p>
                                     @endif
 
@@ -778,11 +785,49 @@
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, 'linkedin-share', 'width=580,height=400');
     }
 
-    // Initialize on page load
+// Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         // Restore last active tab or default to overview
         const savedTab = localStorage.getItem('activeBusinessTab') || 'overview';
         switchTab(savedTab);
+
+        // Apply saved currency on load
+        setTimeout(applyBpCurrency, 300);
     });
+
+    // ── Currency conversion for business profile product prices ──────────────
+    function getLiveRates() {
+        try {
+            const c = localStorage.getItem('ui_currency_rates_cache');
+            return c ? JSON.parse(c) : {};
+        } catch(e) { return {}; }
+    }
+
+    function applyBpCurrency() {
+        const targetRate   = parseFloat(localStorage.getItem('ui_currency_usd_rate') || '1');
+        const targetSymbol = localStorage.getItem('ui_currency_symbol') || '$';
+        const rates        = getLiveRates();
+
+        document.querySelectorAll('.bp-price-display').forEach(function(el) {
+            const native   = parseFloat(el.dataset.priceNative);
+            const currency = el.dataset.priceCurrency;
+            if (isNaN(native)) return;
+
+            const nativeRate  = rates[currency] || 1;
+            const inUSD       = native / nativeRate;
+            const converted   = inUSD * targetRate;
+
+            const mainEl = el.querySelector('.bp-price-main');
+            if (mainEl) {
+                const formatted = converted >= 1000
+                    ? Math.round(converted).toLocaleString()
+                    : converted.toFixed(2);
+                mainEl.textContent = targetSymbol + formatted;
+            }
+        });
+    }
+
+    // Listen for currency changes from the switcher
+    window.addEventListener('currencyChanged', applyBpCurrency);
 </script>
 @endsection

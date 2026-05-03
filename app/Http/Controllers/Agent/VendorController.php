@@ -13,29 +13,39 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Models\AgentCredit;
+use App\Models\Credit;
+use App\Models\CreditTransaction;
+use Illuminate\Support\Facades\Cache;
+
 
 class VendorController extends Controller
 {
     // ─── Subscription guard ───────────────────────────────────────────
-    private function vendorLimit(): int
-    {
-        $sub = \App\Models\AgentSubscription::where('agent_id', auth()->id())
-            ->active()
-            ->with('package')
-            ->first();
+    // private function vendorLimit(): int
+    // {
+    //     $sub = \App\Models\AgentSubscription::where('agent_id', auth()->id())
+    //         ->active()
+    //         ->with('package')
+    //         ->first();
 
-        return (int) ($sub?->package?->max_vendors ?? 1);
-    }
+    //     return (int) ($sub?->package?->max_vendors ?? 1);
+    // }
+
+    // private function currentVendorCount(): int
+    // {
+    //     return Vendor::where('agent_id', auth()->id())->count();
+    // }
+
+    // private function canAddMore(): bool
+    // {
+    //     return $this->currentVendorCount() < $this->vendorLimit();
+    // }
 
     private function currentVendorCount(): int
-    {
-        return Vendor::where('agent_id', auth()->id())->count();
-    }
-
-    private function canAddMore(): bool
-    {
-        return $this->currentVendorCount() < $this->vendorLimit();
-    }
+{
+    return Vendor::where('agent_id', auth()->id())->count();
+}
 
     // ─── INDEX ────────────────────────────────────────────────────────
     public function index(Request $request)
@@ -64,11 +74,41 @@ class VendorController extends Controller
             'active'    => Vendor::where('agent_id', $agentId)->where('account_status', 'active')->count(),
             'pending'   => Vendor::where('agent_id', $agentId)->where('account_status', 'pending')->count(),
             'suspended' => Vendor::where('agent_id', $agentId)->where('account_status', 'suspended')->count(),
-            'limit'     => $this->vendorLimit(),
+            'limit'     => 0,
         ];
 
         return view('agent.vendors.index', compact('vendors', 'stats'));
     }
+
+
+    public function switchToVendor($vendorId)
+{
+    $vendor = Vendor::where('agent_id', auth()->id())
+        ->with('user')
+        ->findOrFail($vendorId);
+
+    if (!$vendor->user) {
+        return response()->json(['success' => false, 'message' => 'Vendor user not found.'], 404);
+    }
+
+    if ($vendor->account_status !== 'active') {
+        return response()->json(['success' => false, 'message' => 'Vendor account is not active.'], 403);
+    }
+
+    $token = Str::random(60);
+
+    Cache::put(
+        'vendor_login_token_' . $token,
+        $vendor->user->id,
+        now()->addMinutes(5)
+    );
+
+    return response()->json([
+        'success'   => true,
+        'message'   => 'Ready to switch',
+        'login_url' => route('auth.vendor.token-login', ['token' => $token]),
+    ]);
+}
 
     // ─── PRINT ────────────────────────────────────────────────────────
     public function print()
@@ -84,11 +124,6 @@ class VendorController extends Controller
     // ─── CREATE ───────────────────────────────────────────────────────
     public function create()
     {
-        if (!$this->canAddMore()) {
-            return redirect()->route('agent.vendors.index')
-                ->with('error', "You have reached your vendor limit ({$this->vendorLimit()}). Please upgrade your subscription to add more vendors.");
-        }
-
         $countries = Country::orderBy('name')->get();
         return view('agent.vendors.create', compact('countries'));
     }
@@ -96,15 +131,16 @@ class VendorController extends Controller
     // ─── STORE ────────────────────────────────────────────────────────
     public function store(Request $request)
     {
-        if (!$this->canAddMore()) {
-            return redirect()->route('agent.vendors.index')
-                ->with('error', 'Vendor limit reached. Please upgrade your subscription.');
-        }
+        // if (!$this->canAddMore()) {
+        //     return redirect()->route('agent.vendors.index')
+        //         ->with('error', 'Vendor limit reached. Please upgrade your subscription.');
+        // }
 
         $validated = $request->validate([
             // Contact / Login
             'name'                        => 'required|string|max:255',
             'email'                       => 'required|email|unique:users,email',
+            'password'                    => 'required|string|min:8|confirmed',
             'phone'                       => 'required|string|max:30',
             'contact_person_position'     => 'nullable|string|max:100',
             'whatsapp_number'             => 'nullable|string|max:30',
@@ -151,13 +187,11 @@ class VendorController extends Controller
 
         DB::beginTransaction();
         try {
-            $tempPassword = Str::random(10);
 
-            // 1. Create the user account
             $user = User::create([
                 'name'              => $validated['name'],
                 'email'             => $validated['email'],
-                'password'          => Hash::make($tempPassword),
+                'password'          => Hash::make($validated['password']),
                 'email_verified_at' => now(),
             ]);
 
@@ -224,7 +258,7 @@ class VendorController extends Controller
             $businessProfile->update(['vendor_id' => $vendor->id]);
 
             Mail::to($user->email)->queue(
-                new \App\Mail\VendorAccountCreatedMail($user->name, $user->email, $tempPassword)
+                new \App\Mail\VendorAccountCreatedMail($user->name, $user->email, $validated['password'])
             );
 
             Mail::to(auth()->user()->email)->queue(
@@ -233,9 +267,29 @@ class VendorController extends Controller
 
             DB::commit();
 
+            // ── Award credits for vendor registration ──────────────────────
+// ── Deduct credits for vendor registration ─────────────────────
+            try {
+                $creditEntry  = Credit::where('type', 'agent_registration')->first();
+                $creditAmount = $creditEntry ? (float) $creditEntry->value : 5.0;
+
+                $agentCredit = AgentCredit::firstOrNew(['agent_id' => auth()->id()]);
+                $agentCredit->total_credits = max(0, (float) ($agentCredit->total_credits ?? 0) - $creditAmount);
+                $agentCredit->save();
+
+                CreditTransaction::create([
+                    'agent_id'         => auth()->id(),
+                    'transaction_type' => 'vendor_registration_deduction',
+                    'credits'          => -$creditAmount,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::error('Credit deduction failed for agent ' . auth()->id() . ': ' . $e->getMessage());
+            }
+
             return redirect()->route('agent.vendors.show', $vendor->id)
                 ->with('success', "Vendor created successfully!")
-                ->with('temp_password', $tempPassword);
+                ->with('vendor_email', $validated['email'])
+                ->with('vendor_password', $validated['password']);
 
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -246,14 +300,20 @@ class VendorController extends Controller
     }
 
     // ─── SHOW ─────────────────────────────────────────────────────────
-    public function show($id)
-    {
-        $vendor = Vendor::where('agent_id', auth()->id())
-            ->with(['user', 'businessProfile.country'])
-            ->findOrFail($id);
+        public function show($id)
+        {
+            $vendor = Vendor::where('agent_id', auth()->id())
+                ->with(['user', 'businessProfile.country'])
+                ->findOrFail($id);
 
-        return view('agent.vendors.show', compact('vendor'));
-    }
+            $recentProducts = \App\Models\Product::where('user_id', $vendor->user_id)
+                ->with(['images', 'productCategory'])
+                ->latest()
+                ->take(2)
+                ->get();
+
+            return view('agent.vendors.show', compact('vendor', 'recentProducts'));
+        }
 
     // ─── EDIT ─────────────────────────────────────────────────────────
     public function edit($id)
