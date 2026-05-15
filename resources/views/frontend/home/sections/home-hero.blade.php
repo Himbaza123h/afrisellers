@@ -475,14 +475,77 @@ $marketplaceCategories = App\Models\ProductCategory::where('status', 'active')
                     data-dot="{{ $i }}"></button>
         @endforeach
     </div>
+{{-- Left Side Ad --}}
+    @php
+        $heroLeftAd = \App\Models\AdPlacement::forPosition('homepage_header');
+    @endphp
 
-    {{-- Arrows --}}
-    <button id="heroPrev" class="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-all {{ $slideCount <= 1 ? 'hidden' : '' }}">
-        <i class="fas fa-chevron-left text-xs"></i>
-    </button>
-    <button id="heroNext" class="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-all {{ $slideCount <= 1 ? 'hidden' : '' }}">
-        <i class="fas fa-chevron-right text-xs"></i>
-    </button>
+    @if($heroLeftAd && $heroLeftAd->media)
+    <a href="{{ $heroLeftAd->cta_url ?? '#' }}"
+       {{ $heroLeftAd->cta_url ? 'target="_blank"' : '' }}
+       class="absolute left-3 top-1/2 -translate-y-1/2 z-30 hidden lg:block overflow-hidden shadow-xl cursor-pointer group"
+       style="width: 120px; height: 500px; margin-top: 230px;">
+
+        {{-- Image or GIF --}}
+        @if($heroLeftAd->media->is_image)
+            <img src="{{ $heroLeftAd->media->url }}"
+                 alt="{{ $heroLeftAd->headline ?? 'Advertisement' }}"
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+
+        {{-- Video --}}
+        @elseif($heroLeftAd->media->is_video)
+            <video class="w-full h-full object-cover" autoplay muted loop playsinline>
+                <source src="{{ $heroLeftAd->media->url }}">
+            </video>
+        @endif
+
+        {{-- Overlay text --}}
+        @if($heroLeftAd->headline)
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2">
+            <p class="text-white text-[9px] font-bold leading-tight">{{ $heroLeftAd->headline }}</p>
+            @if($heroLeftAd->sub_text)
+                <p class="text-white/80 text-[8px] mt-0.5">{{ $heroLeftAd->sub_text }}</p>
+            @endif
+        </div>
+        @endif
+
+        <span class="absolute top-1 right-1 bg-black/50 text-white text-[8px] px-1 rounded">AD</span>
+    </a>
+    @endif
+{{-- Right Side Ad --}}
+    @php
+        $heroRightAd = \App\Models\AdPlacement::forPosition('homepage_right');
+    @endphp
+
+    @if($heroRightAd && $heroRightAd->media)
+    <a href="{{ $heroRightAd->cta_url ?? '#' }}"
+       {{ $heroRightAd->cta_url ? 'target="_blank"' : '' }}
+       class="absolute right-3 top-1/2 -translate-y-1/2 z-30 hidden lg:block overflow-hidden shadow-xl cursor-pointer group"
+       style="width: 120px; height: 500px; margin-top: 230px;">
+
+        @if($heroRightAd->media->is_image)
+            <img src="{{ $heroRightAd->media->url }}"
+                 alt="{{ $heroRightAd->headline ?? 'Advertisement' }}"
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+
+        @elseif($heroRightAd->media->is_video)
+            <video class="w-full h-full object-cover" autoplay muted loop playsinline>
+                <source src="{{ $heroRightAd->media->url }}">
+            </video>
+        @endif
+
+        @if($heroRightAd->headline)
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2">
+            <p class="text-white text-[9px] font-bold leading-tight">{{ $heroRightAd->headline }}</p>
+            @if($heroRightAd->sub_text)
+                <p class="text-white/80 text-[8px] mt-0.5">{{ $heroRightAd->sub_text }}</p>
+            @endif
+        </div>
+        @endif
+
+        <span class="absolute top-1 left-1 bg-black/50 text-white text-[8px] px-1 rounded">AD</span>
+    </a>
+    @endif
 
     {{-- Content --}}
     <div class="container mx-auto px-3 sm:px-4 md:px-6 relative z-20">

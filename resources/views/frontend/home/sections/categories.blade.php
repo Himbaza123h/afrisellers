@@ -17,41 +17,41 @@
                 @php
                     $iconMap = [
                         'agriculture' => '🌾',
-                        'food' => '🍎',
-                        'beverage' => '🥤',
+                        'food'        => '🍎',
+                        'beverage'    => '🥤',
                         'electronics' => '💻',
-                        'technology' => '💻',
-                        'fashion' => '👔',
-                        'clothing' => '👔',
-                        'textile' => '👔',
-                        'industrial' => '🏭',
-                        'machinery' => '🏭',
-                        'construction' => '🏗️',
-                        'building' => '🏗️',
-                        'healthcare' => '🏥',
-                        'medical' => '🏥',
-                        'automotive' => '🚗',
-                        'vehicle' => '🚗',
-                        'home' => '🏡',
-                        'garden' => '🏡',
-                        'furniture' => '🏡',
-                        'beauty' => '💄',
-                        'personal' => '💄',
-                        'care' => '💄',
-                        'cosmetic' => '💄',
-                        'books' => '📚',
-                        'education' => '📚',
-                        'sports' => '⚽',
-                        'outdoor' => '⚽',
-                        'music' => '🎵',
-                        'instrument' => '🎵',
-                        'arts' => '🎨',
-                        'craft' => '🎨',
-                        'pet' => '🐾',
-                        'animal' => '🐾',
-                        'tools' => '🔧',
-                        'hardware' => '🔧',
-                        'default' => '📦',
+                        'technology'  => '💻',
+                        'fashion'     => '👔',
+                        'clothing'    => '👔',
+                        'textile'     => '👔',
+                        'industrial'  => '🏭',
+                        'machinery'   => '🏭',
+                        'construction'=> '🏗️',
+                        'building'    => '🏗️',
+                        'healthcare'  => '🏥',
+                        'medical'     => '🏥',
+                        'automotive'  => '🚗',
+                        'vehicle'     => '🚗',
+                        'home'        => '🏡',
+                        'garden'      => '🏡',
+                        'furniture'   => '🏡',
+                        'beauty'      => '💄',
+                        'personal'    => '💄',
+                        'care'        => '💄',
+                        'cosmetic'    => '💄',
+                        'books'       => '📚',
+                        'education'   => '📚',
+                        'sports'      => '⚽',
+                        'outdoor'     => '⚽',
+                        'music'       => '🎵',
+                        'instrument'  => '🎵',
+                        'arts'        => '🎨',
+                        'craft'       => '🎨',
+                        'pet'         => '🐾',
+                        'animal'      => '🐾',
+                        'tools'       => '🔧',
+                        'hardware'    => '🔧',
+                        'default'     => '📦',
                     ];
 
                     $circleColors = [
@@ -70,6 +70,11 @@
                         }
                         return $iconMap['default'];
                     }
+
+                    $categories = \App\Models\ProductCategory::active()
+                        ->whereNull('parent_id')
+                        ->orderBy('name')
+                        ->get();
                 @endphp
 
                 @forelse($categories as $index => $category)
@@ -78,13 +83,10 @@
                         $circleColor = $circleColors[$index % count($circleColors)];
                     @endphp
                     <a href="{{ route('products.search', ['type' => 'category', 'slug' => \Illuminate\Support\Str::slug($category->name)]) }}"
-                       class="category-slide flex-shrink-0 flex flex-col items-center bg-white hover:shadow-lg rounded-lg md:rounded-xl p-2 md:p-3 text-center transition-all group border border-transparent hover:border-blue-400">
-                        <div class="w-14 h-14 md:w-16 md:h-16 rounded-full {{ $circleColor }} flex items-center justify-center mb-1.5 md:mb-2 transition-transform group-hover:scale-105 overflow-hidden">
-                            @if($category->image)
-                                <img src="{{ $category->image }}" alt="{{ $category->name }}" class="w-full h-full object-cover">
-                            @else
-                                <span class="text-xl md:text-2xl">{{ $icon }}</span>
-                            @endif
+                       class="category-slide flex-shrink-0 flex flex-col items-center bg-white hover:shadow-lg rounded-lg md:rounded-xl p-2 md:p-3 text-center transition-all group border border-transparent hover:border-blue-400"
+                       data-href="{{ route('products.search', ['type' => 'category', 'slug' => \Illuminate\Support\Str::slug($category->name)]) }}">
+                        <div class="w-14 h-14 md:w-16 md:h-16 rounded-full {{ $circleColor }} flex items-center justify-center mb-1.5 md:mb-2 transition-transform group-hover:scale-105">
+                            <span class="text-xl md:text-2xl">{{ $icon }}</span>
                         </div>
                         <div class="text-[9px] md:text-[10px] font-bold text-gray-900 transition-colors group-hover:text-blue-600 leading-tight">
                             {{ $category->name }}
@@ -116,10 +118,9 @@
     @media (max-width: 640px)  { .category-slide { width: calc((100% - 0.5rem) / 2.5);min-width: 90px;  } }
     @media (max-width: 480px)  { .category-slide { width: calc((100% - 0.5rem) / 2);  min-width: 100px; } }
 
+    #category-wrapper { cursor: grab; }
     #category-wrapper.dragging { cursor: grabbing; }
     #category-slider { will-change: transform; user-select: none; }
-    #category-slider a { pointer-events: auto; }
-    #category-wrapper.dragging a { pointer-events: none; }
 </style>
 
 <script>
@@ -131,37 +132,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnNext  = document.getElementById('category-next');
     if (!wrapper || !slider) return;
 
-    const SPEED        = 0.5;   // px per frame auto-scroll
-    const FRICTION     = 0.92;  // momentum decay
+    const SPEED    = 0.5;
+    const FRICTION = 0.92;
 
     let offset       = 0;
     let maxOffset    = 0;
     let velocity     = 0;
     let paused       = false;
     let dragging     = false;
+    let didDrag      = false;   // ← track if user actually moved
     let dragStartX   = 0;
     let dragStartOff = 0;
     let lastDragX    = 0;
     let lastDragTime = 0;
-    let totalDots    = 0;
 
     function clamp(val, min, max) { return Math.min(Math.max(val, min), max); }
-
-    function getMaxOffset() {
-        return Math.max(0, slider.scrollWidth - wrapper.offsetWidth);
-    }
-
-    function applyTransform() {
-        slider.style.transform = `translateX(${-offset}px)`;
-    }
+    function getMaxOffset() { return Math.max(0, slider.scrollWidth - wrapper.offsetWidth); }
+    function applyTransform() { slider.style.transform = `translateX(${-offset}px)`; }
 
     // ── Dots ──
     function buildDots() {
         if (!dotsEl) return;
         const visibleW = wrapper.offsetWidth;
-        totalDots = Math.ceil(slider.scrollWidth / visibleW) || 1;
+        const total    = Math.ceil(slider.scrollWidth / visibleW) || 1;
         dotsEl.innerHTML = '';
-        for (let i = 0; i < totalDots; i++) {
+        for (let i = 0; i < total; i++) {
             const d = document.createElement('button');
             d.className = 'w-1.5 h-1.5 rounded-full bg-gray-300 transition-all';
             d.addEventListener('click', () => {
@@ -196,8 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 velocity  = 0;
                 offset   += SPEED;
             }
-
-            // Bounce back at ends for auto-scroll: loop back to start
             if (offset >= maxOffset + 60) offset = 0;
             if (offset < 0)              offset = 0;
         } else if (!dragging && Math.abs(velocity) > 0.1) {
@@ -218,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Mouse drag ──
     wrapper.addEventListener('mousedown', (e) => {
         dragging     = true;
+        didDrag      = false;
         paused       = true;
         dragStartX   = e.clientX;
         dragStartOff = offset;
@@ -230,8 +224,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('mousemove', (e) => {
         if (!dragging) return;
-        const dx = dragStartX - e.clientX;
-        offset   = clamp(dragStartOff + dx, 0, getMaxOffset());
+        const dx = Math.abs(e.clientX - dragStartX);
+        if (dx > 5) didDrag = true;   // ← only flag as drag if moved >5px
+        offset = clamp(dragStartOff + (dragStartX - e.clientX), 0, getMaxOffset());
 
         const now = Date.now();
         const dt  = now - lastDragTime;
@@ -240,8 +235,15 @@ document.addEventListener('DOMContentLoaded', function () {
         lastDragTime = now;
     });
 
-    document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', (e) => {
         if (!dragging) return;
+
+        // If user barely moved → treat as a click, navigate
+        if (!didDrag) {
+            const link = e.target.closest('[data-href]');
+            if (link) window.location.href = link.dataset.href;
+        }
+
         dragging = false;
         paused   = false;
         wrapper.classList.remove('dragging');
@@ -250,6 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Touch drag ──
     wrapper.addEventListener('touchstart', (e) => {
         dragging     = true;
+        didDrag      = false;
         paused       = true;
         dragStartX   = e.touches[0].clientX;
         dragStartOff = offset;
@@ -260,8 +263,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     wrapper.addEventListener('touchmove', (e) => {
         if (!dragging) return;
-        const dx = dragStartX - e.touches[0].clientX;
-        offset   = clamp(dragStartOff + dx, 0, getMaxOffset());
+        const dx = Math.abs(e.touches[0].clientX - dragStartX);
+        if (dx > 5) didDrag = true;
+        offset = clamp(dragStartOff + (dragStartX - e.touches[0].clientX), 0, getMaxOffset());
 
         const now = Date.now();
         const dt  = now - lastDragTime;
@@ -270,12 +274,19 @@ document.addEventListener('DOMContentLoaded', function () {
         lastDragTime = now;
     }, { passive: true });
 
-    wrapper.addEventListener('touchend', () => {
+    wrapper.addEventListener('touchend', (e) => {
+        if (!dragging) return;
+
+        if (!didDrag) {
+            const link = e.target.closest('[data-href]');
+            if (link) window.location.href = link.dataset.href;
+        }
+
         dragging = false;
         paused   = false;
     });
 
-    // ── Prev / Next buttons ──
+    // ── Prev / Next ──
     if (btnPrev) {
         btnPrev.addEventListener('click', () => {
             velocity = 0;
@@ -289,10 +300,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Page visibility ──
     document.addEventListener('visibilitychange', () => { paused = document.hidden; });
 
-    // ── Init ──
     buildDots();
     window.addEventListener('resize', buildDots);
     requestAnimationFrame(loop);

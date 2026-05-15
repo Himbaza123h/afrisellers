@@ -393,7 +393,8 @@ function copyProductLink() {
             @php
                 $articleImage = $article->thumbnail ?? $article->image ?? null;
             @endphp
-            <a href="{{ route('articles.show', $article->slug) }}"
+            
+            <a href="{{ route('business-profile.products.singleArticle', ['businessProfileId' => $article->user->businessProfile->id, 'articleSlug' => $article->slug]) }}"
                class="flex gap-3 items-start group hover:bg-gray-50 rounded-md p-2 -mx-2 transition">
 
                 <div class="flex-shrink-0 w-20 h-16 rounded-md overflow-hidden bg-gray-100">
@@ -722,33 +723,97 @@ function copyProductLink() {
 
     <div class="p-3 sm:p-4 md:p-6">
         <!-- YouTube Video Tab -->
-<!-- YouTube Video Tab -->
-<div id="youtube-tab" class="tab-content">
-    <div class="w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-lg bg-black">
-        <div class="aspect-video">
-                @php
-                    $vendor = $product->user->vendor ?? null;
-                    $businessProfile = $vendor->businessProfile ?? null;
-                    $youtubeLink = $businessProfile->youtube_link ?? 'https://youtu.be/Xb8som_PBGc?list=RDXb8som_PBGc';
 
-                    // Extract video ID from various YouTube URL formats
-                    if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/', $youtubeLink, $matches)) {
-                        $videoId = $matches[1];
-                    } else {
-                        $videoId = 'Xb8som_PBGc'; // fallback
-                    }
-                @endphp
-                <iframe
-                    class="w-full h-full"
-                    src="https://www.youtube.com/embed/{{ $videoId }}"
-                    title="Product Video"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen>
-                </iframe>
+    <div id="youtube-tab" class="tab-content">
+        <div class="flex flex-col lg:flex-row gap-4">
+    
+            {{-- Left: YouTube Video --}}
+<div class="w-1/2 rounded-lg overflow-hidden shadow-lg bg-black">
+    <div style="height: 280px;">
+                    @php
+                        $vendor = $product->user->vendor ?? null;
+                        $businessProfile = $vendor->businessProfile ?? null;
+                        $youtubeLink = $businessProfile->youtube_link ?? 'https://youtu.be/Xb8som_PBGc?list=RDXb8som_PBGc';
+    
+                        if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/', $youtubeLink, $matches)) {
+                            $videoId = $matches[1];
+                        } else {
+                            $videoId = 'Xb8som_PBGc';
+                        }
+                    @endphp
+                    <iframe
+                        class="w-full h-full"
+                        src="https://www.youtube.com/embed/{{ $videoId }}"
+                        title="Product Video"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
             </div>
+    
+            {{-- Right: Ad --}}
+            <div class="w-1/2 flex-shrink-0">
+                @php
+                    $videoTabAds = [
+                        [
+                            'media_type' => 'image',
+                            'media_url'  => 'https://images.pexels.com/photos/1109541/pexels-photo-1109541.jpeg?auto=compress&cs=tinysrgb&w=600',
+                            'title'      => 'DeWalt Pro Tools — Up to 40% Off',
+                            'target_url' => '#',
+                        ],
+                        [
+                            'media_type' => 'image',
+                            'media_url'  => 'https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg?auto=compress&cs=tinysrgb&w=600',
+                            'title'      => 'Premium Workshop Sets — Free Shipping',
+                            'target_url' => '#',
+                        ],
+                    ];
+                @endphp
+    
+                <div class="relative overflow-hidden rounded-lg" id="videoTabAdSlider" style="height: 280px;">
+                    @foreach($videoTabAds as $i => $ad)
+                    <div class="vtab-ad-slide absolute inset-0 transition-opacity duration-700 {{ $i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}"
+                         style="cursor: {{ $ad['target_url'] !== '#' ? 'pointer' : 'default' }}"
+                         onclick="if('{{ $ad['target_url'] }}'!=='#') window.open('{{ $ad['target_url'] }}','_blank')">
+    
+                        @if($ad['media_type'] === 'image')
+                            <img src="{{ $ad['media_url'] }}" alt="{{ $ad['title'] }}"
+                                 class="w-full h-full object-cover">
+                        @else
+                            <video muted autoplay loop playsinline class="w-full h-full object-cover">
+                                <source src="{{ $ad['media_url'] }}" type="video/mp4">
+                            </video>
+                        @endif
+    
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none"></div>
+    
+                        <div class="absolute top-2 left-2 z-20">
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm text-white text-[9px] font-semibold tracking-wide">
+                                <i class="fas fa-ad text-[8px]"></i> Sponsored
+                            </span>
+                        </div>
+    
+                        <div class="absolute bottom-0 left-0 right-0 z-20 px-2.5 pb-7 pt-4 pointer-events-none">
+                            <p class="text-white text-[11px] font-semibold leading-tight line-clamp-2">{{ $ad['title'] }}</p>
+                        </div>
+                    </div>
+                    @endforeach
+    
+                    {{-- Dot indicators --}}
+                    <div class="absolute bottom-2 left-0 right-0 z-30 flex items-center justify-center gap-1.5">
+                        @foreach($videoTabAds as $i => $ad)
+                        <button class="vtab-ad-dot block h-1 transition-all duration-300 {{ $i === 0 ? 'w-5 bg-white' : 'w-1.5 bg-white/40' }}"
+                                onclick="event.stopPropagation(); goToVtabAdSlide({{ $i }})">
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
+                <p class="text-[9px] text-red-800 tracking-widest mt-1 text-center uppercase">Advertisement</p>
+            </div>
+    
         </div>
-        </div>
+    </div>
 
         <!-- Overview Tab -->
         <div id="overview-tab" class="hidden tab-content">
@@ -1940,6 +2005,31 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(applyPdCurrency, 350);
     }
 
+})();
+// ── Video Tab Ad Slider ───────────────────────────────────────
+(function () {
+    const slides = document.querySelectorAll('.vtab-ad-slide');
+    const dots   = document.querySelectorAll('.vtab-ad-dot');
+    if (!slides.length) return;
+
+    let current = 0;
+    let timer;
+
+    window.goToVtabAdSlide = function (index) {
+        slides[current].classList.replace('opacity-100', 'opacity-0');
+        slides[current].classList.replace('z-10', 'z-0');
+        dots[current].classList.remove('w-5', 'bg-white');
+        dots[current].classList.add('w-1.5', 'bg-white/40');
+
+        current = index;
+
+        slides[current].classList.replace('opacity-0', 'opacity-100');
+        slides[current].classList.replace('z-0', 'z-10');
+        dots[current].classList.remove('w-1.5', 'bg-white/40');
+        dots[current].classList.add('w-5', 'bg-white');
+    };
+
+    timer = setInterval(() => goToVtabAdSlide((current + 1) % slides.length), 4000);
 })();
 </script>
 @endsection

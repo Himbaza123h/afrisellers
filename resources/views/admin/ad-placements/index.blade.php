@@ -30,9 +30,9 @@
         </div>
     @endif
 
-    {{-- Position Cards Grid --}}
+    {{-- First Row: first 2 positions only --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        @foreach($positions as $key => $label)
+        @foreach(array_slice($positions, 0, 2, true) as $key => $label)
         @php
             $positionPlacements = $placements->get($key, collect());
             $activePlacement    = $positionPlacements->firstWhere('is_active', true);
@@ -69,9 +69,7 @@
             @else
                 <div class="divide-y divide-gray-50">
                     @foreach($positionPlacements as $placement)
-                    @php
-                        $isLive = $placement->is_live;
-                    @endphp
+                    @php $isLive = $placement->is_live; @endphp
                     <div class="flex items-center gap-4 px-5 py-3.5 {{ !$placement->is_active ? 'opacity-60' : '' }}">
 
                         {{-- Thumbnail --}}
@@ -96,15 +94,12 @@
                                 {{ $placement->media?->name ?? 'Media deleted' }}
                             </p>
                             <div class="flex items-center gap-2 mt-0.5 flex-wrap">
-                                {{-- Live badge --}}
                                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold
                                              {{ $isLive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                                     <i class="fas fa-circle text-[4px]"></i>
                                     {{ $isLive ? 'LIVE' : ($placement->is_active ? 'SCHEDULED' : 'INACTIVE') }}
                                 </span>
-                                {{-- Type --}}
                                 <span class="text-[10px] text-gray-400 uppercase font-semibold">{{ $placement->media?->type }}</span>
-                                {{-- Dates --}}
                                 @if($placement->starts_at || $placement->ends_at)
                                     <span class="text-[10px] text-gray-400">
                                         {{ $placement->starts_at?->format('d M') ?? '∞' }} – {{ $placement->ends_at?->format('d M') ?? '∞' }}
@@ -115,7 +110,6 @@
 
                         {{-- Actions --}}
                         <div class="flex items-center gap-1.5 flex-shrink-0">
-                            {{-- Toggle --}}
                             <form action="{{ route('admin.ad-placements.toggle', $placement) }}" method="POST">
                                 @csrf
                                 <button type="submit"
@@ -125,12 +119,10 @@
                                     <i class="fas {{ $placement->is_active ? 'fa-toggle-on' : 'fa-toggle-off' }}"></i>
                                 </button>
                             </form>
-                            {{-- Edit --}}
                             <a href="{{ route('admin.ad-placements.edit', $placement) }}"
                                class="p-1.5 bg-gray-100 text-gray-600 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-600 transition-colors">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            {{-- Delete --}}
                             <form action="{{ route('admin.ad-placements.destroy', $placement) }}" method="POST"
                                   onsubmit="return confirm('Remove this placement?')">
                                 @csrf @method('DELETE')
@@ -149,6 +141,56 @@
         </div>
         @endforeach
     </div>
+
+    {{-- Remaining positions — Currently Unavailable --}}
+    @if(count($positions) > 2)
+    <div class="mt-4">
+
+        {{-- Section divider --}}
+        <div class="flex items-center gap-4 mb-4">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <div class="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full">
+                <i class="fas fa-clock text-amber-500 text-xs"></i>
+                <span class="text-xs font-bold text-amber-700">Currently Unavailable at the moment</span>
+            </div>
+            <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            @foreach(array_slice($positions, 2, null, true) as $key => $label)
+            @php
+                $positionPlacements = $placements->get($key, collect());
+                $hasActive          = (bool) $positionPlacements->firstWhere('is_active', true);
+            @endphp
+            <div class="bg-white rounded-xl border border-dashed border-gray-300 shadow-sm overflow-hidden opacity-60 pointer-events-none select-none relative">
+
+                {{-- Unavailable ribbon --}}
+                <div class="absolute top-2 right-2 z-10">
+                    <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-full border border-amber-200">
+                        <i class="fas fa-lock mr-1"></i>Unavailable
+                    </span>
+                </div>
+
+                {{-- Position Header --}}
+                <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gray-50">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                        <p class="text-sm font-bold text-gray-400">{{ $label }}</p>
+                        <span class="px-1.5 py-0.5 bg-gray-100 text-gray-400 text-[9px] font-mono rounded">{{ $key }}</span>
+                    </div>
+                </div>
+
+                {{-- Placeholder body --}}
+                <div class="flex flex-col items-center justify-center px-5 py-8 gap-2">
+                    <i class="fas fa-ban text-2xl text-gray-200"></i>
+                    <p class="text-xs text-gray-400 text-center">This placement position is not yet available.</p>
+                </div>
+
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
 </div>
 @endsection
